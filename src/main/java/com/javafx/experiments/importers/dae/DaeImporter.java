@@ -65,38 +65,7 @@ public final class DaeImporter extends Importer {
     private boolean createPolyMesh;
     private Timeline timeline = null;
 
-    {
-        // CHANGE FOR Y_UP
-        rootNode.getTransforms().add(new Rotate(180, 0, 0, 0, Rotate.X_AXIS));
-    }
-
     public DaeImporter() {
-    }
-
-    public DaeImporter(String url, boolean createPolyMesh) throws IOException {
-        load(url, createPolyMesh);
-    }
-
-    public DaeImporter(File file, boolean createPolyMesh) {
-        this.createPolyMesh = createPolyMesh;
-        try {
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            SAXParser saxParser = factory.newSAXParser();
-            saxParser.parse(file, new DaeSaxParser());
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public DaeImporter(InputStream in, boolean createPolyMesh) {
-        this.createPolyMesh = createPolyMesh;
-        try {
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            SAXParser saxParser = factory.newSAXParser();
-            saxParser.parse(in, new DaeSaxParser());
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public Scene createScene(int width) {
@@ -117,9 +86,8 @@ public final class DaeImporter extends Importer {
 
     @Override
     public void load(String url, boolean createPolygonMesh) throws IOException {
-
         final int dot = url.lastIndexOf('.');
-        if (url.substring(dot + 1, url.length()).toLowerCase().equals("dae"))
+        if (url.substring(dot + 1, url.length()).toLowerCase().equals(".dae"))
             throw new IOException("unsupported 3D format");
 
         this.createPolyMesh = createPolygonMesh;
@@ -136,7 +104,6 @@ public final class DaeImporter extends Importer {
             parser.buildScene(rootNode);
             firstCamera = parser.getFirstCamera();
             firstCameraAspectRatio = parser.getFirstCameraAspectRatio();
-            //timeline = parser.getTimeline();
 
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();

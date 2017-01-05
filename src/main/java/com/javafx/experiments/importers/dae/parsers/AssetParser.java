@@ -20,7 +20,7 @@ final class AssetParser extends DefaultHandler {
     private String authoringTool;
     private String unit;
     private float scale;
-    private String upAxis;
+    String upAxis;
 
     private enum State {
         UNKNOWN,

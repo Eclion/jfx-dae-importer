@@ -16,6 +16,7 @@ import javafx.scene.Node;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Affine;
+import javafx.scene.transform.Rotate;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -155,6 +156,15 @@ final public class DaeSaxParser extends DefaultHandler {
 
     public void buildScene(Group rootNode) {
         DaeScene scene = libraryVisualSceneParser.scenes.peek();
+        String upAxis = assetParser.upAxis;
+        if(upAxis.equals("Z_UP"))
+        {
+            rootNode.getTransforms().add(new Rotate(90, 0, 0, 0, Rotate.X_AXIS));
+        }
+        else if(upAxis.equals("Y_UP"))
+        {
+            rootNode.getTransforms().add(new Rotate(180, 0, 0, 0, Rotate.X_AXIS));
+        }
         rootNode.setId(scene.id);
         rootNode.getChildren().addAll(scene.meshNodes.values().stream().map(this::getMesh).collect(Collectors.toList()));
         rootNode.getChildren().addAll(scene.controllerNodes.values().stream().map(this::getController).collect(Collectors.toList()));
