@@ -1,0 +1,6 @@
+
+apply plugin:'application'
+
+jar {
+    manifest.attributes("Main-Class": mainClassName)
+}
