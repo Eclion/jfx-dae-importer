@@ -1,6 +1,10 @@
+apply plugin:'java'
 
-apply plugin:'application'
 
-jar {
-    manifest.attributes("Main-Class": mainClassName)
+version '1.0.0-SNAPSHOT'
+
+repositories {
+    // Use 'jcenter' for resolving your dependencies.
+    // You can declare any Maven/Ivy/file repository here.
+    jcenter()
 }
