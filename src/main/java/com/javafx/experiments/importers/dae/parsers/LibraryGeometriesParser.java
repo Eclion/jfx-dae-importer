@@ -2,7 +2,6 @@ package com.javafx.experiments.importers.dae.parsers;
 
 import com.javafx.experiments.importers.dae.structures.Input;
 import com.javafx.experiments.importers.dae.utils.ParserUtils;
-import com.javafx.experiments.shape3d.PolygonMesh;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.shape.VertexFormat;
 import org.xml.sax.Attributes;
@@ -27,8 +26,7 @@ final class LibraryGeometriesParser extends DefaultHandler {
     private final Map<String, float[]> floatArrays = new HashMap<>();
     private final Map<String, Input> inputs = new HashMap<>();
     private final List<int[]> pLists = new ArrayList<>();
-    final Map<String, Object> meshes = new HashMap<>();
-    private boolean createPolyMesh;
+    final Map<String, TriangleMesh> meshes = new HashMap<>();
     private int[] vCounts;
 
     private enum State {
@@ -90,16 +88,10 @@ final class LibraryGeometriesParser extends DefaultHandler {
                 savePoints();
                 break;
             case polygons:
-                if (createPolyMesh)
-                    createPolygonsPolyMesh();
-                else
-                    createPolygonsTriangleMesh();
+                createPolygonsTriangleMesh();
                 break;
             case polylist:
-                if (createPolyMesh)
-                    createPolylistPolyMesh();
-                else
-                    createPolylistTriangleMesh();
+                createPolylistTriangleMesh();
                 break;
             case vcount:
                 saveVerticesCounts();
@@ -133,23 +125,9 @@ final class LibraryGeometriesParser extends DefaultHandler {
         throw new UnsupportedOperationException("Need to implement TriangleMesh creation");
     }
 
-    private void createPolygonsPolyMesh() {
-        Input vertexInput = inputs.get("VERTEX");
-        Input texInput = inputs.get("TEXCOORD");
-        float[] points = floatArrays.get(vertexInput.source.substring(1));
-        float[] texCoords = floatArrays.get(texInput.source.substring(1));
-        int[][] faces = new int[pLists.size()][];
-        for(int f=0;f<faces.length;f++) {
-            faces[f] = pLists.get(f);
-        }
-        PolygonMesh mesh = new PolygonMesh(points,texCoords,faces);
-        meshes.put(currentId.get("geometry"),mesh);
-    }
-
     private void createPolylistTriangleMesh() {
         // create mesh put in map
         int faceStep = 1;
-
         Input vertexInput = inputs.get("VERTEX");
         if (vertexInput != null && (vertexInput.offset + 1) > faceStep)
             faceStep = vertexInput.offset + 1;
@@ -203,39 +181,6 @@ final class LibraryGeometriesParser extends DefaultHandler {
         meshes.put(currentId.get("geometry"), mesh);
     }
 
-    private void createPolylistPolyMesh() {
-        int faceStep = 1;
-        Input vertexInput = inputs.get("VERTEX");
-        if (vertexInput!=null && (vertexInput.offset+1) > faceStep) faceStep = vertexInput.offset+1;
-        Input texInput = inputs.get("TEXCOORD");
-        if (texInput!=null && (texInput.offset+1) > faceStep) faceStep = texInput.offset+1;
-        Input normalInput = inputs.get("NORMAL");
-        if (normalInput!=null && (normalInput.offset+1) > faceStep) faceStep = normalInput.offset+1;
-        float[] points = floatArrays.get(vertexInput.source.substring(1));
-        float[] texCoords;
-        if (texInput==null) {
-            texCoords = new float[]{0,0};
-        } else {
-            texCoords = floatArrays.get(texInput.source.substring(1));
-        }
-        int[][] faces = new int[vCounts.length][];
-        int[] p = pLists.get(0);
-        int faceIndex = 0;
-        for(int f=0;f<faces.length;f++) {
-            final int numOfVertex = vCounts[f];
-            final int[] face = new int[numOfVertex*2];
-            for(int v=0;v<numOfVertex;v++) {
-                final int vertexIndex =faceIndex+(v*faceStep);
-                face[v*2] = p[vertexIndex+vertexInput.offset];
-                face[(v*2)+1] = (texInput==null) ? 0 : p[vertexIndex+texInput.offset];
-            }
-            faces[f] = face;
-            faceIndex += numOfVertex*faceStep;
-        }
-        PolygonMesh mesh = new PolygonMesh(points,texCoords,faces);
-        meshes.put(currentId.get("geometry"),mesh);
-    }
-
     private void saveVerticesCounts() {
         String[] numbers = charBuf.toString().trim().split("\\s+");
         vCounts = new int[numbers.length];
@@ -251,10 +196,6 @@ final class LibraryGeometriesParser extends DefaultHandler {
         floatArrays.put(
                 currentId.get("vertices"),
                 points);
-    }
-
-    void setCreatePolyMesh(boolean createPolyMesh) {
-        this.createPolyMesh = createPolyMesh;
     }
 
 }

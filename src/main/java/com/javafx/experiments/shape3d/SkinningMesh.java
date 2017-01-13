@@ -43,6 +43,7 @@ import javafx.collections.ObservableFloatArray;
 import javafx.geometry.Point3D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.MatrixType;
 import javafx.scene.transform.NonInvertibleTransformException;
@@ -52,7 +53,7 @@ import javafx.scene.transform.Transform;
  * PolygonMesh that knows how to update itself given changes in joint transforms.
  * The mesh can be updated with an AnimationTimer.
  */
-public final class SkinningMesh extends PolygonMesh {
+public final class SkinningMesh extends TriangleMesh {
     private final float[][] relativePoints; // nJoints x nPoints*3
     private final float[][] weights; // nJoints x nPoints
     private final List<Integer>[] weightIndices;
@@ -74,12 +75,14 @@ public final class SkinningMesh extends PolygonMesh {
      * @param joints              A list of joints used for skinning; the order of these are associated with the respective attributes of @weights and @bindPoses
      * @param jointForest         A list of the top level trees that contain the joints; all the @joints should be contained in this forest
      */
-    public SkinningMesh(final PolygonMesh mesh, final float[][] weights, final Affine[] bindTransforms, final Affine bindGlobalTransform,
-                        final List<Joint> joints, final List<Parent> jointForest) {//, boolean transformsAreRelatives) {
+    public SkinningMesh(final TriangleMesh mesh, final float[][] weights, final Affine[] bindTransforms, final Affine bindGlobalTransform,
+                        final List<Joint> joints, final List<Parent> jointForest) {
         this.getPoints().addAll(mesh.getPoints());
         this.getTexCoords().addAll(mesh.getTexCoords());
-        this.faces = mesh.faces;
+        this.getFaces().addAll(mesh.getFaces());
         this.getFaceSmoothingGroups().addAll(mesh.getFaceSmoothingGroups());
+        this.getNormals().addAll(mesh.getNormals());
+        this.setVertexFormat(mesh.getVertexFormat());
 
         this.weights = weights;
 
@@ -151,7 +154,7 @@ public final class SkinningMesh extends PolygonMesh {
         JointIndex parent = null;
         Transform localToGlobalTransform;
 
-        public JointIndex(final Node n, final int ind, final List<Joint> orderedJoints) {
+        JointIndex(final Node n, final int ind, final List<Joint> orderedJoints) {
             node = n;
             index = ind;
             if (node instanceof Parent) {

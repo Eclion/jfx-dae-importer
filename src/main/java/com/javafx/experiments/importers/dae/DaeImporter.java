@@ -38,15 +38,12 @@ import javafx.scene.Camera;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
-import javafx.scene.transform.Rotate;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 
 
 /**
@@ -62,11 +59,7 @@ public final class DaeImporter extends Importer {
     private final Group rootNode = new Group();
     private Camera firstCamera = null;
     private double firstCameraAspectRatio = 4 / 3;
-    private boolean createPolyMesh;
     private Timeline timeline = null;
-
-    public DaeImporter() {
-    }
 
     public Scene createScene(int width) {
         Scene scene = new Scene(rootNode, width, (int) (width / firstCameraAspectRatio), true);
@@ -85,18 +78,16 @@ public final class DaeImporter extends Importer {
     }
 
     @Override
-    public void load(String url, boolean createPolygonMesh) throws IOException {
+    public void load(String url) throws IOException {
         final int dot = url.lastIndexOf('.');
-        if (url.substring(dot + 1, url.length()).toLowerCase().equals(".dae"))
+        if (url.substring(dot + 1, url.length()).equalsIgnoreCase(".dae"))
             throw new IOException("unsupported 3D format");
 
-        this.createPolyMesh = createPolygonMesh;
         long START = System.currentTimeMillis();
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser saxParser = factory.newSAXParser();
             DaeSaxParser parser = new DaeSaxParser();
-            parser.setCreatePolyMesh(createPolygonMesh);
             saxParser.parse(url, parser);
 
             buildTimeline(parser);

@@ -41,11 +41,10 @@ public abstract class Importer {
      * Loads the 3D file
      *
      * @param url           The url of the 3D file to load
-     * @param asPolygonMesh When true load as a PolygonMesh if the loader
      *                      supports.
      * @throws IOException If issue loading file
      */
-    public abstract void load(String url, boolean asPolygonMesh) throws IOException;
+    public abstract void load(String url) throws IOException;
 
     /**
      * Gets the 3D node that was loaded earlier through the load() call
