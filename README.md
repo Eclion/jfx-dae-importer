@@ -1,0 +1,2 @@
+# jfx-dae-importer
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d2194e0e6e5e43c381006b1e0707a1c9)](https://www.codacy.com/app/Eclion/jfx-dae-importer?utm_source=github.com&utm_medium=referral&utm_content=Eclion/jfx-dae-importer&utm_campaign=badger)
