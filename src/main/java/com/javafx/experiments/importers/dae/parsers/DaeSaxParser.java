@@ -19,9 +19,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -31,7 +29,9 @@ final public class DaeSaxParser extends DefaultHandler {
 
     private DefaultHandler subHandler;
 
-    private AssetParser assetParser;
+    private Map<State, DefaultHandler> parsers = new HashMap<>();
+
+    /*private AssetParser assetParser;
     private SceneParser sceneParser;
     private LibraryAnimationsParser libraryAnimationsParser;
     private LibraryCamerasParser libraryCamerasParser;
@@ -41,7 +41,7 @@ final public class DaeSaxParser extends DefaultHandler {
     private LibraryImagesParser libraryImagesParser;
     private LibraryLightsParser libraryLightsParser;
     private LibraryMaterialsParser libraryMaterialsParser;
-    private LibraryVisualSceneParser libraryVisualSceneParser;
+    private LibraryVisualSceneParser libraryVisualSceneParser;*/
 
     private Camera firstCamera;
 
@@ -72,55 +72,50 @@ final public class DaeSaxParser extends DefaultHandler {
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        switch (state(qName)) {
+        final State currentState = state(qName);
+        switch (currentState) {
             case asset:
-                assetParser = new AssetParser();
-                subHandler = assetParser;
+                setParser(currentState, new AssetParser());
                 break;
             case scene:
-                sceneParser = new SceneParser();
-                subHandler = sceneParser;
+                setParser(currentState, new SceneParser());
                 break;
             case library_animations:
-                libraryAnimationsParser = new LibraryAnimationsParser();
-                subHandler = libraryAnimationsParser;
+                setParser(currentState, new LibraryAnimationsParser());
                 break;
             case library_cameras:
-                libraryCamerasParser = new LibraryCamerasParser();
-                subHandler = libraryCamerasParser;
+                setParser(currentState, new LibraryCamerasParser());
                 break;
             case library_controllers:
-                libraryControllerParser = new LibraryControllerParser();
-                subHandler = libraryControllerParser;
+                setParser(currentState, new LibraryControllerParser());
                 break;
             case library_effects:
-                libraryEffects = new LibraryEffectsParser();
-                subHandler = libraryEffects;
+                setParser(currentState, new LibraryEffectsParser());
                 break;
             case library_geometries:
-                libraryGeometriesParser = new LibraryGeometriesParser();
-                subHandler = libraryGeometriesParser;
+                setParser(currentState, new LibraryGeometriesParser());
                 break;
             case library_images:
-                libraryImagesParser = new LibraryImagesParser();
-                subHandler = libraryImagesParser;
+                setParser(currentState, new LibraryImagesParser());
                 break;
             case library_lights:
-                libraryLightsParser = new LibraryLightsParser();
-                subHandler = libraryLightsParser;
+                setParser(currentState, new LibraryLightsParser());
                 break;
             case library_materials:
-                libraryMaterialsParser = new LibraryMaterialsParser();
-                subHandler = libraryMaterialsParser;
+                setParser(currentState, new LibraryMaterialsParser());
                 break;
             case library_visual_scenes:
-                libraryVisualSceneParser = new LibraryVisualSceneParser();
-                subHandler = libraryVisualSceneParser;
+                setParser(currentState, new LibraryVisualSceneParser());
                 break;
             default:
                 if (subHandler != null) subHandler.startElement(uri, localName, qName, attributes);
                 break;
         }
+    }
+
+    private void setParser(State state, DefaultHandler parser) {
+        parsers.put(state, parser);
+        subHandler = parsers.get(state);
     }
 
     @Override
@@ -134,26 +129,26 @@ final public class DaeSaxParser extends DefaultHandler {
     }
 
     public Camera getFirstCamera() {
-        return libraryCamerasParser == null
-                ? null
-                : libraryCamerasParser.firstCamera;
+        return (parsers.containsKey(State.library_cameras))
+                ? ((LibraryCamerasParser) parsers.get(State.library_cameras)).firstCamera
+                : null;
     }
 
     public double getFirstCameraAspectRatio() {
-        return libraryCamerasParser == null
-                ? 4.0 / 3.0
-                : libraryCamerasParser.firstCameraAspectRatio;
+        return parsers.containsKey(State.library_cameras)
+                ? ((LibraryCamerasParser) parsers.get(State.library_cameras)).firstCameraAspectRatio
+                : 4.0 / 3.0;
     }
 
     public void buildScene(Group rootNode) {
-        DaeScene scene = libraryVisualSceneParser.scenes.peek();
-        String upAxis = assetParser.upAxis;
-        if(upAxis.equals("Z_UP"))
-        {
+        if (!parsers.containsKey(State.library_visual_scenes)) return;
+        DaeScene scene = ((LibraryVisualSceneParser) parsers.get(State.library_visual_scenes)).scenes.peek();
+        String upAxis = parsers.containsKey(State.asset)
+                ? ((AssetParser) parsers.get(State.asset)).upAxis
+                : "Z_UP";
+        if ("Z_UP".equals(upAxis)) {
             rootNode.getTransforms().add(new Rotate(90, 0, 0, 0, Rotate.X_AXIS));
-        }
-        else if(upAxis.equals("Y_UP"))
-        {
+        } else if ("Y_UP".equals(upAxis)) {
             rootNode.getTransforms().add(new Rotate(180, 0, 0, 0, Rotate.X_AXIS));
         }
         rootNode.setId(scene.id);
@@ -162,14 +157,18 @@ final public class DaeSaxParser extends DefaultHandler {
     }
 
     private Camera getCamera(DaeNode node) {
-        Camera camera = libraryCamerasParser.cameras.get(node.instance_camera_id);
+        if (!parsers.containsKey(State.library_cameras)) return null;
+        Camera camera = ((LibraryCamerasParser) parsers.get(State.library_cameras)).cameras.get(node.instance_camera_id);
         camera.setId(node.name);
         camera.getTransforms().addAll(node.transforms);
         return camera;
     }
 
-    private Node getMesh(DaeNode node) {
-        TriangleMesh mesh = libraryGeometriesParser.meshes.get(node.instance_geometry_id);
+    private MeshView getMesh(DaeNode node) {
+        if (!parsers.containsKey(State.library_geometries)) return new MeshView();
+        TriangleMesh mesh =
+                ((LibraryGeometriesParser) parsers.get(State.library_geometries))
+                        .meshes.get(node.instance_geometry_id);
         MeshView meshView = new MeshView(mesh);
 
         meshView.setId(node.name);
@@ -177,10 +176,23 @@ final public class DaeSaxParser extends DefaultHandler {
         return meshView;
     }
 
-    private Node getController(DaeNode node) {
-        final DaeController controller = libraryControllerParser.controllers.get(node.instance_controller_id);
-        final DaeSkeleton skeleton = (DaeSkeleton) libraryVisualSceneParser.scenes.get(0).skeletons.values().toArray()[0];
-        final TriangleMesh mesh = libraryGeometriesParser.meshes.get(controller.skinId);
+    private MeshView getController(DaeNode node) {
+        if (!parsers.containsKey(State.library_controllers)
+                || !parsers.containsKey(State.library_visual_scenes)
+                || !parsers.containsKey(State.library_geometries)) return new MeshView();
+
+        final DaeController controller =
+                ((LibraryControllerParser) parsers.get(State.library_controllers))
+                        .controllers.get(node.instance_controller_id);
+
+        //TODO get all skeletons
+        final DaeSkeleton skeleton = (DaeSkeleton)
+                ((LibraryVisualSceneParser) parsers.get(State.library_visual_scenes))
+                        .scenes.get(0).skeletons.values().toArray()[0];
+
+        final TriangleMesh mesh =
+                ((LibraryGeometriesParser) parsers.get(State.library_geometries))
+                        .meshes.get(controller.skinId);
 
         final String[] bones = skeleton.joints.keySet().toArray(new String[]{});
         final Affine[] bindTransforms = new Affine[bones.length];
@@ -214,9 +226,15 @@ final public class DaeSaxParser extends DefaultHandler {
     }
 
     public List<KeyFrame> getAllKeyFrames() {
-        List<KeyFrame> frames = new ArrayList<>();
-        libraryVisualSceneParser.scenes.peek().skeletons.values()
-                .forEach(skeleton -> libraryAnimationsParser.animations.values()
+        if (!parsers.containsKey(State.library_animations)
+                || !parsers.containsKey(State.library_visual_scenes)) return new ArrayList<>();
+
+        final LibraryAnimationsParser animationsParser = (LibraryAnimationsParser) parsers.get(State.library_animations);
+
+        final List<KeyFrame> frames = new ArrayList<>();
+        ((LibraryVisualSceneParser) parsers.get(State.library_visual_scenes))
+                .scenes.peek().skeletons.values()
+                .forEach(skeleton -> animationsParser.animations.values()
                         .forEach(animation -> frames.addAll(animation.calculateAnimation(skeleton))));
         return frames;
     }

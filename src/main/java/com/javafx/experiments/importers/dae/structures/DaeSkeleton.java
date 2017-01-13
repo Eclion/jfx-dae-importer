@@ -34,39 +34,24 @@ public final class DaeSkeleton extends Parent {
     }
 
     private static List<Joint> buildBone(final List<DaeNode> daeNodes, final Map<String, Joint> joints, final Map<String, Affine> bindTransforms) {
-        List<Joint> childJoints = new ArrayList<>();
-        for (final DaeNode nodes : daeNodes) {
-            final Joint joint = new Joint();
-            joint.setId(nodes.id);
-            final List<DaeNode> children = nodes.children.values().stream().filter(DaeNode::isJoint).collect(Collectors.toList());
+        return daeNodes.stream()
+                .map(node -> {
+                    final Joint joint = new Joint();
+                    joint.setId(node.id);
 
-            childJoints.add(joint);
-            joints.put(joint.getId(), joint);
+                    joints.put(joint.getId(), joint);
 
-            nodes.transforms.stream()
-                    .filter(transform -> transform instanceof Affine)
-                    .findFirst()
-                    .ifPresent(affine -> {
-                        Affine jointAffine = joint.a;
-                        jointAffine.setMxx(affine.getMxx());
-                        jointAffine.setMxy(affine.getMxy());
-                        jointAffine.setMxz(affine.getMxz());
-                        jointAffine.setMyx(affine.getMyx());
-                        jointAffine.setMyy(affine.getMyy());
-                        jointAffine.setMyz(affine.getMyz());
-                        jointAffine.setMzx(affine.getMzx());
-                        jointAffine.setMzy(affine.getMzy());
-                        jointAffine.setMzz(affine.getMzz());
-                        jointAffine.setTx(affine.getTx());
-                        jointAffine.setTy(affine.getTy());
-                        jointAffine.setTz(affine.getTz());
-                        //bindPoses.put(joint.getId(), (Affine) affine);
-                    });
+                    node.transforms.stream()
+                            .filter(transform -> transform instanceof Affine)
+                            .findFirst()
+                            .ifPresent(joint.a::setToTransform);
 
-            bindTransforms.put(joint.getId(), joint.a);
+                    bindTransforms.put(joint.getId(), joint.a);
 
-            joint.getChildren().addAll(buildBone(children, joints, bindTransforms));
-        }
-        return childJoints;
+                    final List<DaeNode> children = node.children.values().stream().filter(DaeNode::isJoint).collect(Collectors.toList());
+                    joint.getChildren().addAll(buildBone(children, joints, bindTransforms));
+                    return joint;
+                })
+                .collect(Collectors.toList());
     }
 }

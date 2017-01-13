@@ -92,6 +92,7 @@ final class LibraryEffectsParser extends DefaultHandler {
                 break;*/
             case color:
                 tempColor = extractColor(charBuf);
+                break;
             case diffuse:
                 diffuse = tempColor;
                 break;
@@ -106,7 +107,7 @@ final class LibraryEffectsParser extends DefaultHandler {
                 break;*/
             case phong:
                 PhongMaterial material = new PhongMaterial(diffuse);
-                if(specular!=null) material.setSpecularColor(specular);
+                if (specular != null) material.setSpecularColor(specular);
                 materials.put(currentId.get("effect"), material);
                 // commented nearly all parameters as only diffuse is used in the JavaFX's phong impl
                 break;

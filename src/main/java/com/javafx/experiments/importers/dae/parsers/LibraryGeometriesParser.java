@@ -126,59 +126,69 @@ final class LibraryGeometriesParser extends DefaultHandler {
     }
 
     private void createPolylistTriangleMesh() {
+
+        final TriangleMesh mesh = new TriangleMesh(VertexFormat.POINT_TEXCOORD);
+
         // create mesh put in map
         int faceStep = 1;
-        Input vertexInput = inputs.get("VERTEX");
+
+        final Input vertexInput = inputs.get("VERTEX");
+        final Input texInput = inputs.get("TEXCOORD");
+        final Input normalInput = inputs.get("NORMAL");
+
         if (vertexInput != null && (vertexInput.offset + 1) > faceStep)
             faceStep = vertexInput.offset + 1;
-        float[] points = floatArrays.get(vertexInput.source.substring(1));
 
-        Input texInput = inputs.get("TEXCOORD");
-        if (texInput != null && (texInput.offset + 1) > faceStep) faceStep = texInput.offset + 1;
-        float[] texCoords;
-        if (texInput == null) {
-            texCoords = new float[]{0, 0};
-        } else {
-            texCoords = floatArrays.get(texInput.source.substring(1));
-        }
+        if (texInput != null && (texInput.offset + 1) > faceStep)
+            faceStep = texInput.offset + 1;
 
-        Input normalInput = inputs.get("NORMAL");
-        boolean hasNormals = (normalInput != null);
-        float[] normals = new float[]{};
-        if (hasNormals) {
-            normals = floatArrays.get(normalInput.source.substring(1));
+        if (normalInput != null) {
+            mesh.setVertexFormat(VertexFormat.POINT_NORMAL_TEXCOORD);
             if ((normalInput.offset + 1) > faceStep)
                 faceStep = normalInput.offset + 1;
         }
 
-        final int inputCount = (hasNormals) ? 3 : 2;
+        final float[] points = floatArrays.get(vertexInput.source.substring(1));
+        final int[] faces = calcFaces(faceStep, vertexInput, texInput, normalInput);
 
-        int[] faces = new int[IntStream.of(vCounts).sum() * inputCount];
-        int[] p = pLists.get(0);
+        mesh.getFaces().setAll(faces);
+        mesh.getPoints().setAll(points);
+        mesh.getTexCoords().setAll(calcTexCoords(texInput));
+        mesh.getNormals().setAll(calcNormals(normalInput));
+
+        meshes.put(currentId.get("geometry"), mesh);
+    }
+
+    private float[] calcTexCoords(Input texInput) {
+        return (texInput == null)
+                ? new float[]{0, 0}
+                : floatArrays.get(texInput.source.substring(1));
+    }
+
+    private float[] calcNormals(Input normalInput) {
+        return (normalInput == null)
+                ? new float[]{}
+                : floatArrays.get(normalInput.source.substring(1));
+    }
+
+    private int[] calcFaces(int faceStep, Input vertexInput, Input texInput, Input normalInput) {
+        final int inputCount = (normalInput == null) ? 2 : 3;
+        final int[] faces = new int[IntStream.of(vCounts).sum() * inputCount];
+        final int[] p = pLists.get(0);
         int pIndex = 0;
 
         int faceIndex = 0;
         for (int vCount : vCounts) {
             for (int v = 0; v < vCount; v++) {
                 faces[faceIndex + v * inputCount] = p[pIndex + vertexInput.offset];
-                if (hasNormals)
+                if (inputCount == 3)
                     faces[faceIndex + v * inputCount + 1] = p[pIndex + normalInput.offset];
                 faces[faceIndex + v * inputCount + inputCount - 1] = (texInput == null) ? 0 : p[pIndex + texInput.offset];
                 pIndex += faceStep;
             }
             faceIndex += vCount * inputCount;
         }
-
-        TriangleMesh mesh = (hasNormals)
-                ? new TriangleMesh(VertexFormat.POINT_NORMAL_TEXCOORD)
-                : new TriangleMesh(VertexFormat.POINT_TEXCOORD);
-
-        mesh.getPoints().setAll(points);
-        if (hasNormals) mesh.getNormals().setAll(normals);
-        mesh.getTexCoords().setAll(texCoords);
-        mesh.getFaces().setAll(faces);
-
-        meshes.put(currentId.get("geometry"), mesh);
+        return faces;
     }
 
     private void saveVerticesCounts() {

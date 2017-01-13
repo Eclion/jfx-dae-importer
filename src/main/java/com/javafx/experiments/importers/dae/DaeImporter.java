@@ -80,14 +80,16 @@ public final class DaeImporter extends Importer {
     @Override
     public void load(String url) throws IOException {
         final int dot = url.lastIndexOf('.');
-        if (url.substring(dot + 1, url.length()).equalsIgnoreCase(".dae"))
+        final String extension = url.substring(dot + 1, url.length());
+        if (".dae".equalsIgnoreCase(extension)) {
             throw new IOException("unsupported 3D format");
+        }
 
-        long START = System.currentTimeMillis();
+        final long START = System.currentTimeMillis();
         try {
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            SAXParser saxParser = factory.newSAXParser();
-            DaeSaxParser parser = new DaeSaxParser();
+            final SAXParserFactory factory = SAXParserFactory.newInstance();
+            final SAXParser saxParser = factory.newSAXParser();
+            final DaeSaxParser parser = new DaeSaxParser();
             saxParser.parse(url, parser);
 
             buildTimeline(parser);
@@ -99,7 +101,7 @@ public final class DaeImporter extends Importer {
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
         }
-        long END = System.currentTimeMillis();
+        final long END = System.currentTimeMillis();
         System.out.println("IMPORTED [" + url + "] in  " + ((END - START)) + "ms");
     }
 
@@ -110,7 +112,7 @@ public final class DaeImporter extends Importer {
 
     @Override
     public boolean isSupported(String extension) {
-        return extension != null && extension.equals("dae");
+        return extension != null && "dae".equals(extension);
     }
 
     @Override

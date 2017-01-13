@@ -21,38 +21,44 @@ public final class DaeAnimation {
     public String target;
     final List<DaeAnimation> childAnimations = new ArrayList<>();
 
-    public DaeAnimation(String id)
-    {
+    public DaeAnimation(String id) {
         this.id = id;
     }
 
-    public List<KeyFrame> calculateAnimation(DaeSkeleton skeleton){
-        List<KeyFrame> keyFrames = new ArrayList<>();
+    public List<KeyFrame> calculateAnimation(DaeSkeleton skeleton) {
+        final List<KeyFrame> keyFrames = new ArrayList<>();
         final String targetJointName = target.split("/")[0];
-        Joint animatedJoint = skeleton.joints.get(targetJointName);
-        int count = input.length;
-        for(int i = 0; i < count; i ++)
-        {
-            Duration duration = new Duration(input[i]*3000);
-            Affine keyAffine = new Affine(output, MatrixType.MT_3D_4x4, i*16);
-            keyFrames.add(new KeyFrame(duration, new KeyValue(animatedJoint.a.mxxProperty(), keyAffine.getMxx())));
-            keyFrames.add(new KeyFrame(duration, new KeyValue(animatedJoint.a.mxyProperty(), keyAffine.getMxy())));
-            keyFrames.add(new KeyFrame(duration, new KeyValue(animatedJoint.a.mxzProperty(), keyAffine.getMxz())));
-            keyFrames.add(new KeyFrame(duration, new KeyValue(animatedJoint.a.myxProperty(), keyAffine.getMyx())));
-            keyFrames.add(new KeyFrame(duration, new KeyValue(animatedJoint.a.myyProperty(), keyAffine.getMyy())));
-            keyFrames.add(new KeyFrame(duration, new KeyValue(animatedJoint.a.myzProperty(), keyAffine.getMyz())));
-            keyFrames.add(new KeyFrame(duration, new KeyValue(animatedJoint.a.mzxProperty(), keyAffine.getMzx())));
-            keyFrames.add(new KeyFrame(duration, new KeyValue(animatedJoint.a.mzyProperty(), keyAffine.getMzy())));
-            keyFrames.add(new KeyFrame(duration, new KeyValue(animatedJoint.a.mzzProperty(), keyAffine.getMzz())));
-            keyFrames.add(new KeyFrame(duration, new KeyValue(animatedJoint.a.txProperty(), keyAffine.getTx())));
-            keyFrames.add(new KeyFrame(duration, new KeyValue(animatedJoint.a.tyProperty(), keyAffine.getTy())));
-            keyFrames.add(new KeyFrame(duration, new KeyValue(animatedJoint.a.tzProperty(), keyAffine.getTz())));
+        final Joint animatedJoint = skeleton.joints.get(targetJointName);
+        for (int i = 0; i < input.length; i++) {
+            final Affine keyAffine = new Affine(output, MatrixType.MT_3D_4x4, i * 16);
+            keyFrames.addAll(convertToKeyFrames(input[i] * 3000, animatedJoint.a, keyAffine));
         }
         keyFrames.addAll(childAnimations.stream().map(animation -> animation.calculateAnimation(skeleton))
                 .reduce(new ArrayList<>(), (l1, l2) -> {
-            l1.addAll(l2);
-            return l1;
-        }));
+                    l1.addAll(l2);
+                    return l1;
+                }));
+        return keyFrames;
+    }
+
+    private List<KeyFrame> convertToKeyFrames(final float t, final Affine jointAffine, final Affine keyAffine) {
+        final Duration duration = new Duration(t);
+
+        final List<KeyFrame> keyFrames = new ArrayList<>();
+
+        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.mxxProperty(), keyAffine.getMxx())));
+        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.mxyProperty(), keyAffine.getMxy())));
+        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.mxzProperty(), keyAffine.getMxz())));
+        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.myxProperty(), keyAffine.getMyx())));
+        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.myyProperty(), keyAffine.getMyy())));
+        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.myzProperty(), keyAffine.getMyz())));
+        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.mzxProperty(), keyAffine.getMzx())));
+        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.mzyProperty(), keyAffine.getMzy())));
+        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.mzzProperty(), keyAffine.getMzz())));
+        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.txProperty(), keyAffine.getTx())));
+        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.tyProperty(), keyAffine.getTy())));
+        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.tzProperty(), keyAffine.getTz())));
+
         return keyFrames;
     }
 

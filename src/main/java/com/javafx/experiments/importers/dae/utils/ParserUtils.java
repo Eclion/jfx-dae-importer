@@ -3,6 +3,8 @@ package com.javafx.experiments.importers.dae.utils;
 import com.javafx.experiments.importers.dae.structures.Input;
 import org.xml.sax.Attributes;
 
+import java.util.stream.IntStream;
+
 /**
  * @author Eclion
  */
@@ -29,11 +31,7 @@ public final class ParserUtils {
     }
 
     public static double[] extractDoubleArray(StringBuilder charBuf) {
-        String[] numbers = charBuf.toString().trim().split("\\s+");
-        double[] array = new double[numbers.length];
-        for (int i = 0; i < numbers.length; i++) {
-            array[i] = Float.parseFloat(numbers[i].trim());
-        }
-        return array;
+        final float[] floatArray = extractFloatArray(charBuf);
+        return IntStream.range(0, floatArray.length).mapToDouble(i -> floatArray[i]).toArray();
     }
 }
