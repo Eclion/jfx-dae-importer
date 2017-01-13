@@ -53,40 +53,12 @@ public final class Joint extends Group {
     public final Translate t = new Translate();
 
     public final Rotate jox = new Rotate();
-
-    {
-        jox.setAxis(Rotate.X_AXIS);
-    }
-
     public final Rotate joy = new Rotate();
-
-    {
-        joy.setAxis(Rotate.Y_AXIS);
-    }
-
     public final Rotate joz = new Rotate();
 
-    {
-        joz.setAxis(Rotate.Z_AXIS);
-    }
-
     public final Rotate rx = new Rotate();
-
-    {
-        rx.setAxis(Rotate.X_AXIS);
-    }
-
     public final Rotate ry = new Rotate();
-
-    {
-        ry.setAxis(Rotate.Y_AXIS);
-    }
-
     public final Rotate rz = new Rotate();
-
-    {
-        rz.setAxis(Rotate.Z_AXIS);
-    }
 
     public final Scale s = new Scale();
     public final Scale is = new Scale();
@@ -96,6 +68,15 @@ public final class Joint extends Group {
 
     public Joint() {
         super();
+
+        joz.setAxis(Rotate.Z_AXIS);
+        joy.setAxis(Rotate.Y_AXIS);
+        jox.setAxis(Rotate.X_AXIS);
+
+        rx.setAxis(Rotate.X_AXIS);
+        ry.setAxis(Rotate.Y_AXIS);
+        rz.setAxis(Rotate.Z_AXIS);
+
         getTransforms().addAll(t, is, joz, joy, jox, rz, ry, rx, s, a);
     }
 }

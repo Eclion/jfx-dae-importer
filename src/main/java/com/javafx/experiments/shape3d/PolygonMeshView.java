@@ -51,6 +51,30 @@ public class PolygonMeshView extends Parent {
     private static final boolean DEBUG = false;
     private final MeshView meshView = new MeshView();
 
+    /**
+     * Defines the drawMode this {@code Shape3D}.
+     *
+     * @defaultValue DrawMode.FILL
+     */
+    private ObjectProperty<DrawMode> drawMode;
+
+    /**
+     * Defines the drawMode this {@code Shape3D}.
+     *
+     * @defaultValue CullFace.BACK
+     */
+    private ObjectProperty<CullFace> cullFace;
+
+    /**
+     * Defines the material this {@code Shape3D}.
+     * The default material is null. If {@code Material} is null, a PhongMaterial
+     * with a diffuse color of Color.LIGHTGRAY is used for rendering.
+     *
+     * @defaultValue null
+     */
+    private final ObjectProperty<Material> materialProperty = new SimpleObjectProperty<>();
+
+
     private TriangleMesh triangleMesh = new TriangleMesh();
 
     private final ArrayChangeListener<ObservableFloatArray> meshPointsListener = (t, bln, i, i1) -> {
@@ -108,13 +132,6 @@ public class PolygonMeshView extends Parent {
         return meshProperty;
     }
 
-    /**
-     * Defines the drawMode this {@code Shape3D}.
-     *
-     * @defaultValue DrawMode.FILL
-     */
-    private ObjectProperty<DrawMode> drawMode;
-
     public final void setDrawMode(DrawMode value) {
         drawModeProperty().set(value);
     }
@@ -137,13 +154,6 @@ public class PolygonMeshView extends Parent {
         return drawMode;
     }
 
-    /**
-     * Defines the drawMode this {@code Shape3D}.
-     *
-     * @defaultValue CullFace.BACK
-     */
-    private ObjectProperty<CullFace> cullFace;
-
     public final void setCullFace(CullFace value) {
         cullFaceProperty().set(value);
     }
@@ -163,15 +173,6 @@ public class PolygonMeshView extends Parent {
         }
         return cullFace;
     }
-
-    /**
-     * Defines the material this {@code Shape3D}.
-     * The default material is null. If {@code Material} is null, a PhongMaterial
-     * with a diffuse color of Color.LIGHTGRAY is used for rendering.
-     *
-     * @defaultValue null
-     */
-    private final ObjectProperty<Material> materialProperty = new SimpleObjectProperty<>();
 
     public Material getMaterial() {
         return materialProperty.get();

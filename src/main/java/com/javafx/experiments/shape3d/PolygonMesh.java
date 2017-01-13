@@ -41,6 +41,11 @@ import javafx.collections.ObservableIntegerArray;
  * can convert to using ObservableIntegerArray
  */
 public class PolygonMesh {
+    // TODO: Hardcode to constants for FX 8 (only one vertex format)
+    private static final int NUM_COMPONENTS_PER_POINT = 3;
+    private static final int NUM_COMPONENTS_PER_TEXCOORD = 2;
+    private static final int NUM_COMPONENTS_PER_FACE = 6;
+
     private final ObservableFloatArray points = FXCollections.observableFloatArray();
     private final ObservableFloatArray normals = FXCollections.observableFloatArray();
     private final ObservableFloatArray texCoords = FXCollections.observableFloatArray();
@@ -86,11 +91,6 @@ public class PolygonMesh {
         }
         return numEdgesInFaces;
     }
-
-    // TODO: Hardcode to constants for FX 8 (only one vertex format)
-    private static final int NUM_COMPONENTS_PER_POINT = 3;
-    private static final int NUM_COMPONENTS_PER_TEXCOORD = 2;
-    private static final int NUM_COMPONENTS_PER_FACE = 6;
 
     public int getPointElementSize() {
         return NUM_COMPONENTS_PER_POINT;
