@@ -89,19 +89,6 @@ final class LibraryControllerParser extends DefaultHandler {
             case param:
                 String sourceId = currentId.get("source");
                 params.put(sourceId, new Param(attributes.getValue("name"), attributes.getValue("type")));
-                /*if (attributes.getValue("name").equalsIgnoreCase("transform")) {
-                    // assuming that the matrices are floats 4 x 4
-                    sourceId = currentId.get("source");
-                    float[] values = floatArrays.get(sourceId);
-                    double[] formattedValues = new double[values.length];
-                    for (int j = 0; j < values.length; j++) formattedValues[j] = values[j];
-                    int nbMatrices = values.length / 16;
-                    Affine[] transforms = new Affine[nbMatrices];
-                    for (int i = 0; i < nbMatrices; i++) {
-                        transforms[i] = new Affine(formattedValues, MatrixType.MT_3D_4x4, i * 16);
-                    }
-                    controllers.get(currentControllerId).bindPoses = transforms;
-                }*/
                 break;
             case skin:
                 controllers.get(currentControllerId).skinId = attributes.getValue("source").substring(1);
@@ -128,7 +115,7 @@ final class LibraryControllerParser extends DefaultHandler {
                 break;
             case float_array:
                 floatArrays.put(currentId.get("source"), ParserUtils.extractFloatArray(charBuf));
-                if (currentId.get("source").contains("bind_poses")) //TODO cf previous comments
+                if (currentId.get("source").contains("bind_poses"))
                 {
                     double[] doubleArray = ParserUtils.extractDoubleArray(charBuf);
                     for (int i = 0; i < doubleArray.length / 16; i++) {

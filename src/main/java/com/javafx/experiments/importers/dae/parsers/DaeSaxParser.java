@@ -175,10 +175,9 @@ public final class DaeSaxParser extends DefaultHandler {
                 ((LibraryControllerParser) parsers.get(State.library_controllers))
                         .controllers.get(node.instanceControllerId);
 
-        //TODO get all skeletons
-        final DaeSkeleton skeleton = (DaeSkeleton)
+        final DaeSkeleton skeleton =
                 ((LibraryVisualSceneParser) parsers.get(State.library_visual_scenes))
-                        .scenes.get(0).skeletons.values().toArray()[0];
+                        .scenes.get(0).skeletons.get(controller.getName());
 
         final TriangleMesh mesh =
                 ((LibraryGeometriesParser) parsers.get(State.library_geometries))

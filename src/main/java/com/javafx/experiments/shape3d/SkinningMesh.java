@@ -37,6 +37,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javafx.beans.InvalidationListener;
 import javafx.collections.ObservableFloatArray;
@@ -54,8 +56,8 @@ import javafx.scene.transform.Transform;
  * The mesh can be updated with an AnimationTimer.
  */
 public final class SkinningMesh extends TriangleMesh {
+    private static final Logger LOGGER = Logger.getLogger(SkinningMesh.class.getSimpleName());
     private final float[][] relativePoints; // nJoints x nPoints*3
-    //private final float[][] relativeNormals;
     private final float[][] weights; // nJoints x nPoints
     private final List<Integer>[] weightIndices;
     private final List<JointIndex> jointIndexForest = new ArrayList<>();
@@ -70,7 +72,7 @@ public final class SkinningMesh extends TriangleMesh {
      * SkinningMesh constructor.
      *
      * @param mesh                The binding mesh
-     * @param jointsWeights             A two-dimensional array (nJoints x nPoints) of the influence weights used for skinning
+     * @param jointsWeights       A two-dimensional array (nJoints x nPoints) of the influence weights used for skinning
      * @param bindTransforms      The binding transforms for every joint
      * @param bindGlobalTransform The global binding transform; all binding transforms are defined with respect to this frame
      * @param joints              A list of joints used for skinning; the order of these are associated with the respective attributes of @weights and @bindPoses
@@ -90,7 +92,7 @@ public final class SkinningMesh extends TriangleMesh {
         try {
             this.bindGlobalInverseTransform = bindGlobalTransform.createInverse();
         } catch (NonInvertibleTransformException ex) {
-            System.err.println("Caught NonInvertibleTransformException: " + ex.getMessage());
+            LOGGER.log(Level.SEVERE, "Caught NonInvertibleTransformException: " + ex.getMessage());
         }
 
         this.jointToRootTransforms = new Transform[nJoints];
@@ -218,6 +220,12 @@ public final class SkinningMesh extends TriangleMesh {
 
         updateLocalToGlobalTransforms(jointIndexForest);
 
+        updatePoints();
+
+        jointsTransformDirty = false;
+    }
+
+    private void updatePoints() {
         final float[] points = new float[nPoints * 3];
         final double[] t = new double[12];
         float[] relativePoint;
@@ -230,8 +238,6 @@ public final class SkinningMesh extends TriangleMesh {
                 points[3 * i + 2] += weights[j][i] * (t[8] * relativePoint[3 * i] + t[9] * relativePoint[3 * i + 1] + t[10] * relativePoint[3 * i + 2] + t[11]);
             }
         }
-        getPoints().set(0, points, 0, points.length);
-
-        jointsTransformDirty = false;
+        this.getPoints().set(0, points, 0, points.length);
     }
 }

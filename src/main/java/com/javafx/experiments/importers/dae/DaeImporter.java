@@ -44,6 +44,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -56,6 +58,7 @@ import java.io.IOException;
  */
 @SuppressWarnings("UnusedDeclaration")
 public final class DaeImporter extends Importer {
+    private static final Logger LOGGER = Logger.getLogger(DaeImporter.class.getSimpleName());
     private final Group rootNode = new Group();
     private Camera firstCamera;
     private double firstCameraAspectRatio;
@@ -102,7 +105,7 @@ public final class DaeImporter extends Importer {
             e.printStackTrace();
         }
         final long end = System.currentTimeMillis();
-        System.out.println("IMPORTED [" + url + "] in  " + ((end - start)) + "ms");
+        LOGGER.log(Level.INFO, "IMPORTED [" + url + "] in  " + ((end - start)) + "ms");
     }
 
     private void buildTimeline(final DaeSaxParser parser) {
