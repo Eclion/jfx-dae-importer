@@ -2,6 +2,7 @@ package com.javafx.experiments.importers.dae.structures;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
+import javafx.beans.value.WritableValue;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.MatrixType;
 import javafx.util.Duration;
@@ -49,20 +50,24 @@ public final class DaeAnimation {
 
         final List<KeyFrame> keyFrames = new ArrayList<>();
 
-        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.mxxProperty(), keyAffine.getMxx())));
-        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.mxyProperty(), keyAffine.getMxy())));
-        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.mxzProperty(), keyAffine.getMxz())));
-        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.myxProperty(), keyAffine.getMyx())));
-        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.myyProperty(), keyAffine.getMyy())));
-        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.myzProperty(), keyAffine.getMyz())));
-        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.mzxProperty(), keyAffine.getMzx())));
-        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.mzyProperty(), keyAffine.getMzy())));
-        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.mzzProperty(), keyAffine.getMzz())));
-        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.txProperty(), keyAffine.getTx())));
-        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.tyProperty(), keyAffine.getTy())));
-        keyFrames.add(new KeyFrame(duration, new KeyValue(jointAffine.tzProperty(), keyAffine.getTz())));
+        keyFrames.add(convertToKeyFrame(duration, jointAffine.mxxProperty(), keyAffine.getMxx()));
+        keyFrames.add(convertToKeyFrame(duration, jointAffine.mxyProperty(), keyAffine.getMxy()));
+        keyFrames.add(convertToKeyFrame(duration, jointAffine.mxzProperty(), keyAffine.getMxz()));
+        keyFrames.add(convertToKeyFrame(duration, jointAffine.myxProperty(), keyAffine.getMyx()));
+        keyFrames.add(convertToKeyFrame(duration, jointAffine.myyProperty(), keyAffine.getMyy()));
+        keyFrames.add(convertToKeyFrame(duration, jointAffine.myzProperty(), keyAffine.getMyz()));
+        keyFrames.add(convertToKeyFrame(duration, jointAffine.mzxProperty(), keyAffine.getMzx()));
+        keyFrames.add(convertToKeyFrame(duration, jointAffine.mzyProperty(), keyAffine.getMzy()));
+        keyFrames.add(convertToKeyFrame(duration, jointAffine.mzzProperty(), keyAffine.getMzz()));
+        keyFrames.add(convertToKeyFrame(duration, jointAffine.txProperty(), keyAffine.getTx()));
+        keyFrames.add(convertToKeyFrame(duration, jointAffine.tyProperty(), keyAffine.getTy()));
+        keyFrames.add(convertToKeyFrame(duration, jointAffine.tzProperty(), keyAffine.getTz()));
 
         return keyFrames;
+    }
+
+    private KeyFrame convertToKeyFrame(final Duration d, final WritableValue<Number> target, final Number endValue) {
+        return new KeyFrame(d, new KeyValue(target, endValue));
     }
 
     public void setInterpolations(final String[] interpolations) {
