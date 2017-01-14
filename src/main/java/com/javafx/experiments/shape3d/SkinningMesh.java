@@ -41,10 +41,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.collections.ObservableFloatArray;
 import javafx.geometry.Point3D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.MatrixType;
@@ -102,6 +104,8 @@ public final class SkinningMesh extends TriangleMesh {
         this.relativePoints = this.initializeRelativePoints(bindTransforms, bindGlobalTransform);
 
         this.processJoints(joints, jointForest);
+
+        updateNormals();
     }
 
     // Create the jointIndexForest forest. Its structure is the same as jointForest, except that this forest have
@@ -221,6 +225,7 @@ public final class SkinningMesh extends TriangleMesh {
         updateLocalToGlobalTransforms(jointIndexForest);
 
         updatePoints();
+        updateNormals();
 
         jointsTransformDirty = false;
     }
@@ -239,5 +244,37 @@ public final class SkinningMesh extends TriangleMesh {
             }
         }
         this.getPoints().set(0, points, 0, points.length);
+    }
+
+    private void updateNormals() {
+        float[] normals = this.getNormals().toArray(null);
+        final ObservableFaceArray faces = this.getFaces();
+        final int faceSize = getFaceElementSize();
+        final int pointSize = getPointElementSize();
+
+        for (int i = 0; i < faces.size() / faceSize; i++) {
+            int index1 = faces.get(i * faceSize);
+            int index2 = faces.get(i * faceSize + pointSize);
+            int index3 = faces.get(i * faceSize + pointSize * 2);
+            final Point3D p1 = getPoint(index1);
+            final Point3D p2 = getPoint(index2);
+            final Point3D p3 = getPoint(index3);
+            final Point3D newNormal = calculateNormal(p1, p2, p3);
+            normals[i * 3] = (float) newNormal.getX();
+            normals[i * 3 + 1] = (float) newNormal.getY();
+            normals[i * 3 + 2] = (float) newNormal.getZ();
+        }
+
+        getNormals().setAll(normals);
+    }
+
+    private Point3D getPoint(int index) {
+        return new Point3D(getPoints().get(3 * index), getPoints().get(3 * index + 1), getPoints().get(3 * index + 2));
+    }
+
+    private Point3D calculateNormal(Point3D p1, Point3D p2, Point3D p3) {
+        Point3D u = p2.subtract(p1);
+        Point3D v = p3.subtract(p1);
+        return u.crossProduct(v).normalize();
     }
 }

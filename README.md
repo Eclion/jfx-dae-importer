@@ -16,7 +16,7 @@ Please do not hesitate to contribute, or to send your collada files
 
 V1: 3D object import
 - [x] import simple animations
-- [ ] import normals
+- [x] import normals
 - [ ] import textures
 - [ ] import materials
 - [ ] import cameras
