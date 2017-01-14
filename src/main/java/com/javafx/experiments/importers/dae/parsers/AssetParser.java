@@ -52,7 +52,7 @@ final class AssetParser extends DefaultHandler {
                 break;
             case unit:
                 unit = attributes.getValue("name");
-                scale = Float.parseFloat(attributes.getValue(unit));
+                scale = Float.parseFloat(attributes.getValue("meter"));
                 break;
             default:
                 break;

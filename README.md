@@ -21,6 +21,7 @@ V1: 3D object import
 - [ ] import materials
 - [ ] import cameras
 - [ ] import lights
+- [ ] import morph
 - [ ] gather samples and polish the importer
 
 V2: physics import (not planned)

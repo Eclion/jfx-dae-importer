@@ -37,18 +37,26 @@ final class LibraryEffectsParser extends DefaultHandler {
 
     private enum State {
         UNKNOWN,
-        ambient, //ignored
         color,
         diffuse,
-        effect, //ignored
-        emission, //ignored
-        _float, //ignored
-        index_of_refraction, //ignored
         phong,
-        profile_COMMON, //ignored
-        shininess, //ignored
         specular,
-        technique //ignored
+
+        // ignored, unsupported states:
+        ambient,
+        double_sided,
+        effect,
+        emission,
+        extra,
+        _float,
+        index_of_refraction,
+        profile_COMMON,
+        shininess,
+        technique
+    }
+
+    Material getEffectMaterial(String effectId) {
+        return materials.get(effectId);
     }
 
     private static State state(final String name) {

@@ -10,6 +10,7 @@ import com.javafx.experiments.shape3d.SkinningMesh;
 import javafx.animation.KeyFrame;
 import javafx.scene.Camera;
 import javafx.scene.Group;
+import javafx.scene.paint.Material;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Affine;
@@ -142,8 +143,8 @@ public final class DaeSaxParser extends DefaultHandler {
             rootNode.getTransforms().add(new Rotate(180, 0, 0, 0, Rotate.X_AXIS));
         }
         rootNode.setId(scene.id);
-        rootNode.getChildren().addAll(scene.meshNodes.values().stream().map(this::getMesh).collect(Collectors.toList()));
-        rootNode.getChildren().addAll(scene.controllerNodes.values().stream().map(this::getController).collect(Collectors.toList()));
+        scene.meshNodes.values().stream().map(this::getMeshes).forEach(rootNode.getChildren()::addAll);
+        scene.controllerNodes.values().stream().map(this::getControllers).forEach(rootNode.getChildren()::addAll);
     }
 
     private Camera getCamera(final DaeNode node) {
@@ -154,34 +155,40 @@ public final class DaeSaxParser extends DefaultHandler {
         return camera;
     }
 
-    private MeshView getMesh(final DaeNode node) {
-        if (!parsers.containsKey(State.library_geometries)) return new MeshView();
-        TriangleMesh mesh =
-                ((LibraryGeometriesParser) parsers.get(State.library_geometries))
-                        .getMesh(node.instanceGeometryId);
-        MeshView meshView = new MeshView(mesh);
+    private List<MeshView> getMeshes(final DaeNode node) {
+        final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(State.library_geometries);
+        if (geometriesParser == null) return new ArrayList<>();
 
-        meshView.setId(node.name);
-        meshView.getTransforms().addAll(node.transforms);
-        return meshView;
+        final List<TriangleMesh> meshes = geometriesParser.getMeshes(node.instanceGeometryId);
+        final List<Material> materials = getMaterials(node.instanceGeometryId);
+
+        final List<MeshView> views = new ArrayList<>();
+
+        for (int i = 0; i < meshes.size(); i++) {
+            final MeshView meshView = new MeshView(meshes.get(i));
+            meshView.setId(node.name);
+            if (i < materials.size()) meshView.setMaterial(materials.get(i));
+            views.add(meshView);
+        }
+
+        return views;
+
     }
 
-    private MeshView getController(final DaeNode node) {
-        if (!parsers.containsKey(State.library_controllers)
-                || !parsers.containsKey(State.library_visual_scenes)
-                || !parsers.containsKey(State.library_geometries)) return new MeshView();
+    private List<MeshView> getControllers(final DaeNode node) {
+        final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(State.library_geometries);
+        final LibraryControllerParser controllerParser = (LibraryControllerParser) parsers.get(State.library_controllers);
+        final LibraryVisualSceneParser visualSceneParser = (LibraryVisualSceneParser) parsers.get(State.library_visual_scenes);
 
-        final DaeController controller =
-                ((LibraryControllerParser) parsers.get(State.library_controllers))
-                        .controllers.get(node.instanceControllerId);
+        if (controllerParser == null || visualSceneParser == null
+                || geometriesParser == null) return new ArrayList<>();
+
+        final DaeController controller = controllerParser.
+                controllers.get(node.instanceControllerId);
 
         final DaeSkeleton skeleton =
                 ((LibraryVisualSceneParser) parsers.get(State.library_visual_scenes))
                         .scenes.get(0).skeletons.get(controller.getName());
-
-        final TriangleMesh mesh =
-                ((LibraryGeometriesParser) parsers.get(State.library_geometries))
-                        .getMesh(controller.skinId);
 
         final String[] bones = skeleton.joints.keySet().toArray(new String[]{});
         final Affine[] bindTransforms = new Affine[bones.length];
@@ -192,26 +199,37 @@ public final class DaeSaxParser extends DefaultHandler {
             joints[i] = skeleton.joints.get(bones[i]);
         }
 
-        final SkinningMesh skinningMesh = new SkinningMesh(
-                mesh, controller.vertexWeights, bindTransforms,
-                controller.bindShapeMatrix, Arrays.asList(joints), Arrays.asList(skeleton));
+        final List<TriangleMesh> meshes = geometriesParser.getMeshes(controller.skinId);
 
-        final MeshView meshView = new MeshView(skinningMesh);
+        final List<Material> materials = getMaterials(controller.skinId);
 
-        final SkinningMeshTimer skinningMeshTimer = new SkinningMeshTimer(skinningMesh);
-        if (meshView.getScene() != null) {
-            skinningMeshTimer.start();
-        }
-        meshView.sceneProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue == null) {
-                skinningMeshTimer.stop();
-            } else {
+        final List<MeshView> views = new ArrayList<>();
+
+        for (int i = 0; i < meshes.size(); i++) {
+            final SkinningMesh skinningMesh = new SkinningMesh(
+                    meshes.get(i), controller.vertexWeights, bindTransforms,
+                    controller.bindShapeMatrix, Arrays.asList(joints), Arrays.asList(skeleton));
+
+            final MeshView meshView = new MeshView(skinningMesh);
+
+            final SkinningMeshTimer skinningMeshTimer = new SkinningMeshTimer(skinningMesh);
+            if (meshView.getScene() != null) {
                 skinningMeshTimer.start();
             }
-        });
+            meshView.sceneProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue == null) {
+                    skinningMeshTimer.stop();
+                } else {
+                    skinningMeshTimer.start();
+                }
+            });
 
-        meshView.setId(node.name);
-        return meshView;
+            meshView.setId(node.name);
+            if (i < materials.size()) meshView.setMaterial(materials.get(i));
+            views.add(meshView);
+        }
+
+        return views;
     }
 
     public List<KeyFrame> getAllKeyFrames() {
@@ -228,4 +246,22 @@ public final class DaeSaxParser extends DefaultHandler {
         return frames;
     }
 
+    private List<Material> getMaterials(String meshId) {
+        final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(State.library_geometries);
+        final LibraryMaterialsParser materialsParser = (LibraryMaterialsParser) parsers.get(State.library_materials);
+        final LibraryEffectsParser effectsParser = (LibraryEffectsParser) parsers.get(State.library_effects);
+
+        final List<Material> materials;
+        if (materialsParser != null && effectsParser != null) {
+            materials = geometriesParser.
+                    getMaterialIds(meshId).
+                    stream().
+                    map(materialsParser::getEffectId).
+                    map(effectsParser::getEffectMaterial)
+                    .collect(Collectors.toList());
+        } else {
+            materials = new ArrayList<>();
+        }
+        return materials;
+    }
 }

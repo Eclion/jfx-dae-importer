@@ -26,28 +26,39 @@ final class LibraryGeometriesParser extends DefaultHandler {
     private final Map<String, float[]> floatArrays = new HashMap<>();
     private final Map<String, Input> inputs = new HashMap<>();
     private final List<int[]> pLists = new ArrayList<>();
-    private final Map<String, TriangleMesh> meshes = new HashMap<>();
+    private final Map<String, List<TriangleMesh>> meshes = new HashMap<>();
+    private final Map<String, List<String>> materials = new HashMap<>();
     private int[] vCounts;
+    private boolean triangulated = true;
 
-    TriangleMesh getMesh(final String meshId) {
-        return meshes.get(meshId);
+    List<TriangleMesh> getMeshes(final String meshId) {
+        return meshes.getOrDefault(meshId, new ArrayList<>());
+    }
+
+    List<String> getMaterialIds(final String meshId) {
+        return materials.getOrDefault(meshId, new ArrayList<>());
     }
 
     private enum State {
         UNKNOWN,
-        accessor,
         float_array,
-        geometry,
         input,
-        mesh,
         p,
-        param,
         polygons,
         polylist,
         source,
-        technique_common,
         vcount,
-        vertices
+        vertices,
+
+        // ignored, unsupported states:
+        accessor,
+        double_sided,
+        extra,
+        geometry,
+        mesh,
+        param,
+        technique,
+        technique_common
     }
 
     private static State state(final String name) {
@@ -71,6 +82,15 @@ final class LibraryGeometriesParser extends DefaultHandler {
                 this.inputs.put(input.semantic, input);
                 break;
             case polylist:
+                final String materialId = attributes.getValue("material");
+                if (materialId != null)
+                {
+                    final String geometryId = currentId.get("geometry");
+                    if (!materials.containsKey(geometryId)){
+                        materials.put(geometryId, new ArrayList<>());
+                    }
+                    materials.get(geometryId).add(materialId);
+                }
                 this.inputs.clear();
                 this.pLists.clear();
                 break;
@@ -124,12 +144,19 @@ final class LibraryGeometriesParser extends DefaultHandler {
 
     private void createPolygonsTriangleMesh() {
         // create mesh put in map
-        TriangleMesh mesh = new TriangleMesh();
-        meshes.put(currentId.get("geometry"), mesh);
+        final TriangleMesh mesh = new TriangleMesh();
+        final String geometryId = currentId.get("geometry");
+        if (!meshes.containsKey(geometryId)){
+            meshes.put(geometryId, new ArrayList<>());
+        }
+        meshes.get(geometryId).add(mesh);
         throw new UnsupportedOperationException("Need to implement TriangleMesh creation");
     }
 
     private void createPolylistTriangleMesh() {
+        if (!triangulated) {
+            LOGGER.warning("Not triangulated meshes aren't supported (yet)");
+        }
 
         final TriangleMesh mesh = new TriangleMesh(VertexFormat.POINT_TEXCOORD);
 
@@ -160,7 +187,11 @@ final class LibraryGeometriesParser extends DefaultHandler {
         mesh.getTexCoords().setAll(calcTexCoords(texInput));
         mesh.getNormals().setAll(calcNormals(normalInput));
 
-        meshes.put(currentId.get("geometry"), mesh);
+        final String geometryId = currentId.get("geometry");
+        if (!meshes.containsKey(geometryId)){
+            meshes.put(geometryId, new ArrayList<>());
+        }
+        meshes.get(geometryId).add(mesh);
     }
 
     private float[] calcTexCoords(final Input texInput) {
@@ -196,10 +227,12 @@ final class LibraryGeometriesParser extends DefaultHandler {
     }
 
     private void saveVerticesCounts() {
-        String[] numbers = charBuf.toString().trim().split("\\s+");
+        final String[] numbers = ParserUtils.splitCharBuffer(charBuf);
+        triangulated = true;
         vCounts = new int[numbers.length];
         for (int i = 0; i < numbers.length; i++) {
             vCounts[i] = Integer.parseInt(numbers[i].trim());
+            if (vCounts[i] != 3 && triangulated) triangulated = false;
         }
     }
 

@@ -33,20 +33,22 @@ final class LibraryControllerParser extends DefaultHandler {
 
     private enum State {
         UNKNOWN,
-        accessor, // ignored
         bind_shape_matrix,
         controller,
         float_array,
         input,
-        joints, // ignored
         Name_array,
         param,
         skin,
-        source, // ignored
-        technique_common, // ignored
         v,
         vcount,
-        vertex_weights
+        vertex_weights,
+
+        // ignored, unsupported states:
+        accessor,
+        joints,
+        source,
+        technique_common
 
     }
 

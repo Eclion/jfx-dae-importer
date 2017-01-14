@@ -19,10 +19,16 @@ final class LibraryMaterialsParser extends DefaultHandler {
 
     private final Map<String, String> materialEffectMap = new HashMap<>();
 
+    String getEffectId(String materialId) {
+        return materialEffectMap.get(materialId);
+    }
+
     private enum State {
         UNKNOWN,
         instance_effect,
-        material //ignored
+
+        // ignored, unsupported states:
+        material
     }
 
     private static State state(final String name) {
@@ -42,7 +48,10 @@ final class LibraryMaterialsParser extends DefaultHandler {
                 LOGGER.log(Level.WARNING, "Unknown element: " + qName);
                 break;
             case instance_effect:
-                materialEffectMap.put(currentId.get("material"), attributes.getValue("url"));
+                final String effectUrl = attributes.getValue("url");
+                if (effectUrl != null) {
+                    materialEffectMap.put(currentId.get("material"), effectUrl.substring(1));
+                }
                 break;
             default:
                 break;

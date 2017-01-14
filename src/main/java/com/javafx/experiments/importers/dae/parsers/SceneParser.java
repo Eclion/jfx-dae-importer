@@ -19,6 +19,8 @@ final class SceneParser extends DefaultHandler {
 
     private enum State {
         UNKNOWN,
+
+        // ignored, unsupported states:
         instance_visual_scene
     }
 
