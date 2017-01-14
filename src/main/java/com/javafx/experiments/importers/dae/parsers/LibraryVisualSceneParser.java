@@ -1,16 +1,20 @@
 package com.javafx.experiments.importers.dae.parsers;
 
-import com.javafx.experiments.importers.dae.structures.DaeController;
 import com.javafx.experiments.importers.dae.structures.DaeNode;
 import com.javafx.experiments.importers.dae.structures.DaeScene;
 import com.javafx.experiments.importers.dae.structures.DaeSkeleton;
 import javafx.geometry.Point3D;
-import javafx.scene.transform.*;
+import javafx.scene.transform.Affine;
+import javafx.scene.transform.Rotate;
+import javafx.scene.transform.Scale;
+import javafx.scene.transform.Translate;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,7 +27,6 @@ final class LibraryVisualSceneParser extends DefaultHandler {
     private final Map<String, String> currentId = new HashMap<>();
     final LinkedList<DaeScene> scenes = new LinkedList<>();
     final LinkedList<DaeNode> nodes = new LinkedList<>();
-    final List<DaeController> controllers = new ArrayList<>();
 
     private enum State {
         UNKNOWN,
@@ -50,7 +53,7 @@ final class LibraryVisualSceneParser extends DefaultHandler {
         visual_scene
     }
 
-    private static State state(String name) {
+    private static State state(final String name) {
         try {
             return State.valueOf(name);
         } catch (Exception e) {
@@ -59,7 +62,7 @@ final class LibraryVisualSceneParser extends DefaultHandler {
     }
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
         currentId.put(qName, attributes.getValue("id"));
         charBuf = new StringBuilder();
         switch (state(qName)) {
@@ -67,19 +70,19 @@ final class LibraryVisualSceneParser extends DefaultHandler {
                 LOGGER.log(Level.WARNING, "Unknown element: " + qName);
                 break;
             case instance_camera:
-                nodes.peek().instance_camera_id = attributes.getValue("url").substring(1);
+                nodes.peek().instanceCameraId = attributes.getValue("url").substring(1);
                 break;
             case instance_controller:
-                nodes.peek().instance_controller_id = attributes.getValue("url").substring(1);
+                nodes.peek().instanceControllerId = attributes.getValue("url").substring(1);
                 break;
             case instance_geometry:
-                nodes.peek().instance_geometry_id = attributes.getValue("url").substring(1);
+                nodes.peek().instanceGeometryId = attributes.getValue("url").substring(1);
                 break;
             case instance_light:
-                nodes.peek().instance_light_id = attributes.getValue("url").substring(1);
+                nodes.peek().instanceLightId = attributes.getValue("url").substring(1);
                 break;
             case instance_material:
-                nodes.peek().instance_material_id = attributes.getValue("target").substring(1);
+                nodes.peek().instanceMaterialId = attributes.getValue("target").substring(1);
                 break;
             case node:
                 createDaeNode(attributes);
@@ -93,7 +96,7 @@ final class LibraryVisualSceneParser extends DefaultHandler {
     }
 
     @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
+    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
         switch (state(qName)) {
             case UNKNOWN:
                 break;
@@ -113,7 +116,7 @@ final class LibraryVisualSceneParser extends DefaultHandler {
                 addTranslation();
                 break;
             case skeleton:
-                nodes.peek().skeleton_id = charBuf.toString().trim().substring(1);
+                nodes.peek().skeletonId = charBuf.toString().trim().substring(1);
                 break;
             default:
                 break;
@@ -121,7 +124,7 @@ final class LibraryVisualSceneParser extends DefaultHandler {
     }
 
     @Override
-    public void characters(char[] ch, int start, int length) throws SAXException {
+    public void characters(final char[] ch, final int start, final int length) throws SAXException {
         charBuf.append(ch, start, length);
     }
 
@@ -134,8 +137,7 @@ final class LibraryVisualSceneParser extends DefaultHandler {
         ));
     }
 
-    private void addRotation()
-    {
+    private void addRotation() {
         String[] rv = charBuf.toString().trim().split("\\s+");
         nodes.peek().transforms.add(new Rotate(
                 Double.parseDouble(rv[3].trim()),
@@ -176,11 +178,11 @@ final class LibraryVisualSceneParser extends DefaultHandler {
         ));
     }
 
-    private void createVisualScene(Attributes attributes) {
+    private void createVisualScene(final Attributes attributes) {
         scenes.push(new DaeScene(attributes.getValue("id"), attributes.getValue("name")));
     }
 
-    private void createDaeNode(Attributes attributes) {
+    private void createDaeNode(final Attributes attributes) {
         nodes.push(new DaeNode(
                 attributes.getValue("id"),
                 attributes.getValue("name"),
@@ -191,24 +193,15 @@ final class LibraryVisualSceneParser extends DefaultHandler {
     private void setDaeNode() {
         DaeNode thisNode = nodes.pop();
         if (nodes.isEmpty()) {
-            if(thisNode.isCamera())
-            {
+            if (thisNode.isCamera()) {
                 scenes.peek().cameraNodes.put(thisNode.id, thisNode);
-            }
-            else if(thisNode.isLight())
-            {
+            } else if (thisNode.isLight()) {
                 scenes.peek().lightNodes.put(thisNode.id, thisNode);
-            }
-            else if(thisNode.hasBones())
-            {
+            } else if (thisNode.hasJoints()) {
                 scenes.peek().skeletons.put(thisNode.id, DaeSkeleton.fromDaeNode(thisNode));
-            }
-            else if(thisNode.isMesh())
-            {
+            } else if (thisNode.isMesh()) {
                 scenes.peek().meshNodes.put(thisNode.id, thisNode);
-            }
-            else if(thisNode.isController())
-            {
+            } else if (thisNode.isController()) {
                 scenes.peek().controllerNodes.put(thisNode.id, thisNode);
             }
         } else {

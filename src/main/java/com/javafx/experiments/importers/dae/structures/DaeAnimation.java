@@ -14,27 +14,30 @@ import java.util.List;
  */
 public final class DaeAnimation {
 
-    final String id;
+    //ratio set for the animation used for testing.
+    private static final int TIMER_RATIO = 3000;
+
+    private final String id;
     public float[] input;
     public double[] output;
-    public String[] interpolations;
+    private String[] interpolations;
     public String target;
-    final List<DaeAnimation> childAnimations = new ArrayList<>();
+    private final List<DaeAnimation> childAnimations = new ArrayList<>();
 
-    public DaeAnimation(String id) {
+    public DaeAnimation(final String id) {
         this.id = id;
     }
 
-    public List<KeyFrame> calculateAnimation(DaeSkeleton skeleton) {
+    public List<KeyFrame> calculateAnimation(final DaeSkeleton skeleton) {
         final List<KeyFrame> keyFrames = new ArrayList<>();
-        final String targetJointName = target.split("/")[0];
+        final String targetJointName = this.target.split("/")[0];
         final Joint animatedJoint = skeleton.joints.get(targetJointName);
-        for (int i = 0; i < input.length; i++) {
-            final Affine keyAffine = new Affine(output, MatrixType.MT_3D_4x4, i * 16);
-            keyFrames.addAll(convertToKeyFrames(input[i] * 3000, animatedJoint.a, keyAffine));
+        for (int i = 0; i < this.input.length; i++) {
+            final Affine keyAffine = new Affine(this.output, MatrixType.MT_3D_4x4, i * 16);
+            keyFrames.addAll(this.convertToKeyFrames(this.input[i] * TIMER_RATIO, animatedJoint.a, keyAffine));
         }
-        keyFrames.addAll(childAnimations.stream().map(animation -> animation.calculateAnimation(skeleton))
-                .reduce(new ArrayList<>(), (l1, l2) -> {
+        keyFrames.addAll(this.childAnimations.stream().map(animation -> animation.calculateAnimation(skeleton)).
+                reduce(new ArrayList<>(), (l1, l2) -> {
                     l1.addAll(l2);
                     return l1;
                 }));
@@ -62,11 +65,11 @@ public final class DaeAnimation {
         return keyFrames;
     }
 
-    public void setInterpolations(String[] interpolations) {
+    public void setInterpolations(final String[] interpolations) {
         this.interpolations = interpolations;
     }
 
-    public void addChild(DaeAnimation animation) {
+    public void addChild(final DaeAnimation animation) {
         childAnimations.add(animation);
     }
 }

@@ -57,11 +57,11 @@ import java.io.IOException;
 @SuppressWarnings("UnusedDeclaration")
 public final class DaeImporter extends Importer {
     private final Group rootNode = new Group();
-    private Camera firstCamera = null;
-    private double firstCameraAspectRatio = 4 / 3;
-    private Timeline timeline = null;
+    private Camera firstCamera;
+    private double firstCameraAspectRatio;
+    private Timeline timeline;
 
-    public Scene createScene(int width) {
+    public Scene createScene(final int width) {
         Scene scene = new Scene(rootNode, width, (int) (width / firstCameraAspectRatio), true);
         if (firstCamera != null) scene.setCamera(firstCamera);
         scene.setFill(Color.BEIGE);
@@ -78,14 +78,14 @@ public final class DaeImporter extends Importer {
     }
 
     @Override
-    public void load(String url) throws IOException {
+    public void load(final String url) throws IOException {
         final int dot = url.lastIndexOf('.');
         final String extension = url.substring(dot + 1, url.length());
         if (".dae".equalsIgnoreCase(extension)) {
             throw new IOException("unsupported 3D format");
         }
 
-        final long START = System.currentTimeMillis();
+        final long start = System.currentTimeMillis();
         try {
             final SAXParserFactory factory = SAXParserFactory.newInstance();
             final SAXParser saxParser = factory.newSAXParser();
@@ -101,17 +101,17 @@ public final class DaeImporter extends Importer {
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
         }
-        final long END = System.currentTimeMillis();
-        System.out.println("IMPORTED [" + url + "] in  " + ((END - START)) + "ms");
+        final long end = System.currentTimeMillis();
+        System.out.println("IMPORTED [" + url + "] in  " + ((end - start)) + "ms");
     }
 
-    private void buildTimeline(DaeSaxParser parser) {
+    private void buildTimeline(final DaeSaxParser parser) {
         timeline = new Timeline();
         timeline.getKeyFrames().addAll(parser.getAllKeyFrames());
     }
 
     @Override
-    public boolean isSupported(String extension) {
+    public boolean isSupported(final String extension) {
         return extension != null && "dae".equals(extension);
     }
 

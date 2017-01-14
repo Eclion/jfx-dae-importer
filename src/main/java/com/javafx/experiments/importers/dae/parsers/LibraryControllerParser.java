@@ -10,7 +10,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,8 +50,7 @@ final class LibraryControllerParser extends DefaultHandler {
 
     }
 
-    private void init()
-    {
+    private void init() {
         charBuf = new StringBuilder();
         currentControllerId = "";
         currentId.clear();
@@ -62,7 +62,7 @@ final class LibraryControllerParser extends DefaultHandler {
         nbPoints = 0;
     }
 
-    private static State state(String name) {
+    private static State state(final String name) {
         try {
             return State.valueOf(name);
         } catch (Exception e) {
@@ -71,7 +71,7 @@ final class LibraryControllerParser extends DefaultHandler {
     }
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
         currentId.put(qName, attributes.getValue("id"));
         charBuf = new StringBuilder();
         switch (state(qName)) {
@@ -115,7 +115,7 @@ final class LibraryControllerParser extends DefaultHandler {
     }
 
     @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
+    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
         switch (state(qName)) {
             case UNKNOWN:
                 break;
@@ -128,12 +128,11 @@ final class LibraryControllerParser extends DefaultHandler {
                 break;
             case float_array:
                 floatArrays.put(currentId.get("source"), ParserUtils.extractFloatArray(charBuf));
-                if(currentId.get("source").contains("bind_poses")) //TODO cf previous comments
+                if (currentId.get("source").contains("bind_poses")) //TODO cf previous comments
                 {
                     double[] doubleArray = ParserUtils.extractDoubleArray(charBuf);
-                    for(int i = 0; i < doubleArray.length/16; i++)
-                    {
-                        controllers.get(currentControllerId).bindPoses.add(new Affine(doubleArray, MatrixType.MT_3D_4x4, i*16));
+                    for (int i = 0; i < doubleArray.length / 16; i++) {
+                        controllers.get(currentControllerId).bindPoses.add(new Affine(doubleArray, MatrixType.MT_3D_4x4, i * 16));
                     }
                 }
                 break;
@@ -155,7 +154,7 @@ final class LibraryControllerParser extends DefaultHandler {
     }
 
     @Override
-    public void characters(char[] ch, int start, int length) throws SAXException {
+    public void characters(final char[] ch, final int start, final int length) throws SAXException {
         charBuf.append(ch, start, length);
     }
 
@@ -198,7 +197,7 @@ final class LibraryControllerParser extends DefaultHandler {
         controllers.get(currentControllerId).vertexWeights = weights;
     }
 
-    private Affine extractMatrixTransformation(String[] matrixStringValues) {
+    private Affine extractMatrixTransformation(final String[] matrixStringValues) {
         double[] matrixValues = new double[matrixStringValues.length];
         for (int i = 0; i < matrixStringValues.length; i++) {
             matrixValues[i] = Double.valueOf(matrixStringValues[i]);

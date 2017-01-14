@@ -2,7 +2,11 @@ package com.javafx.experiments.importers.dae.structures;
 
 import javafx.scene.transform.Transform;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 
 /**
  * @author Eclion
@@ -13,59 +17,52 @@ public final class DaeNode {
     public final String name;
     public final String type;
     public final List<Transform> transforms = new ArrayList<>();
-    public String instance_camera_id;
-    public String instance_geometry_id;
-    public String instance_controller_id;
-    public String instance_light_id;
-    public String instance_material_id;
-    public String skeleton_id;
+    public String instanceCameraId;
+    public String instanceGeometryId;
+    public String instanceControllerId;
+    public String instanceLightId;
+    public String instanceMaterialId;
+    public String skeletonId;
     public final Map<String, DaeNode> children = new HashMap<>();
 
-    public DaeNode(String id, String name, String type) {
+    public DaeNode(final String id, final String name, final String type) {
         this.id = id;
         this.name = name;
         this.type = type;
     }
 
     public boolean isCamera() {
-        return instance_camera_id != null;
+        return instanceCameraId != null;
     }
 
     public boolean isLight() {
-        return instance_light_id != null;
+        return instanceLightId != null;
     }
 
     public boolean isMesh() {
-        return instance_geometry_id != null;
+        return instanceGeometryId != null;
     }
 
     public boolean isController() {
-        return instance_controller_id != null;
+        return instanceControllerId != null;
     }
 
-    public boolean hasBones() {
-        return children.values().stream().anyMatch(child -> child.type.equalsIgnoreCase("JOINT"));
+    public boolean hasJoints() {
+        return children.values().stream().anyMatch(DaeNode::isJoint);
     }
 
-    public boolean isJoint() {
-        return type.equalsIgnoreCase("JOINT");
+    boolean isJoint() {
+        return "JOINT".equalsIgnoreCase(type);
     }
 
     @Override
     public String toString() {
-        return "DaeNode{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", instance_camera=" + instance_camera_id +
-                ", instance_geometry=" + instance_geometry_id +
-                ", instance_controller=" + instance_controller_id +
-                '}';
-    }
-
-    Optional<DaeNode> getChildFromId(String id) {
-        return children.containsKey(id)
-                ? Optional.of(children.get(id))
-                : children.values().stream().map(child -> child.getChildFromId(id))
-                .filter(Optional::isPresent).map(Optional::get).findFirst();
+        return "DaeNode{"
+                + "id='" + this.id + '\''
+                + ", name='" + this.name + '\''
+                + ", instance_camera=" + this.instanceCameraId
+                + ", instance_geometry=" + this.instanceGeometryId
+                + ", instance_controller=" + this.instanceControllerId
+                + '}';
     }
 }

@@ -1,5 +1,6 @@
 package com.javafx.experiments.importers.dae.parsers;
 
+import com.javafx.experiments.importers.dae.utils.ParserUtils;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Material;
 import javafx.scene.paint.PhongMaterial;
@@ -17,7 +18,7 @@ import java.util.logging.Logger;
  * @author Eclion
  */
 final class LibraryEffectsParser extends DefaultHandler {
-    private final static Logger LOGGER = Logger.getLogger(LibraryEffectsParser.class.getSimpleName());
+    private static final Logger LOGGER = Logger.getLogger(LibraryEffectsParser.class.getSimpleName());
     private StringBuilder charBuf = new StringBuilder();
     private final Map<String, String> currentId = new HashMap<>();
 
@@ -50,7 +51,7 @@ final class LibraryEffectsParser extends DefaultHandler {
         technique //ignored
     }
 
-    private static State state(String name) {
+    private static State state(final String name) {
         try {
             return (!Objects.equals(name, "float"))
                     ? State.valueOf(name)
@@ -61,9 +62,9 @@ final class LibraryEffectsParser extends DefaultHandler {
     }
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        currentId.put(qName, attributes.getValue("id"));
-        charBuf = new StringBuilder();
+    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
+        this.currentId.put(qName, attributes.getValue("id"));
+        this.charBuf = new StringBuilder();
         switch (state(qName)) {
             case UNKNOWN:
                 LOGGER.log(Level.WARNING, "Unknown element: " + qName);
@@ -85,7 +86,7 @@ final class LibraryEffectsParser extends DefaultHandler {
     }
 
     @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
+    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
         switch (state(qName)) {
             /*case ambient:
                 ambient = tempColor;
@@ -123,13 +124,13 @@ final class LibraryEffectsParser extends DefaultHandler {
     }
 
     @Override
-    public void characters(char[] ch, int start, int length) throws SAXException {
-        charBuf.append(ch, start, length);
+    public void characters(final char[] ch, final int start, final int length) throws SAXException {
+        this.charBuf.append(ch, start, length);
     }
 
-    private Color extractColor(StringBuilder charBuf) {
+    private Color extractColor(final StringBuilder charBuf) {
         try {
-            String[] colors = charBuf.toString().trim().split("\\s+");
+            final String[] colors = ParserUtils.splitCharBuffer(charBuf);
             return new Color(
                     Double.parseDouble(colors[0]),
                     Double.parseDouble(colors[1]),
@@ -142,12 +143,4 @@ final class LibraryEffectsParser extends DefaultHandler {
         return null;
     }
 
-    /*Float extractFloat(StringBuilder charBuf) {
-        try {
-            return Float.parseFloat(charBuf.toString().trim());
-        } catch (Exception ignored) {
-
-        }
-        return null;
-    }*/
 }

@@ -15,9 +15,12 @@ Please do not hesitate to contribute, or to send your collada files
 ## "Roadmap"
 
 V1: 3D object import
-- [x] simple animations
+- [x] import simple animations
 - [ ] import normals
 - [ ] import textures
+- [ ] import materials
+- [ ] import cameras
+- [ ] import lights
 - [ ] gather samples and polish the importer
 
 V2: physics import (not planned)

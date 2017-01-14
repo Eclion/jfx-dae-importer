@@ -10,27 +10,37 @@ import java.util.stream.IntStream;
  */
 public final class ParserUtils {
 
-    public static float[] extractFloatArray(StringBuilder charBuf) {
-        String[] numbers = charBuf.toString().trim().split("\\s+");
-        float[] array = new float[numbers.length];
+    private ParserUtils() {
+    }
+
+    public static String[] splitCharBuffer(final StringBuilder charBuf) {
+        return charBuf.toString().trim().split("\\s+");
+    }
+
+    public static float[] extractFloatArray(final StringBuilder charBuf) {
+        final String[] numbers = splitCharBuffer(charBuf);
+        final float[] array = new float[numbers.length];
         for (int i = 0; i < numbers.length; i++) {
             array[i] = Float.parseFloat(numbers[i].trim());
         }
         return array;
     }
 
-    public static String[] extractNameArray(StringBuilder charBuf) {
-        return charBuf.toString().trim().split("\\s+");
+    public static String[] extractNameArray(final StringBuilder charBuf) {
+        return splitCharBuffer(charBuf);
     }
 
-    public static Input createInput(Attributes attributes) {
+    public static Input createInput(final Attributes attributes) {
+        final String offset = attributes.getValue("offset");
         return new Input(
-                attributes.getValue("offset") != null ? Integer.parseInt(attributes.getValue("offset")) : 0,
+                offset == null
+                        ? 0
+                        : Integer.parseInt(offset),
                 attributes.getValue("semantic"),
                 attributes.getValue("source"));
     }
 
-    public static double[] extractDoubleArray(StringBuilder charBuf) {
+    public static double[] extractDoubleArray(final StringBuilder charBuf) {
         final float[] floatArray = extractFloatArray(charBuf);
         return IntStream.range(0, floatArray.length).mapToDouble(i -> floatArray[i]).toArray();
     }

@@ -6,15 +6,15 @@ import javafx.animation.AnimationTimer;
 /**
  * @author Eclion
  */
-public class SkinningMeshTimer extends AnimationTimer {
+public final class SkinningMeshTimer extends AnimationTimer {
     private final SkinningMesh mesh;
 
-    public SkinningMeshTimer(SkinningMesh mesh) {
+    public SkinningMeshTimer(final SkinningMesh mesh) {
         this.mesh = mesh;
     }
 
     @Override
-    public void handle(long l) {
+    public void handle(final long l) {
         mesh.update();
     }
 }

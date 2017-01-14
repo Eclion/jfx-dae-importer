@@ -15,8 +15,7 @@ public final class DaeScene {
     public final Map<String, DaeSkeleton> skeletons = new HashMap<>();
     public final Map<String, DaeNode> controllerNodes = new HashMap<>();
 
-    public DaeScene(String id, String name)
-    {
+    public DaeScene(final String id, final String name) {
         this.id = id;
         this.name = name;
     }

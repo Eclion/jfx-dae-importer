@@ -38,16 +38,16 @@ import javafx.scene.Group;
 
 public abstract class Importer {
     /**
-     * Loads the 3D file
+     * Loads the 3D file.
      *
-     * @param url           The url of the 3D file to load
-     *                      supports.
+     * @param url The url of the 3D file to load
+     *            supports.
      * @throws IOException If issue loading file
      */
-    public abstract void load(String url) throws IOException;
+    public abstract void load(final String url) throws IOException;
 
     /**
-     * Gets the 3D node that was loaded earlier through the load() call
+     * Gets the 3D node that was loaded earlier through the load() call.
      *
      * @return The loaded node
      */
@@ -61,14 +61,12 @@ public abstract class Importer {
      *                    "dae")
      * @return True if the extension is of a supported type. False otherwise.
      */
-    public abstract boolean isSupported(String supportType);
+    public abstract boolean isSupported(final String supportType);
 
     /**
-     * Can be overridden to return a timeline animation for the 3D file
+     * Can be overridden to return a timeline animation for the 3D file.
      *
      * @return A timeline animation. Null if there is no timeline animation.
      */
-    public Timeline getTimeline() {
-        return null;
-    }
+    public abstract Timeline getTimeline();
 }

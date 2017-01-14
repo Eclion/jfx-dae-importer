@@ -50,34 +50,34 @@ import javafx.scene.transform.Translate;
  * determined by rotateOrder) Of these sub-matrices we can set [SO] to identity, so matrix = [T][IS][JO][R][S]
  */
 public final class Joint extends Group {
-    public final Translate t = new Translate();
+    final Translate t = new Translate();
 
-    public final Rotate jox = new Rotate();
-    public final Rotate joy = new Rotate();
-    public final Rotate joz = new Rotate();
+    final Rotate jox = new Rotate();
+    final Rotate joy = new Rotate();
+    final Rotate joz = new Rotate();
 
-    public final Rotate rx = new Rotate();
-    public final Rotate ry = new Rotate();
-    public final Rotate rz = new Rotate();
+    final Rotate rx = new Rotate();
+    final Rotate ry = new Rotate();
+    final Rotate rz = new Rotate();
 
-    public final Scale s = new Scale();
-    public final Scale is = new Scale();
+    final Scale s = new Scale();
+    final Scale is = new Scale();
     // should bind "is" to be in the inverse of the parent's "s"
 
-    public final Affine a = new Affine();
+    final Affine a = new Affine();
 
-    public Joint() {
+    Joint() {
         super();
 
-        joz.setAxis(Rotate.Z_AXIS);
-        joy.setAxis(Rotate.Y_AXIS);
-        jox.setAxis(Rotate.X_AXIS);
+        this.joz.setAxis(Rotate.Z_AXIS);
+        this.joy.setAxis(Rotate.Y_AXIS);
+        this.jox.setAxis(Rotate.X_AXIS);
 
-        rx.setAxis(Rotate.X_AXIS);
-        ry.setAxis(Rotate.Y_AXIS);
-        rz.setAxis(Rotate.Z_AXIS);
+        this.rx.setAxis(Rotate.X_AXIS);
+        this.ry.setAxis(Rotate.Y_AXIS);
+        this.rz.setAxis(Rotate.Z_AXIS);
 
-        getTransforms().addAll(t, is, joz, joy, jox, rz, ry, rx, s, a);
+        this.getTransforms().addAll(t, is, joz, joy, jox, rz, ry, rx, s, a);
     }
 }
 

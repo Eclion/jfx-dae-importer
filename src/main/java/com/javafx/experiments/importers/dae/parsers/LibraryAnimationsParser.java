@@ -13,10 +13,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * @author Eclion
+ * @author Eclion.
  */
 final class LibraryAnimationsParser extends DefaultHandler {
-    private final static Logger LOGGER = Logger.getLogger(LibraryAnimationsParser.class.getSimpleName());
+    private static final Logger LOGGER = Logger.getLogger(LibraryAnimationsParser.class.getSimpleName());
     private StringBuilder charBuf = new StringBuilder();
     private final Map<String, String> currentId = new HashMap<>();
     private String currentAnimationId = "";
@@ -37,7 +37,7 @@ final class LibraryAnimationsParser extends DefaultHandler {
         technique_common
     }
 
-    private static State state(String name) {
+    private static State state(final String name) {
         try {
             return State.valueOf(name);
         } catch (Exception e) {
@@ -46,7 +46,7 @@ final class LibraryAnimationsParser extends DefaultHandler {
     }
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
         currentId.put(qName, attributes.getValue("id"));
         charBuf = new StringBuilder();
         switch (state(qName)) {
@@ -67,27 +67,21 @@ final class LibraryAnimationsParser extends DefaultHandler {
     }
 
     @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
+    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
         switch (state(qName)) {
             case animation:
                 DaeAnimation animation = currentAnimations.pop();
-                if(currentAnimations.isEmpty())
-                {
+                if (currentAnimations.isEmpty()) {
                     animations.put(currentAnimationId, animation);
-                }
-                else
-                {
+                } else {
                     currentAnimations.peek().addChild(animation);
                 }
                 break;
             case float_array:
                 String sourceId = currentId.get(State.source.name());
-                if (sourceId.equalsIgnoreCase(currentAnimationId+"-input"))
-                {
+                if (sourceId.equalsIgnoreCase(currentAnimationId + "-input")) {
                     currentAnimations.peek().input = ParserUtils.extractFloatArray(charBuf);
-                }
-                else if (sourceId.equalsIgnoreCase(currentAnimationId+"-output"))
-                {
+                } else if (sourceId.equalsIgnoreCase(currentAnimationId + "-output")) {
                     currentAnimations.peek().output = ParserUtils.extractDoubleArray(charBuf);
                 }
                 break;
@@ -102,7 +96,7 @@ final class LibraryAnimationsParser extends DefaultHandler {
     }
 
     @Override
-    public void characters(char[] ch, int start, int length) throws SAXException {
+    public void characters(final char[] ch, final int start, final int length) throws SAXException {
         charBuf.append(ch, start, length);
     }
 }

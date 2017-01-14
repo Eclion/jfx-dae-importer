@@ -20,14 +20,18 @@ import java.util.stream.IntStream;
  * @author Eclion
  */
 final class LibraryGeometriesParser extends DefaultHandler {
-    private final static Logger LOGGER = Logger.getLogger(LibraryGeometriesParser.class.getSimpleName());
+    private static final Logger LOGGER = Logger.getLogger(LibraryGeometriesParser.class.getSimpleName());
     private StringBuilder charBuf = new StringBuilder();
     private final Map<String, String> currentId = new HashMap<>();
     private final Map<String, float[]> floatArrays = new HashMap<>();
     private final Map<String, Input> inputs = new HashMap<>();
     private final List<int[]> pLists = new ArrayList<>();
-    final Map<String, TriangleMesh> meshes = new HashMap<>();
+    private final Map<String, TriangleMesh> meshes = new HashMap<>();
     private int[] vCounts;
+
+    TriangleMesh getMesh(final String meshId) {
+        return meshes.get(meshId);
+    }
 
     private enum State {
         UNKNOWN,
@@ -46,7 +50,7 @@ final class LibraryGeometriesParser extends DefaultHandler {
         vertices
     }
 
-    private static State state(String name) {
+    private static State state(final String name) {
         try {
             return State.valueOf(name);
         } catch (Exception e) {
@@ -55,20 +59,20 @@ final class LibraryGeometriesParser extends DefaultHandler {
     }
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        currentId.put(qName, attributes.getValue("id"));
-        charBuf = new StringBuilder();
+    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
+        this.currentId.put(qName, attributes.getValue("id"));
+        this.charBuf = new StringBuilder();
         switch (state(qName)) {
             case UNKNOWN:
                 LOGGER.log(Level.WARNING, "Unknown element: " + qName);
                 break;
             case input:
                 Input input = ParserUtils.createInput(attributes);
-                inputs.put(input.semantic, input);
+                this.inputs.put(input.semantic, input);
                 break;
             case polylist:
-                inputs.clear();
-                pLists.clear();
+                this.inputs.clear();
+                this.pLists.clear();
                 break;
             default:
                 break;
@@ -76,7 +80,7 @@ final class LibraryGeometriesParser extends DefaultHandler {
     }
 
     @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
+    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
         switch (state(qName)) {
             case UNKNOWN:
                 break;
@@ -105,7 +109,7 @@ final class LibraryGeometriesParser extends DefaultHandler {
     }
 
     @Override
-    public void characters(char[] ch, int start, int length) throws SAXException {
+    public void characters(final char[] ch, final int start, final int length) throws SAXException {
         charBuf.append(ch, start, length);
     }
 
@@ -159,19 +163,19 @@ final class LibraryGeometriesParser extends DefaultHandler {
         meshes.put(currentId.get("geometry"), mesh);
     }
 
-    private float[] calcTexCoords(Input texInput) {
+    private float[] calcTexCoords(final Input texInput) {
         return (texInput == null)
                 ? new float[]{0, 0}
                 : floatArrays.get(texInput.source.substring(1));
     }
 
-    private float[] calcNormals(Input normalInput) {
+    private float[] calcNormals(final Input normalInput) {
         return (normalInput == null)
                 ? new float[]{}
                 : floatArrays.get(normalInput.source.substring(1));
     }
 
-    private int[] calcFaces(int faceStep, Input vertexInput, Input texInput, Input normalInput) {
+    private int[] calcFaces(final int faceStep, final Input vertexInput, final Input texInput, final Input normalInput) {
         final int inputCount = (normalInput == null) ? 2 : 3;
         final int[] faces = new int[IntStream.of(vCounts).sum() * inputCount];
         final int[] p = pLists.get(0);

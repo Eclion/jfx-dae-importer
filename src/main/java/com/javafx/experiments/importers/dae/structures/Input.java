@@ -8,7 +8,7 @@ public final class Input {
     public final String semantic;
     public final String source;
 
-    public Input(int offset, String semantic, String source) {
+    public Input(final int offset, final String semantic, final String source) {
         this.offset = offset;
         this.semantic = semantic;
         this.source = source;
@@ -16,10 +16,10 @@ public final class Input {
 
     @Override
     public String toString() {
-        return "Input{" +
-                "offset=" + offset +
-                ", semantic='" + semantic + '\'' +
-                ", source='" + source + '\'' +
-                '}';
+        return "Input{"
+                + "offset=" + this.offset
+                + ", semantic='" + this.semantic + '\''
+                + ", source='" + this.source + '\''
+                + '}';
     }
 }

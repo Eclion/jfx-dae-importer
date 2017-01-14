@@ -15,13 +15,15 @@ import java.util.logging.Logger;
  * @author Eclion
  */
 final class LibraryCamerasParser extends DefaultHandler {
-    private final static Logger LOGGER = Logger.getLogger(LibraryCamerasParser.class.getSimpleName());
+    private static final Logger LOGGER = Logger.getLogger(LibraryCamerasParser.class.getSimpleName());
+    private static final double DEFAULT_ASPECT_RATIO = 4d / 3d;
+
     private StringBuilder charBuf = new StringBuilder();
     private final Map<String, String> currentId = new HashMap<>();
-    private Double aspect_ratio, xfov, yfov, znear, zfar;
+    private Double aspectRatio, xfov, yfov, znear, zfar;
     Camera firstCamera = null;
     final Map<String, Camera> cameras = new HashMap<>();
-    double firstCameraAspectRatio = 4 / 3;
+    double firstCameraAspectRatio = DEFAULT_ASPECT_RATIO;
 
     private enum State {
         UNKNOWN,
@@ -41,7 +43,7 @@ final class LibraryCamerasParser extends DefaultHandler {
         znear
     }
 
-    private static State state(String name) {
+    private static State state(final String name) {
         try {
             return State.valueOf(name);
         } catch (Exception e) {
@@ -50,7 +52,7 @@ final class LibraryCamerasParser extends DefaultHandler {
     }
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
         currentId.put(qName, attributes.getValue("id"));
         charBuf = new StringBuilder();
         switch (state(qName)) {
@@ -58,7 +60,7 @@ final class LibraryCamerasParser extends DefaultHandler {
                 LOGGER.log(Level.WARNING, "Unknown element: " + qName);
                 break;
             case camera:
-                aspect_ratio = xfov = yfov = znear = zfar = null;
+                aspectRatio = xfov = yfov = znear = zfar = null;
                 break;
             default:
                 break;
@@ -66,10 +68,10 @@ final class LibraryCamerasParser extends DefaultHandler {
     }
 
     @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
+    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
         switch (state(qName)) {
             case aspect_ratio:
-                aspect_ratio = Double.parseDouble(charBuf.toString().trim());
+                aspectRatio = Double.parseDouble(charBuf.toString().trim());
                 break;
             case camera:
                 saveCamera();
@@ -92,7 +94,7 @@ final class LibraryCamerasParser extends DefaultHandler {
     }
 
     @Override
-    public void characters(char[] ch, int start, int length) throws SAXException {
+    public void characters(final char[] ch, final int start, final int length) throws SAXException {
         charBuf.append(ch, start, length);
     }
 
@@ -110,7 +112,7 @@ final class LibraryCamerasParser extends DefaultHandler {
         cameras.put(currentId.get("camera"), camera);
         if (firstCamera == null) {
             firstCamera = camera;
-            if (aspect_ratio != null) firstCameraAspectRatio = aspect_ratio;
+            if (aspectRatio != null) firstCameraAspectRatio = aspectRatio;
         }
     }
 }

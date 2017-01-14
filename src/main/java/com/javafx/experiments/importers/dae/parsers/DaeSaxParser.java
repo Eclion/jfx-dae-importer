@@ -10,7 +10,6 @@ import com.javafx.experiments.shape3d.SkinningMesh;
 import javafx.animation.KeyFrame;
 import javafx.scene.Camera;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Affine;
@@ -19,33 +18,23 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
  * @author Eclion
  */
-final public class DaeSaxParser extends DefaultHandler {
+public final class DaeSaxParser extends DefaultHandler {
 
     private DefaultHandler subHandler;
 
     private Map<State, DefaultHandler> parsers = new HashMap<>();
 
-    /*private AssetParser assetParser;
-    private SceneParser sceneParser;
-    private LibraryAnimationsParser libraryAnimationsParser;
-    private LibraryCamerasParser libraryCamerasParser;
-    private LibraryControllerParser libraryControllerParser;
-    private LibraryEffectsParser libraryEffects;
-    private LibraryGeometriesParser libraryGeometriesParser;
-    private LibraryImagesParser libraryImagesParser;
-    private LibraryLightsParser libraryLightsParser;
-    private LibraryMaterialsParser libraryMaterialsParser;
-    private LibraryVisualSceneParser libraryVisualSceneParser;*/
-
     private Camera firstCamera;
-
-    private double firstCameraAspectRatio = 4.0f / 3.0f;
 
     private enum State {
         UNKNOWN,
@@ -62,7 +51,7 @@ final public class DaeSaxParser extends DefaultHandler {
         library_visual_scenes
     }
 
-    private static State state(String name) {
+    private static State state(final String name) {
         try {
             return State.valueOf(name);
         } catch (Exception e) {
@@ -71,7 +60,7 @@ final public class DaeSaxParser extends DefaultHandler {
     }
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
         final State currentState = state(qName);
         switch (currentState) {
             case asset:
@@ -108,23 +97,24 @@ final public class DaeSaxParser extends DefaultHandler {
                 setParser(currentState, new LibraryVisualSceneParser());
                 break;
             default:
-                if (subHandler != null) subHandler.startElement(uri, localName, qName, attributes);
+                if (subHandler != null)
+                    subHandler.startElement(uri, localName, qName, attributes);
                 break;
         }
     }
 
-    private void setParser(State state, DefaultHandler parser) {
+    private void setParser(final State state, final DefaultHandler parser) {
         parsers.put(state, parser);
         subHandler = parsers.get(state);
     }
 
     @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
+    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
         if (subHandler != null) subHandler.endElement(uri, localName, qName);
     }
 
     @Override
-    public void characters(char[] ch, int start, int length) throws SAXException {
+    public void characters(final char[] ch, final int start, final int length) throws SAXException {
         if (subHandler != null) subHandler.characters(ch, start, length);
     }
 
@@ -140,7 +130,7 @@ final public class DaeSaxParser extends DefaultHandler {
                 : 4.0 / 3.0;
     }
 
-    public void buildScene(Group rootNode) {
+    public void buildScene(final Group rootNode) {
         if (!parsers.containsKey(State.library_visual_scenes)) return;
         DaeScene scene = ((LibraryVisualSceneParser) parsers.get(State.library_visual_scenes)).scenes.peek();
         String upAxis = parsers.containsKey(State.asset)
@@ -156,19 +146,19 @@ final public class DaeSaxParser extends DefaultHandler {
         rootNode.getChildren().addAll(scene.controllerNodes.values().stream().map(this::getController).collect(Collectors.toList()));
     }
 
-    private Camera getCamera(DaeNode node) {
+    private Camera getCamera(final DaeNode node) {
         if (!parsers.containsKey(State.library_cameras)) return null;
-        Camera camera = ((LibraryCamerasParser) parsers.get(State.library_cameras)).cameras.get(node.instance_camera_id);
+        Camera camera = ((LibraryCamerasParser) parsers.get(State.library_cameras)).cameras.get(node.instanceCameraId);
         camera.setId(node.name);
         camera.getTransforms().addAll(node.transforms);
         return camera;
     }
 
-    private MeshView getMesh(DaeNode node) {
+    private MeshView getMesh(final DaeNode node) {
         if (!parsers.containsKey(State.library_geometries)) return new MeshView();
         TriangleMesh mesh =
                 ((LibraryGeometriesParser) parsers.get(State.library_geometries))
-                        .meshes.get(node.instance_geometry_id);
+                        .getMesh(node.instanceGeometryId);
         MeshView meshView = new MeshView(mesh);
 
         meshView.setId(node.name);
@@ -176,14 +166,14 @@ final public class DaeSaxParser extends DefaultHandler {
         return meshView;
     }
 
-    private MeshView getController(DaeNode node) {
+    private MeshView getController(final DaeNode node) {
         if (!parsers.containsKey(State.library_controllers)
                 || !parsers.containsKey(State.library_visual_scenes)
                 || !parsers.containsKey(State.library_geometries)) return new MeshView();
 
         final DaeController controller =
                 ((LibraryControllerParser) parsers.get(State.library_controllers))
-                        .controllers.get(node.instance_controller_id);
+                        .controllers.get(node.instanceControllerId);
 
         //TODO get all skeletons
         final DaeSkeleton skeleton = (DaeSkeleton)
@@ -192,7 +182,7 @@ final public class DaeSaxParser extends DefaultHandler {
 
         final TriangleMesh mesh =
                 ((LibraryGeometriesParser) parsers.get(State.library_geometries))
-                        .meshes.get(controller.skinId);
+                        .getMesh(controller.skinId);
 
         final String[] bones = skeleton.joints.keySet().toArray(new String[]{});
         final Affine[] bindTransforms = new Affine[bones.length];
