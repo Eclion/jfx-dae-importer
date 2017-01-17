@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 /**
  * @author Eclion
  */
-public final class DaeSaxParser extends DefaultHandler {
+public final class DaeSaxHandler extends DefaultHandler {
 
     private DefaultHandler subHandler;
 

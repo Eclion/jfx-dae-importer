@@ -32,7 +32,7 @@
 package com.javafx.experiments.importers.dae;
 
 import com.javafx.experiments.importers.Importer;
-import com.javafx.experiments.importers.dae.parsers.DaeSaxParser;
+import com.javafx.experiments.importers.dae.parsers.DaeSaxHandler;
 import javafx.animation.Timeline;
 import javafx.scene.Camera;
 import javafx.scene.Group;
@@ -92,14 +92,14 @@ public final class DaeImporter extends Importer {
         try {
             final SAXParserFactory factory = SAXParserFactory.newInstance();
             final SAXParser saxParser = factory.newSAXParser();
-            final DaeSaxParser parser = new DaeSaxParser();
-            saxParser.parse(url, parser);
+            final DaeSaxHandler handler = new DaeSaxHandler();
+            saxParser.parse(url, handler);
 
-            buildTimeline(parser);
+            buildTimeline(handler);
 
-            parser.buildScene(rootNode);
-            firstCamera = parser.getFirstCamera();
-            firstCameraAspectRatio = parser.getFirstCameraAspectRatio();
+            handler.buildScene(rootNode);
+            firstCamera = handler.getFirstCamera();
+            firstCameraAspectRatio = handler.getFirstCameraAspectRatio();
 
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
@@ -108,7 +108,7 @@ public final class DaeImporter extends Importer {
         LOGGER.log(Level.INFO, "IMPORTED [" + url + "] in  " + ((end - start)) + "ms");
     }
 
-    private void buildTimeline(final DaeSaxParser parser) {
+    private void buildTimeline(final DaeSaxHandler parser) {
         timeline = new Timeline();
         timeline.getKeyFrames().addAll(parser.getAllKeyFrames());
     }

@@ -14,7 +14,7 @@ Please do not hesitate to contribute, or to send your collada files
 
 ## "Roadmap"
 
-V1: 3D object import
+#### V1: 3D object import
 - [x] import simple animations
 - [x] import normals
 - [ ] import textures
@@ -22,6 +22,8 @@ V1: 3D object import
 - [ ] import cameras
 - [ ] import lights
 - [ ] import morph
-- [ ] gather samples and polish the importer
+- [ ] import hair
 
-V2: physics import (not planned)
+If the features aren't implemented, it's surely because I don't need it. ;)
+
+#### V2: physics import (not planned)

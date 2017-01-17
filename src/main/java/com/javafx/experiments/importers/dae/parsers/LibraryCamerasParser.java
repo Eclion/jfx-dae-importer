@@ -29,18 +29,20 @@ final class LibraryCamerasParser extends DefaultHandler {
         UNKNOWN,
         aspect_ratio,
         camera,
-        extra, //ignored
-        perspective, //ignored
-        optics, //ignored
-        shiftx, //ignored
-        shifty, //ignored
-        technique, //ignored
-        technique_common, //ignored
         xfov,
         yfov,
-        YF_dofdist, //ignored
         zfar,
-        znear
+        znear,
+
+        // ignored, unsupported states:
+        extra,
+        perspective,
+        optics,
+        shiftx,
+        shifty,
+        technique,
+        technique_common,
+        YF_dofdist
     }
 
     private static State state(final String name) {

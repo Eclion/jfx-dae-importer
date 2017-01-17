@@ -26,12 +26,17 @@ final class AssetParser extends DefaultHandler {
         UNKNOWN,
         author,
         authoring_tool,
-        contributor, //ignored
-        created, //ignored
-        modified, //ignored
         unit,
-        up_axis
+        up_axis,
 
+        // ignored, unsupported states:
+        comments,
+        contributor,
+        copyright,
+        created,
+        modified,
+        source_data,
+        title
     }
 
     private static State state(final String name) {

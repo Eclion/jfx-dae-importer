@@ -25,15 +25,17 @@ final class LibraryAnimationsParser extends DefaultHandler {
 
     private enum State {
         UNKNOWN,
-        accessor,
         animation,
         channel,
         float_array,
-        input,
         Name_array,
+        source,
+
+        // ignored, unsupported states:
+        accessor,
+        input,
         param,
         sampler,
-        source,
         technique_common
     }
 

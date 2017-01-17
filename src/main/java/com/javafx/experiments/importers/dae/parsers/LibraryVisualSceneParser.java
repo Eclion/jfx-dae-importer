@@ -30,27 +30,29 @@ final class LibraryVisualSceneParser extends DefaultHandler {
 
     private enum State {
         UNKNOWN,
-        bind_material,
-        connect,
-        extra,
         instance_camera,
         instance_controller,
         instance_geometry,
         instance_light,
         instance_material,
-        layer,
         node,
         matrix,
         rotate,
         skeleton,
+        translate,
+        scale,
+        visual_scene,
+
+        // ignored, unsupported states:
+        bind_material,
+        connect,
+        extra,
+        layer,
         technique,
         technique_common,
         tip_x,
         tip_y,
-        tip_z,
-        translate,
-        scale,
-        visual_scene
+        tip_z
     }
 
     private static State state(final String name) {
