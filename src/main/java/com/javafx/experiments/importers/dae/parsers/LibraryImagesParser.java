@@ -1,11 +1,13 @@
 package com.javafx.experiments.importers.dae.parsers;
 
+import javafx.scene.image.Image;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,10 +17,24 @@ import java.util.logging.Logger;
 final class LibraryImagesParser extends DefaultHandler {
     private static final Logger LOGGER = Logger.getLogger(LibraryImagesParser.class.getSimpleName());
     private StringBuilder charBuf = new StringBuilder();
-    private final Map<String, String> currentId = new HashMap<>();
+    private final HashMap<String, String> currentId = new HashMap<>();
+    private final HashMap<String, Image> images = new HashMap<>();
+    private final String rootUrl;
 
     private enum State {
-        UNKNOWN
+        UNKNOWN,
+        init_from,
+
+        // ignored, unsupported states:
+        image
+    }
+
+    LibraryImagesParser(final String fileUrl) {
+        this.rootUrl = fileUrl;
+    }
+
+    Image getImage(String imageId) {
+        return images.get(imageId);
     }
 
     private static State state(final String name) {
@@ -46,6 +62,13 @@ final class LibraryImagesParser extends DefaultHandler {
     public void endElement(final String uri, final String localName, final String qName) throws SAXException {
         switch (state(qName)) {
             case UNKNOWN:
+                break;
+            case init_from:
+                final String filePath = charBuf.toString();
+                final File folder = new File(rootUrl);
+                final Path imagePath = folder.toPath().resolve(filePath);
+                final Image image = new Image("file:" + imagePath.toString());
+                images.put(currentId.get("image"), image);
                 break;
             default:
                 break;

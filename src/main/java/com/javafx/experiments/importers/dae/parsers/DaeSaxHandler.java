@@ -21,9 +21,8 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -33,9 +32,11 @@ public final class DaeSaxHandler extends DefaultHandler {
 
     private DefaultHandler subHandler;
 
-    private Map<State, DefaultHandler> parsers = new HashMap<>();
+    private HashMap<State, DefaultHandler> parsers = new HashMap<>();
 
     private Camera firstCamera;
+
+    private final String fileUrl;
 
     private enum State {
         UNKNOWN,
@@ -50,6 +51,10 @@ public final class DaeSaxHandler extends DefaultHandler {
         library_lights,
         library_materials,
         library_visual_scenes
+    }
+
+    public DaeSaxHandler(final String url) {
+        this.fileUrl = url;
     }
 
     private static State state(final String name) {
@@ -86,7 +91,7 @@ public final class DaeSaxHandler extends DefaultHandler {
                 setParser(currentState, new LibraryGeometriesParser());
                 break;
             case library_images:
-                setParser(currentState, new LibraryImagesParser());
+                setParser(currentState, new LibraryImagesParser(fileUrl));
                 break;
             case library_lights:
                 setParser(currentState, new LibraryLightsParser());
@@ -132,9 +137,10 @@ public final class DaeSaxHandler extends DefaultHandler {
     }
 
     public void buildScene(final Group rootNode) {
-        if (!parsers.containsKey(State.library_visual_scenes)) return;
-        DaeScene scene = ((LibraryVisualSceneParser) parsers.get(State.library_visual_scenes)).scenes.peek();
-        String upAxis = parsers.containsKey(State.asset)
+        final LibraryVisualSceneParser visualSceneParser = (LibraryVisualSceneParser) parsers.get(State.library_visual_scenes);
+        if (visualSceneParser == null) return;
+        final DaeScene scene = visualSceneParser.scenes.peek();
+        final String upAxis = parsers.containsKey(State.asset)
                 ? ((AssetParser) parsers.get(State.asset)).upAxis
                 : "Z_UP";
         if ("Z_UP".equals(upAxis)) {
@@ -143,13 +149,22 @@ public final class DaeSaxHandler extends DefaultHandler {
             rootNode.getTransforms().add(new Rotate(180, 0, 0, 0, Rotate.X_AXIS));
         }
         rootNode.setId(scene.id);
+
+        final LibraryImagesParser imagesParser = (LibraryImagesParser) parsers.get(State.library_images);
+        final LibraryEffectsParser effectsParser = (LibraryEffectsParser) parsers.get(State.library_effects);
+        if (imagesParser != null && effectsParser != null)
+        {
+            effectsParser.buildEffects(imagesParser);
+        }
+
         scene.meshNodes.values().stream().map(this::getMeshes).forEach(rootNode.getChildren()::addAll);
         scene.controllerNodes.values().stream().map(this::getControllers).forEach(rootNode.getChildren()::addAll);
     }
 
     private Camera getCamera(final DaeNode node) {
-        if (!parsers.containsKey(State.library_cameras)) return null;
-        Camera camera = ((LibraryCamerasParser) parsers.get(State.library_cameras)).cameras.get(node.instanceCameraId);
+        final LibraryCamerasParser camerasParser = ((LibraryCamerasParser) parsers.get(State.library_cameras));
+        if (camerasParser == null) return null;
+        final Camera camera = camerasParser.cameras.get(node.instanceCameraId);
         camera.setId(node.name);
         camera.getTransforms().addAll(node.transforms);
         return camera;

@@ -43,6 +43,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -92,7 +93,7 @@ public final class DaeImporter extends Importer {
         try {
             final SAXParserFactory factory = SAXParserFactory.newInstance();
             final SAXParser saxParser = factory.newSAXParser();
-            final DaeSaxHandler handler = new DaeSaxHandler();
+            final DaeSaxHandler handler = new DaeSaxHandler(extractRootPath(url));
             saxParser.parse(url, handler);
 
             buildTimeline(handler);
@@ -121,5 +122,11 @@ public final class DaeImporter extends Importer {
     @Override
     public Timeline getTimeline() {
         return timeline;
+    }
+
+    private String extractRootPath(final String relativeUrl) throws IOException {
+        final File file = new File(relativeUrl);
+
+        return file.getCanonicalFile().getParent();
     }
 }
