@@ -4,7 +4,7 @@
 
 ## About
 
-This repo host a Collada (dae v1.4) importer for JavaFX.
+This repo host a Collada (dae v1.4) importer for JavaFX on pure Java.
 
 It's based on [TeamFX's openjfx-8u-dev-rt repo](https://github.com/teamfx/openjfx-8u-dev-rt/).
 
@@ -17,8 +17,7 @@ Please do not hesitate to contribute, or to send your collada files
 #### V1: 3D object import
 - [x] import simple animations
 - [x] import normals
-- [x] import textures
-- [ ] import materials
+- [x] import materials & textures
 - [ ] import cameras
 - [ ] import lights
 - [ ] import morph
