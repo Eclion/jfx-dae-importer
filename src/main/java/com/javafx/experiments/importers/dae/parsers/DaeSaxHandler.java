@@ -152,8 +152,7 @@ public final class DaeSaxHandler extends DefaultHandler {
 
         final LibraryImagesParser imagesParser = (LibraryImagesParser) parsers.get(State.library_images);
         final LibraryEffectsParser effectsParser = (LibraryEffectsParser) parsers.get(State.library_effects);
-        if (imagesParser != null && effectsParser != null)
-        {
+        if (imagesParser != null && effectsParser != null) {
             effectsParser.buildEffects(imagesParser);
         }
 
@@ -247,17 +246,16 @@ public final class DaeSaxHandler extends DefaultHandler {
         return views;
     }
 
-    public List<KeyFrame> getAllKeyFrames() {
-        if (!parsers.containsKey(State.library_animations)
-                || !parsers.containsKey(State.library_visual_scenes)) return new ArrayList<>();
-
+    public HashMap<String, List<KeyFrame>> getKeyFramesMap() {
         final LibraryAnimationsParser animationsParser = (LibraryAnimationsParser) parsers.get(State.library_animations);
+        final LibraryVisualSceneParser visualSceneParser = (LibraryVisualSceneParser) parsers.get(State.library_visual_scenes);
+        if (animationsParser == null || visualSceneParser == null) return new HashMap<>();
 
-        final List<KeyFrame> frames = new ArrayList<>();
-        ((LibraryVisualSceneParser) parsers.get(State.library_visual_scenes))
-                .scenes.peek().skeletons.values()
+        final HashMap<String, List<KeyFrame>> frames = new HashMap<>();
+        visualSceneParser.scenes.peek().skeletons.values()
                 .forEach(skeleton -> animationsParser.animations.values()
-                        .forEach(animation -> frames.addAll(animation.calculateAnimation(skeleton))));
+                        .forEach(animation -> frames.put(animation.id, animation.calculateAnimation(skeleton)))
+                );
         return frames;
     }
 

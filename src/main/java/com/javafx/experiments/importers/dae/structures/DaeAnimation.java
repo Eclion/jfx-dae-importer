@@ -18,7 +18,7 @@ public final class DaeAnimation {
     //ratio set for the animation used for testing.
     private static final int TIMER_RATIO = 3000;
 
-    private final String id;
+    public final String id;
     public float[] input;
     public double[] output;
     private String[] interpolations;
@@ -33,6 +33,7 @@ public final class DaeAnimation {
         final List<KeyFrame> keyFrames = new ArrayList<>();
         final String targetJointName = this.target.split("/")[0];
         final Joint animatedJoint = skeleton.joints.get(targetJointName);
+        if(animatedJoint == null) return new ArrayList<>();
         for (int i = 0; i < this.input.length; i++) {
             final Affine keyAffine = new Affine(this.output, MatrixType.MT_3D_4x4, i * 16);
             keyFrames.addAll(this.convertToKeyFrames(this.input[i] * TIMER_RATIO, animatedJoint.a, keyAffine));

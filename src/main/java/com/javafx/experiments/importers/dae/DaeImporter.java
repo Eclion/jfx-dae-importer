@@ -45,6 +45,8 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,7 +65,7 @@ public final class DaeImporter extends Importer {
     private final Group rootNode = new Group();
     private Camera firstCamera;
     private double firstCameraAspectRatio;
-    private Timeline timeline;
+    private HashMap<String, Timeline> timelines = new HashMap<>();
 
     public Scene createScene(final int width) {
         Scene scene = new Scene(rootNode, width, (int) (width / firstCameraAspectRatio), true);
@@ -96,7 +98,7 @@ public final class DaeImporter extends Importer {
             final DaeSaxHandler handler = new DaeSaxHandler(extractRootPath(url));
             saxParser.parse(url, handler);
 
-            buildTimeline(handler);
+            buildTimelines(handler);
 
             handler.buildScene(rootNode);
             firstCamera = handler.getFirstCamera();
@@ -109,9 +111,11 @@ public final class DaeImporter extends Importer {
         LOGGER.log(Level.INFO, "IMPORTED [" + url + "] in  " + ((end - start)) + "ms");
     }
 
-    private void buildTimeline(final DaeSaxHandler parser) {
-        timeline = new Timeline();
-        timeline.getKeyFrames().addAll(parser.getAllKeyFrames());
+    private void buildTimelines(final DaeSaxHandler parser) {
+        parser.getKeyFramesMap().entrySet()
+                .forEach(entry ->
+                        timelines.put(entry.getKey(), new Timeline(entry.getValue().toArray(null)))
+                );
     }
 
     @Override
@@ -120,8 +124,8 @@ public final class DaeImporter extends Importer {
     }
 
     @Override
-    public Timeline getTimeline() {
-        return timeline;
+    public Map<String, Timeline> getTimelines() {
+        return timelines;
     }
 
     private String extractRootPath(final String relativeUrl) throws IOException {

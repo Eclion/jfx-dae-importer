@@ -32,6 +32,7 @@
 package com.javafx.experiments.importers;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javafx.animation.Timeline;
 import javafx.scene.Group;
@@ -68,5 +69,5 @@ public abstract class Importer {
      *
      * @return A timeline animation. Null if there is no timeline animation.
      */
-    public abstract Timeline getTimeline();
+    public abstract Map<String, Timeline> getTimelines();
 }
