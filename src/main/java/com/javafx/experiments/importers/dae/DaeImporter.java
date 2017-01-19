@@ -33,6 +33,7 @@ package com.javafx.experiments.importers.dae;
 
 import com.javafx.experiments.importers.Importer;
 import com.javafx.experiments.importers.dae.parsers.DaeSaxHandler;
+import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.Camera;
 import javafx.scene.Group;
@@ -113,8 +114,12 @@ public final class DaeImporter extends Importer {
 
     private void buildTimelines(final DaeSaxHandler parser) {
         parser.getKeyFramesMap().entrySet()
-                .forEach(entry ->
-                        timelines.put(entry.getKey(), new Timeline(entry.getValue().toArray(null)))
+                .forEach(entry -> {
+                            if (!timelines.containsKey(entry.getKey())) {
+                                timelines.put(entry.getKey(), new Timeline());
+                            }
+                            timelines.get(entry.getKey()).getKeyFrames().addAll(entry.getValue());
+                        }
                 );
     }
 
