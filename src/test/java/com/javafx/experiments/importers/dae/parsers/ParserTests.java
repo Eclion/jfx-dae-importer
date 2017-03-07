@@ -40,9 +40,11 @@ public final class ParserTests {
 
     @Test
     public void parseLibraryEffects() throws Exception {
-
-        final LibraryEffectsParser effectsParser = new LibraryEffectsParser();
-        executeParsing("effects_1.xml", effectsParser);
+        final LibraryEffectsParserV2 effectsParser = new LibraryEffectsParserV2();
+        final LibraryHandler parser = effectsParser.getLibraryHandler();
+        executeParsing("effects_1.xml", parser);
+        //final LibraryEffectsParser effectsParser = new LibraryEffectsParser();
+        //executeParsing("effects_1.xml", effectsParser);
 
         final LibraryImagesParser mockImageParser = mock(LibraryImagesParser.class);
         when(mockImageParser.getImage(any())).thenReturn(null);
@@ -58,12 +60,12 @@ public final class ParserTests {
 
     @Test
     public void parseAssets() throws Exception {
-        //final AssetParserV2 assetParser = new AssetParserV2();
-        //final LibraryHandler parser = assetParser.getLibraryHandler();
-        //executeParsing(resource, parser);
+        final AssetParserV2 assetParser = new AssetParserV2();
+        final LibraryHandler parser = assetParser.getLibraryHandler();
+        executeParsing("asset_1.xml", parser);
 
-        final AssetParser assetParser = new AssetParser();
-        executeParsing("asset_1.xml", assetParser);
+        //final AssetParser assetParser = new AssetParser();
+        //executeParsing("asset_1.xml", assetParser);
 
         assertEquals("Z_UP", assetParser.upAxis);
         assertEquals("meter", assetParser.unit);
@@ -74,8 +76,12 @@ public final class ParserTests {
 
     @Test
     public void parseAnimations() throws Exception {
-        final LibraryAnimationsParser animationsParser = new LibraryAnimationsParser();
-        executeParsing("animations_1.xml", animationsParser);
+        final LibraryAnimationsParserV2 animationsParser = new LibraryAnimationsParserV2();
+        final LibraryHandler parser = animationsParser.getLibraryHandler();
+        executeParsing("animations_1.xml", parser);
+
+        //final LibraryAnimationsParser animationsParser = new LibraryAnimationsParser();
+        //executeParsing("animations_1.xml", animationsParser);
 
         final DaeAnimation actualArmatureBoneAnimation = animationsParser.animations.get("Armature_Bone_pose_matrix");
 
@@ -89,8 +95,11 @@ public final class ParserTests {
 
     @Test
     public void parseCameras() throws Exception {
-        final LibraryCamerasParser camerasParser = new LibraryCamerasParser();
-        executeParsing("cameras_1.xml", camerasParser);
+        final LibraryCamerasParserV2 camerasParser = new LibraryCamerasParserV2();
+        final LibraryHandler parser = camerasParser.getLibraryHandler();
+        executeParsing("cameras_1.xml", parser);
+        //final LibraryCamerasParser camerasParser = new LibraryCamerasParser();
+        //executeParsing("cameras_1.xml", camerasParser);
 
         PerspectiveCamera actualCamera = (PerspectiveCamera) camerasParser.cameras.get("Camera-camera");
 
@@ -103,8 +112,11 @@ public final class ParserTests {
 
     @Test
     public void parseControllers() throws Exception {
-        final LibraryControllerParser controllerParser = new LibraryControllerParser();
-        executeParsing("controllers_1.xml", controllerParser);
+        final LibraryControllerParserV2 controllerParser = new LibraryControllerParserV2();
+        final LibraryHandler parser = controllerParser.getLibraryHandler();
+        executeParsing("controllers_1.xml", parser);
+        //final LibraryControllerParser controllerParser = new LibraryControllerParser();
+        //executeParsing("controllers_1.xml", controllerParser);
 
         DaeController actualController = controllerParser.controllers.get("Armature_Cube-skin");
 
@@ -121,8 +133,11 @@ public final class ParserTests {
 
     @Test
     public void parseGeometries() throws Exception {
-        final LibraryGeometriesParser geometriesParser = new LibraryGeometriesParser();
-        executeParsing("geometries_1.xml", geometriesParser);
+        final LibraryGeometriesParserV2 geometriesParser = new LibraryGeometriesParserV2();
+        final LibraryHandler parser = geometriesParser.getLibraryHandler();
+        executeParsing("geometries_1.xml", parser);
+        //final LibraryGeometriesParser geometriesParser = new LibraryGeometriesParser();
+        //executeParsing("geometries_1.xml", geometriesParser);
 
         TriangleMesh actualMesh = geometriesParser.getMeshes("Cube-mesh").get(0);
         assertEquals(24, actualMesh.getPoints().size());
@@ -136,24 +151,33 @@ public final class ParserTests {
 
     @Test
     public void parseLights() throws Exception {
-        final LibraryLightsParser lightsParser = new LibraryLightsParser();
-        executeParsing("lights_1.xml", lightsParser);
+        final LibraryLightsParserV2 lightsParser = new LibraryLightsParserV2();
+        final LibraryHandler parser = lightsParser.getLibraryHandler();
+        executeParsing("lights_1.xml", parser);
+        //final LibraryLightsParser lightsParser = new LibraryLightsParser();
+        //executeParsing("lights_1.xml", lightsParser);
 
         throw new Exception("Nothing implemented yet for the lights");
     }
 
     @Test
     public void parseMaterials() throws Exception {
-        final LibraryMaterialsParser materialsParser = new LibraryMaterialsParser();
-        executeParsing("materials_1.xml", materialsParser);
+        final LibraryMaterialsParserV2 materialsParser = new LibraryMaterialsParserV2();
+        final LibraryHandler parser = materialsParser.getLibraryHandler();
+        executeParsing("materials_1.xml", parser);
+        //final LibraryMaterialsParser materialsParser = new LibraryMaterialsParser();
+        //executeParsing("materials_1.xml", materialsParser);
 
         assertEquals("Material-effect", materialsParser.getEffectId("Material-material"));
     }
 
     @Test
     public void parseVisualScenes() throws Exception {
-        final LibraryVisualSceneParser visualSceneParser = new LibraryVisualSceneParser();
-        executeParsing("visual_scenes_1.xml", visualSceneParser);
+        final LibraryVisualSceneParserV2 visualSceneParser = new LibraryVisualSceneParserV2();
+        final LibraryHandler parser = visualSceneParser.getLibraryHandler();
+        executeParsing("visual_scenes_1.xml", parser);
+        //final LibraryVisualSceneParser visualSceneParser = new LibraryVisualSceneParser();
+        //executeParsing("visual_scenes_1.xml", visualSceneParser);
 
         DaeScene actualScene = visualSceneParser.scenes.get(0);
 

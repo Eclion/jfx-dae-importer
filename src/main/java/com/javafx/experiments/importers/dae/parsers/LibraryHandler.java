@@ -28,10 +28,14 @@ public class LibraryHandler extends DefaultHandler {
     @Override
     public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
         charBuf = new StringBuilder();
+        final StartElement startElement = new StartElement(uri, localName, qName, attributes);
+        if (startElementConsumers.containsKey("*")) {
+            startElementConsumers.get("*").accept(startElement);
+        }
         if (startElementConsumers.containsKey(qName)) {
-            startElementConsumers.get(qName).accept(new StartElement(uri, localName, qName, attributes));
+            startElementConsumers.get(qName).accept(startElement);
         } else {
-            LOGGER.log(Level.WARNING, "Unknown element: " + qName);
+            //LOGGER.log(Level.WARNING, "Unknown element: " + qName);
         }
     }
 
@@ -45,20 +49,6 @@ public class LibraryHandler extends DefaultHandler {
     @Override
     public void characters(final char[] ch, final int start, final int length) throws SAXException {
         charBuf.append(ch, start, length);
-    }
-
-    class StartElement {
-        final String uri;
-        final String localName;
-        final String qName;
-        final Attributes attributes;
-
-        StartElement(final String uri, final String localName, final String qName, final Attributes attributes) {
-            this.uri = uri;
-            this.localName = localName;
-            this.qName = qName;
-            this.attributes = attributes;
-        }
     }
 
     class EndElement {

@@ -21,11 +21,11 @@ final class AssetParserV2 extends AbstractParser {
 
     AssetParserV2() {
 
-        final Map<String, Consumer<LibraryHandler.StartElement>> startElementConsumer = new HashMap<>();
+        final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
 
         startElementConsumer.put(UNIT_TAG, startElement -> {
-            unit = startElement.attributes.getValue("name");
-            scale = Float.parseFloat(startElement.attributes.getValue("meter"));
+            unit = startElement.getAttributeValue("name");
+            scale = Float.parseFloat(startElement.getAttributeValue("meter"));
         });
 
         final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
