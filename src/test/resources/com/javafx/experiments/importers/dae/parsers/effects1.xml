@@ -1,0 +1,104 @@
+<library_effects>
+    <effect id="shine-fx">
+        <profile_COMMON>
+            <newparam sid="file1-surface">
+                <surface type="2D">
+                    <init_from>file1</init_from>
+                    <format>A8R8G8B8</format>
+                </surface>
+            </newparam>
+            <newparam sid="file1-sampler">
+                <sampler2D>
+                    <source>file1-surface</source>
+                    <minfilter>LINEAR_MIPMAP_LINEAR</minfilter>
+                    <magfilter>LINEAR</magfilter>
+                </sampler2D>
+            </newparam>
+            <technique sid="common">
+                <phong>
+                    <emission>
+                        <color>0 0 0 1</color>
+                    </emission>
+                    <ambient>
+                        <color>0 0 0 1</color>
+                    </ambient>
+                    <diffuse>
+                        <texture texture="file1-sampler" texcoord="TEX0"/>
+                    </diffuse>
+                    <specular>
+                        <color>0.49586 0.49586 0.49586 1</color>
+                    </specular>
+                    <shininess>
+                        <float>78.942</float>
+                    </shininess>
+                    <reflective>
+                        <color>0 0 0 1</color>
+                    </reflective>
+                    <reflectivity>
+                        <float>0.5</float>
+                    </reflectivity>
+                    <transparent>
+                        <color>0 0 0 1</color>
+                    </transparent>
+                    <transparency>
+                        <float>1</float>
+                    </transparency>
+                    <index_of_refraction>
+                        <float>1</float>
+                    </index_of_refraction>
+                </phong>
+            </technique>
+        </profile_COMMON>
+    </effect>
+    <effect id="matte-fx">
+        <profile_COMMON>
+            <newparam sid="file1-surface">
+                <surface type="2D">
+                    <init_from>file1</init_from>
+                    <format>A8R8G8B8</format>
+                </surface>
+            </newparam>
+            <newparam sid="file1-sampler">
+                <sampler2D>
+                    <source>file1-surface</source>
+                    <minfilter>LINEAR_MIPMAP_LINEAR</minfilter>
+                    <magfilter>LINEAR</magfilter>
+                </sampler2D>
+            </newparam>
+            <technique sid="common">
+                <blinn>
+                    <emission>
+                        <color>0 0 0 1</color>
+                    </emission>
+                    <ambient>
+                        <color>0 0 0 1</color>
+                    </ambient>
+                    <diffuse>
+                        <texture texture="file1-sampler" texcoord="TEX0"/>
+                    </diffuse>
+                    <specular>
+                        <color>0.30578 0.30578 0.30578 1</color>
+                    </specular>
+                    <shininess>
+                        <float>0.30576</float>
+                    </shininess>
+                    <reflective>
+                        <color>0 0 0 1</color>
+                    </reflective>
+                    <reflectivity>
+                        <float>0.5</float>
+                    </reflectivity>
+                    <transparent>
+                        <color>0 0 0 1</color>
+                    </transparent>
+                    <transparency>
+                        <float>1</float>
+                    </transparency>
+                    <index_of_refraction>
+                        <float>1</float>
+                    </index_of_refraction>
+                </blinn>
+            </technique>
+        </profile_COMMON>
+    </effect>
+</library_effects>
