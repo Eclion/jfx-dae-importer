@@ -50,13 +50,21 @@ final class LibraryEffectsParser extends DefaultHandler {
         texture,
 
         // ignored, unsupported states:
+        blinn,
         double_sided,
         extra,
+        format,
+        magfilter,
+        minfilter,
         newparam,
         profile_COMMON,
+        reflective,
+        reflectivity,
         sampler2D,
         surface,
-        technique
+        technique,
+        transparency,
+        transparent
     }
 
     void buildEffects(final LibraryImagesParser imagesParser) {
