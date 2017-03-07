@@ -16,10 +16,10 @@ final class AssetParser extends DefaultHandler {
     private static final Logger LOGGER = Logger.getLogger(AssetParser.class.getName());
     private StringBuilder charBuf = new StringBuilder();
     private final Map<String, String> currentId = new HashMap<>();
-    private String author;
-    private String authoringTool;
-    private String unit;
-    private float scale;
+    String author;
+    String authoringTool;
+    String unit;
+    float scale;
     String upAxis;
 
     private enum State {

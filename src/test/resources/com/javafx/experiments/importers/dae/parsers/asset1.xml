@@ -1,0 +1,10 @@
+<asset>
+    <contributor>
+        <author>Blender User</author>
+        <authoring_tool>Blender 2.78.0</authoring_tool>
+    </contributor>
+    <created>2016-12-01T21:37:02</created>
+    <modified>2016-12-01T21:37:02</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+</asset>
