@@ -1,9 +1,7 @@
 package com.javafx.experiments.importers.dae.parsers;
 
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Material;
 import javafx.scene.paint.PhongMaterial;
-import org.junit.Assert;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -53,7 +51,7 @@ public final class ParserTests {
     @Test
     public void parseAssets() throws Exception {
         final AssetParserV2 assetParser = new AssetParserV2();
-        final LibraryHandler parser = assetParser.libraryHandler;
+        final LibraryHandler parser = assetParser.getLibraryHandler();
 
         //final AssetParser assetParser = new AssetParser();
         final File resource = new File(this.getClass().getResource("asset1.xml").toURI());

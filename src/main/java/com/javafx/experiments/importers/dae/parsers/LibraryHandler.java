@@ -11,10 +11,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Created by Eclion on 07/03/17.
+ * @author Eclion
  */
 public class LibraryHandler extends DefaultHandler {
-    private static final Logger LOGGER = Logger.getLogger(AssetParser.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(LibraryHandler.class.getName());
     private StringBuilder charBuf = new StringBuilder();
 
     private Map<String, Consumer<StartElement>> startElementConsumers = new HashMap<>();
