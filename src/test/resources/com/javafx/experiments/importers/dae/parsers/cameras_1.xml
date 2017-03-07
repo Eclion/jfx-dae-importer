@@ -1,0 +1,21 @@
+<library_cameras>
+    <camera id="Camera-camera" name="Camera">
+        <optics>
+            <technique_common>
+                <perspective>
+                    <xfov sid="xfov">49.13434</xfov>
+                    <aspect_ratio>1.777778</aspect_ratio>
+                    <znear sid="znear">0.1</znear>
+                    <zfar sid="zfar">100</zfar>
+                </perspective>
+            </technique_common>
+        </optics>
+        <extra>
+            <technique profile="blender">
+                <YF_dofdist>0</YF_dofdist>
+                <shiftx>0</shiftx>
+                <shifty>0</shifty>
+            </technique>
+        </extra>
+    </camera>
+</library_cameras>

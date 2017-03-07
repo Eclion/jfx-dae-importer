@@ -1,0 +1,41 @@
+<library_controllers>
+    <controller id="Armature_Cube-skin" name="Armature">
+        <skin source="#Cube-mesh">
+            <bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 1 0 0 0 1</bind_shape_matrix>
+            <source id="Armature_Cube-skin-joints">
+                <Name_array id="Armature_Cube-skin-joints-array" count="2">Bone Bone_001</Name_array>
+                <technique_common>
+                    <accessor source="#Armature_Cube-skin-joints-array" count="2" stride="1">
+                        <param name="JOINT" type="name"/>
+                    </accessor>
+                </technique_common>
+            </source>
+            <source id="Armature_Cube-skin-bind_poses">
+                <float_array id="Armature_Cube-skin-bind_poses-array" count="32">1 0 0 0 0 0 1 0 0 -1 0 0 0 0 0 1 1 0 0 0 0 0 1 -0.9968251 0 -1 0 0 0 0 0 1</float_array>
+                <technique_common>
+                    <accessor source="#Armature_Cube-skin-bind_poses-array" count="2" stride="16">
+                        <param name="TRANSFORM" type="float4x4"/>
+                    </accessor>
+                </technique_common>
+            </source>
+            <source id="Armature_Cube-skin-weights">
+                <float_array id="Armature_Cube-skin-weights-array" count="16">0.8467516 0.1532484 0.8583953 0.1416047 0.8467516 0.1532484 0.8583953 0.1416047 0.152781 0.847219 0.1412776 0.8587223 0.152781 0.8472191 0.1412776 0.8587223</float_array>
+                <technique_common>
+                    <accessor source="#Armature_Cube-skin-weights-array" count="16" stride="1">
+                        <param name="WEIGHT" type="float"/>
+                    </accessor>
+                </technique_common>
+            </source>
+            <joints>
+                <input semantic="JOINT" source="#Armature_Cube-skin-joints"/>
+                <input semantic="INV_BIND_MATRIX" source="#Armature_Cube-skin-bind_poses"/>
+            </joints>
+            <vertex_weights count="8">
+                <input semantic="JOINT" source="#Armature_Cube-skin-joints" offset="0"/>
+                <input semantic="WEIGHT" source="#Armature_Cube-skin-weights" offset="1"/>
+                <vcount>2 2 2 2 2 2 2 2 </vcount>
+                <v>0 0 1 1 0 2 1 3 0 4 1 5 0 6 1 7 0 8 1 9 0 10 1 11 0 12 1 13 0 14 1 15</v>
+            </vertex_weights>
+        </skin>
+    </controller>
+</library_controllers>

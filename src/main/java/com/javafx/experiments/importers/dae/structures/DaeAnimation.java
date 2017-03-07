@@ -21,7 +21,7 @@ public final class DaeAnimation {
     public final String id;
     public float[] input;
     public double[] output;
-    private String[] interpolations;
+    private String[] interpolations; //TODO add interpolations to the animation
     public String target;
     private final List<DaeAnimation> childAnimations = new ArrayList<>();
 
