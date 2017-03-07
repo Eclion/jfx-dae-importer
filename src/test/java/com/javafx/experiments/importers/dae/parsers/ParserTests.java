@@ -1,9 +1,10 @@
 package com.javafx.experiments.importers.dae.parsers;
 
-import com.javafx.experiments.importers.dae.utils.ParserUtils;
-import com.javafx.experiments.utils.TestUtils;
+import javafx.scene.paint.Color;
 import javafx.scene.paint.Material;
 import javafx.scene.paint.PhongMaterial;
+import org.junit.Assert;
+import org.junit.Test;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -13,15 +14,16 @@ import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.io.IOException;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+
 /**
  * @author Eclion
  */
 public final class ParserTests {
 
-    public static void main(String... args) throws Exception {
-        parseLibraryEffects();
-        System.out.println(TestUtils.ALL_TEST_PASSED);
-    }
 
     private static void executeParsing(File testResource, DefaultHandler parser) throws ParserConfigurationException, SAXException, IOException {
         final SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -29,12 +31,21 @@ public final class ParserTests {
         saxParser.parse(testResource, parser);
     }
 
-    private static void parseLibraryEffects() throws Exception {
-        LibraryEffectsParser parser = new LibraryEffectsParser();
-        File resource = new File(parser.getClass().getResource("effects1.xml").toURI());
-        executeParsing(resource, parser);
-        Material actualMaterial = parser.getEffectMaterial("shine-fx");
-        PhongMaterial expectedMaterial = new PhongMaterial();
-        TestUtils.assertEquals(expectedMaterial, actualMaterial);
+    @Test
+    public void parseLibraryEffects() throws Exception {
+        final LibraryEffectsParser effectsParser = new LibraryEffectsParser();
+        final File resource = new File(effectsParser.getClass().getResource("effects1.xml").toURI());
+        executeParsing(resource, effectsParser);
+
+        final LibraryImagesParser mockImageParser = mock(LibraryImagesParser.class);
+        when(mockImageParser.getImage(any())).thenReturn(null);
+
+        effectsParser.buildEffects(mockImageParser);
+
+        final PhongMaterial actualMaterial = (PhongMaterial) effectsParser.getEffectMaterial("shine-fx");
+
+        final Color expectedSpecularColor = new Color(0.49586, 0.49586, 0.49586, 1);
+
+        Assert.assertEquals(expectedSpecularColor, actualMaterial.getSpecularColor());
     }
 }

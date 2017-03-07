@@ -60,9 +60,10 @@ final class LibraryEffectsParser extends DefaultHandler {
     }
 
     void buildEffects(final LibraryImagesParser imagesParser) {
-        effects.forEach(effect ->
-                materials.put(effect.id, effect.build(imagesParser))
-        );
+        effects.stream()
+                .filter(effect -> effect.type != null)
+                .forEach(effect -> materials.put(effect.id, effect.build(imagesParser))
+                );
     }
 
     Material getEffectMaterial(final String effectId) {
