@@ -88,7 +88,7 @@ final class LibraryEffectsParserV2 extends AbstractParser {
         handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }
 
-    void buildEffects(final LibraryImagesParser imagesParser) {
+    void buildEffects(final LibraryImagesParserV2 imagesParser) {
         effects.stream()
                 .filter(effect -> effect.type != null)
                 .forEach(effect -> materials.put(effect.id, effect.build(imagesParser))
@@ -131,7 +131,7 @@ final class LibraryEffectsParserV2 extends AbstractParser {
             this.id = id;
         }
 
-        Material build(final LibraryImagesParser imagesParser) {
+        Material build(final LibraryImagesParserV2 imagesParser) {
             Material material = null;
             switch (this.type) {
                 case PHONG_TAG:
@@ -143,7 +143,7 @@ final class LibraryEffectsParserV2 extends AbstractParser {
             return material;
         }
 
-        PhongMaterial buildPhongMaterial(final LibraryImagesParser imagesParser) {
+        PhongMaterial buildPhongMaterial(final LibraryImagesParserV2 imagesParser) {
             final PhongMaterial material = new PhongMaterial();
 
             colors.entrySet().forEach(entry -> {
