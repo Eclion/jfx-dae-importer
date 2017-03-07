@@ -2,11 +2,12 @@ package com.javafx.experiments.importers.dae.parsers;
 
 import com.javafx.experiments.importers.dae.structures.DaeAnimation;
 import com.javafx.experiments.importers.dae.structures.DaeController;
-import javafx.scene.Camera;
+import com.javafx.experiments.importers.dae.structures.DaeScene;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
-import javafx.scene.transform.Affine;
+import javafx.scene.shape.TriangleMesh;
+import javafx.scene.shape.VertexFormat;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -18,9 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -28,9 +27,9 @@ import static org.mockito.Mockito.when;
 
 /**
  * @author Eclion
+ * TODO: improve tests, implement a system test
  */
 public final class ParserTests {
-
 
     private void executeParsing(String testResource, DefaultHandler parser) throws ParserConfigurationException, SAXException, IOException, URISyntaxException {
         final File resource = new File(this.getClass().getResource(testResource).toURI());
@@ -120,31 +119,49 @@ public final class ParserTests {
         }, actualController.bindPoses.toArray());*/
     }
 
+    @Test
     public void parseGeometries() throws Exception {
         final LibraryGeometriesParser geometriesParser = new LibraryGeometriesParser();
         executeParsing("geometries_1.xml", geometriesParser);
 
-        System.out.println();
+        TriangleMesh actualMesh = geometriesParser.getMeshes("Cube-mesh").get(0);
+        assertEquals(24, actualMesh.getPoints().size());
+        assertEquals(36, actualMesh.getNormals().size());
+        assertEquals(2, actualMesh.getTexCoords().size());
+        assertEquals(108, actualMesh.getFaces().size());
+        assertEquals(VertexFormat.POINT_NORMAL_TEXCOORD, actualMesh.getVertexFormat());
+
+        assertEquals("Material-material", geometriesParser.getMaterialIds("Cube-mesh").get(0));
     }
 
+    @Test
     public void parseLights() throws Exception {
         final LibraryLightsParser lightsParser = new LibraryLightsParser();
         executeParsing("lights_1.xml", lightsParser);
 
-        System.out.println();
+        throw new Exception("Nothing implemented yet for the lights");
     }
 
+    @Test
     public void parseMaterials() throws Exception {
         final LibraryMaterialsParser materialsParser = new LibraryMaterialsParser();
         executeParsing("materials_1.xml", materialsParser);
 
-        System.out.println();
+        assertEquals("Material-effect", materialsParser.getEffectId("Material-material"));
     }
 
+    @Test
     public void parseVisualScenes() throws Exception {
         final LibraryVisualSceneParser visualSceneParser = new LibraryVisualSceneParser();
         executeParsing("visual_scenes_1.xml", visualSceneParser);
 
-        System.out.println();
+        DaeScene actualScene = visualSceneParser.scenes.get(0);
+
+        assertEquals("Scene", actualScene.id);
+        assertEquals(1, actualScene.cameraNodes.size());
+        assertEquals(1, actualScene.lightNodes.size());
+        assertEquals(0, actualScene.meshNodes.size());
+        assertEquals(1, actualScene.skeletons.size());
+        assertEquals(1, actualScene.controllerNodes.size());
     }
 }
