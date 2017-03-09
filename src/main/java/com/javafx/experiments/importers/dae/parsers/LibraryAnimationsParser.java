@@ -2,103 +2,61 @@ package com.javafx.experiments.importers.dae.parsers;
 
 import com.javafx.experiments.importers.dae.structures.DaeAnimation;
 import com.javafx.experiments.importers.dae.utils.ParserUtils;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.function.Consumer;
 
 /**
  * @author Eclion.
  */
-final class LibraryAnimationsParser extends DefaultHandler {
-    private static final Logger LOGGER = Logger.getLogger(LibraryAnimationsParser.class.getSimpleName());
-    private StringBuilder charBuf = new StringBuilder();
+final class LibraryAnimationsParser extends AbstractParser {
+    private static final String ANIMATION_TAG = "animation";
+    private static final String CHANNEL_TAG = "channel";
+    private static final String FLOAT_ARRAY_TAG = "float_array";
+    private static final String NAME_ARRAY_TAG = "Name_array";
+    private static final String SOURCE_TAG = "source";
+
     private final Map<String, String> currentId = new HashMap<>();
     private String currentAnimationId = "";
     public final Map<String, DaeAnimation> animations = new HashMap<>();
     private final LinkedList<DaeAnimation> currentAnimations = new LinkedList<>();
 
-    private enum State {
-        UNKNOWN,
-        animation,
-        channel,
-        float_array,
-        Name_array,
-        source,
+    LibraryAnimationsParser() {
+        /*final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
+        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+        handler = new LibraryHandler(startElementConsumer, endElementConsumer);*/
+        final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
 
-        // ignored, unsupported states:
-        accessor,
-        input,
-        param,
-        sampler,
-        technique_common
-    }
+        startElementConsumer.put("*", startElement -> currentId.put(startElement.qName, startElement.getAttributeValue("id")));
+        startElementConsumer.put(ANIMATION_TAG, startElement -> {
+            currentAnimationId = currentId.get(startElement.qName);
+            currentAnimations.push(new DaeAnimation(currentAnimationId));
+        });
+        startElementConsumer.put(CHANNEL_TAG, startElement -> currentAnimations.peek().target = startElement.getAttributeValue("target"));
 
-    private static State state(final String name) {
-        try {
-            return State.valueOf(name);
-        } catch (Exception e) {
-            return State.UNKNOWN;
-        }
-    }
+        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
 
-    @Override
-    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
-        currentId.put(qName, attributes.getValue("id"));
-        charBuf = new StringBuilder();
-        switch (state(qName)) {
-            case UNKNOWN:
-                LOGGER.log(Level.WARNING, "Unknown element: " + qName);
-                break;
-            case animation:
-                currentAnimationId = currentId.get(qName);
-                currentAnimations.push(new DaeAnimation(currentAnimationId));
-                //animations.put(currentAnimationId, );
-                break;
-            case channel:
-                currentAnimations.peek().target = attributes.getValue("target");
-                break;
-            default:
-                break;
-        }
-    }
+        endElementConsumer.put(ANIMATION_TAG, endElement -> {
+            DaeAnimation animation = currentAnimations.pop();
+            if (currentAnimations.isEmpty()) {
+                animations.put(currentAnimationId, animation);
+            } else {
+                currentAnimations.peek().addChild(animation);
+            }
+        });
+        endElementConsumer.put(FLOAT_ARRAY_TAG, endElement -> {
+            String sourceId = currentId.get(SOURCE_TAG);
+            if (sourceId.equalsIgnoreCase(currentAnimationId + "-input")) {
+                currentAnimations.peek().input = ParserUtils.extractFloatArray(endElement.content);
+            } else if (sourceId.equalsIgnoreCase(currentAnimationId + "-output")) {
+                currentAnimations.peek().output = ParserUtils.extractDoubleArray(endElement.content);
+            }
+        });
+        endElementConsumer.put(NAME_ARRAY_TAG, endElement -> currentAnimations.peek().setInterpolations(endElement.content.split("\\s+")
+        ));
 
-    @Override
-    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
-        switch (state(qName)) {
-            case animation:
-                DaeAnimation animation = currentAnimations.pop();
-                if (currentAnimations.isEmpty()) {
-                    animations.put(currentAnimationId, animation);
-                } else {
-                    currentAnimations.peek().addChild(animation);
-                }
-                break;
-            case float_array:
-                String sourceId = currentId.get(State.source.name());
-                if (sourceId.equalsIgnoreCase(currentAnimationId + "-input")) {
-                    currentAnimations.peek().input = ParserUtils.extractFloatArray(charBuf);
-                } else if (sourceId.equalsIgnoreCase(currentAnimationId + "-output")) {
-                    currentAnimations.peek().output = ParserUtils.extractDoubleArray(charBuf);
-                }
-                break;
-            case Name_array:
-                currentAnimations.peek().setInterpolations(
-                        ParserUtils.extractNameArray(charBuf)
-                );
-                break;
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void characters(final char[] ch, final int start, final int length) throws SAXException {
-        charBuf.append(ch, start, length);
+        handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }
 }

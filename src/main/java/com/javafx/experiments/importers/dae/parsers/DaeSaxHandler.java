@@ -1,11 +1,7 @@
 package com.javafx.experiments.importers.dae.parsers;
 
 import com.javafx.experiments.animation.SkinningMeshTimer;
-import com.javafx.experiments.importers.dae.structures.DaeController;
-import com.javafx.experiments.importers.dae.structures.DaeNode;
-import com.javafx.experiments.importers.dae.structures.DaeScene;
-import com.javafx.experiments.importers.dae.structures.DaeSkeleton;
-import com.javafx.experiments.importers.dae.structures.Joint;
+import com.javafx.experiments.importers.dae.structures.*;
 import com.javafx.experiments.shape3d.SkinningMesh;
 import javafx.animation.KeyFrame;
 import javafx.scene.Camera;
@@ -15,133 +11,84 @@ import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.Rotate;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
  * @author Eclion
  */
-public final class DaeSaxHandler extends DefaultHandler {
+public final class DaeSaxHandler extends AbstractParser {
 
-    private DefaultHandler subHandler;
+    private final static String ASSET_TAG = "asset";
+    private final static String SCENE_TAG = "scene";
+    private final static String LIBRARY_ANIMATIONS_TAG = "library_animations";
+    private final static String LIBRARY_CAMERAS_TAG = "library_cameras";
+    private final static String LIBRARY_CONTROLLERS_TAG = "library_controllers";
+    private final static String LIBRARY_EFFECTS_TAG = "library_effects";
+    private final static String LIBRARY_GEOMETRIES_TAG = "library_geometries";
+    private final static String LIBRARY_IMAGES_TAG = "library_images";
+    private final static String LIBRARY_LIGHTS_TAG = "library_lights";
+    private final static String LIBRARY_MATERIALS_TAG = "library_materials";
+    private final static String LIBRARY_VISUAL_SCENES_TAG = "library_visual_scenes";
 
-    private HashMap<State, DefaultHandler> parsers = new HashMap<>();
+    private AbstractParser subHandler;
+
+    private HashMap<String, AbstractParser> parsers = new HashMap<>();
 
     private Camera firstCamera;
 
-    private final String fileUrl;
+    public DaeSaxHandler(final String fileUrl) {
+        final HashMap<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
+        startElementConsumer.put("*", startElement -> {
+            if (subHandler != null) {
+                subHandler.getLibraryHandler().startElement(startElement);
+            }
+        });
 
-    private enum State {
-        UNKNOWN,
-        asset,
-        scene,
-        library_animations,
-        library_cameras,
-        library_controllers,
-        library_effects,
-        library_geometries,
-        library_images,
-        library_lights,
-        library_materials,
-        library_visual_scenes
+        startElementConsumer.put(ASSET_TAG, startElement -> setParser(startElement.qName, new AssetParser()));
+        startElementConsumer.put(SCENE_TAG, startElement -> setParser(startElement.qName, new SceneParser()));
+        startElementConsumer.put(LIBRARY_ANIMATIONS_TAG, startElement -> setParser(startElement.qName, new LibraryAnimationsParser()));
+        startElementConsumer.put(LIBRARY_CAMERAS_TAG, startElement -> setParser(startElement.qName, new LibraryCamerasParser()));
+        startElementConsumer.put(LIBRARY_CONTROLLERS_TAG, startElement -> setParser(startElement.qName, new LibraryControllerParser()));
+        startElementConsumer.put(LIBRARY_EFFECTS_TAG, startElement -> setParser(startElement.qName, new LibraryEffectsParser()));
+        startElementConsumer.put(LIBRARY_GEOMETRIES_TAG, startElement -> setParser(startElement.qName, new LibraryGeometriesParser()));
+        startElementConsumer.put(LIBRARY_IMAGES_TAG, startElement -> setParser(startElement.qName, new LibraryImagesParser(fileUrl)));
+        startElementConsumer.put(LIBRARY_LIGHTS_TAG, startElement -> setParser(startElement.qName, new LibraryLightsParser()));
+        startElementConsumer.put(LIBRARY_MATERIALS_TAG, startElement -> setParser(startElement.qName, new LibraryMaterialsParser()));
+        startElementConsumer.put(LIBRARY_VISUAL_SCENES_TAG, startElement -> setParser(startElement.qName, new LibraryVisualSceneParser()));
+
+        final HashMap<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+
+        endElementConsumer.put("*", endElement -> subHandler.getLibraryHandler().endElement(endElement));
+
+        handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }
 
-    public DaeSaxHandler(final String url) {
-        this.fileUrl = url;
-    }
-
-    private static State state(final String name) {
-        try {
-            return State.valueOf(name);
-        } catch (Exception e) {
-            return State.UNKNOWN;
-        }
-    }
-
-    @Override
-    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
-        final State currentState = state(qName);
-        switch (currentState) {
-            case asset:
-                setParser(currentState, new AssetParser());
-                break;
-            case scene:
-                setParser(currentState, new SceneParser());
-                break;
-            case library_animations:
-                setParser(currentState, new LibraryAnimationsParser());
-                break;
-            case library_cameras:
-                setParser(currentState, new LibraryCamerasParser());
-                break;
-            case library_controllers:
-                setParser(currentState, new LibraryControllerParser());
-                break;
-            case library_effects:
-                setParser(currentState, new LibraryEffectsParser());
-                break;
-            case library_geometries:
-                setParser(currentState, new LibraryGeometriesParser());
-                break;
-            case library_images:
-                setParser(currentState, new LibraryImagesParser(fileUrl));
-                break;
-            case library_lights:
-                setParser(currentState, new LibraryLightsParser());
-                break;
-            case library_materials:
-                setParser(currentState, new LibraryMaterialsParser());
-                break;
-            case library_visual_scenes:
-                setParser(currentState, new LibraryVisualSceneParser());
-                break;
-            default:
-                if (subHandler != null)
-                    subHandler.startElement(uri, localName, qName, attributes);
-                break;
-        }
-    }
-
-    private void setParser(final State state, final DefaultHandler parser) {
-        parsers.put(state, parser);
-        subHandler = parsers.get(state);
-    }
-
-    @Override
-    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
-        if (subHandler != null) subHandler.endElement(uri, localName, qName);
-    }
-
-    @Override
-    public void characters(final char[] ch, final int start, final int length) throws SAXException {
-        if (subHandler != null) subHandler.characters(ch, start, length);
+    private void setParser(final String tag, final AbstractParser parser) {
+        parsers.put(tag, parser);
+        subHandler = parsers.get(tag);
     }
 
     public Camera getFirstCamera() {
-        return (parsers.containsKey(State.library_cameras))
-                ? ((LibraryCamerasParser) parsers.get(State.library_cameras)).firstCamera
+        return (parsers.containsKey(LIBRARY_CAMERAS_TAG))
+                ? ((LibraryCamerasParser) parsers.get(LIBRARY_CAMERAS_TAG)).firstCamera
                 : null;
     }
 
     public double getFirstCameraAspectRatio() {
-        return parsers.containsKey(State.library_cameras)
-                ? ((LibraryCamerasParser) parsers.get(State.library_cameras)).firstCameraAspectRatio
+        return parsers.containsKey(LIBRARY_CAMERAS_TAG)
+                ? ((LibraryCamerasParser) parsers.get(LIBRARY_CAMERAS_TAG)).firstCameraAspectRatio
                 : 4.0 / 3.0;
     }
 
     public void buildScene(final Group rootNode) {
-        final LibraryVisualSceneParser visualSceneParser = (LibraryVisualSceneParser) parsers.get(State.library_visual_scenes);
+        final LibraryVisualSceneParser visualSceneParser = (LibraryVisualSceneParser) parsers.get(LIBRARY_VISUAL_SCENES_TAG);
         if (visualSceneParser == null) return;
         final DaeScene scene = visualSceneParser.scenes.peek();
-        final String upAxis = parsers.containsKey(State.asset)
-                ? ((AssetParser) parsers.get(State.asset)).upAxis
+        final String upAxis = parsers.containsKey(ASSET_TAG)
+                ? ((AssetParser) parsers.get(ASSET_TAG)).upAxis
                 : "Z_UP";
         if ("Z_UP".equals(upAxis)) {
             rootNode.getTransforms().add(new Rotate(90, 0, 0, 0, Rotate.X_AXIS));
@@ -150,8 +97,8 @@ public final class DaeSaxHandler extends DefaultHandler {
         }
         rootNode.setId(scene.id);
 
-        final LibraryImagesParser imagesParser = (LibraryImagesParser) parsers.get(State.library_images);
-        final LibraryEffectsParser effectsParser = (LibraryEffectsParser) parsers.get(State.library_effects);
+        final LibraryImagesParser imagesParser = (LibraryImagesParser) parsers.get(LIBRARY_IMAGES_TAG);
+        final LibraryEffectsParser effectsParser = (LibraryEffectsParser) parsers.get(LIBRARY_EFFECTS_TAG);
         if (imagesParser != null && effectsParser != null) {
             effectsParser.buildEffects(imagesParser);
         }
@@ -161,7 +108,7 @@ public final class DaeSaxHandler extends DefaultHandler {
     }
 
     private Camera getCamera(final DaeNode node) {
-        final LibraryCamerasParser camerasParser = ((LibraryCamerasParser) parsers.get(State.library_cameras));
+        final LibraryCamerasParser camerasParser = ((LibraryCamerasParser) parsers.get(LIBRARY_CAMERAS_TAG));
         if (camerasParser == null) return null;
         final Camera camera = camerasParser.cameras.get(node.instanceCameraId);
         camera.setId(node.name);
@@ -170,7 +117,7 @@ public final class DaeSaxHandler extends DefaultHandler {
     }
 
     private List<MeshView> getMeshes(final DaeNode node) {
-        final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(State.library_geometries);
+        final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(LIBRARY_GEOMETRIES_TAG);
         if (geometriesParser == null) return new ArrayList<>();
 
         final List<TriangleMesh> meshes = geometriesParser.getMeshes(node.instanceGeometryId);
@@ -190,9 +137,9 @@ public final class DaeSaxHandler extends DefaultHandler {
     }
 
     private List<MeshView> getControllers(final DaeNode node) {
-        final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(State.library_geometries);
-        final LibraryControllerParser controllerParser = (LibraryControllerParser) parsers.get(State.library_controllers);
-        final LibraryVisualSceneParser visualSceneParser = (LibraryVisualSceneParser) parsers.get(State.library_visual_scenes);
+        final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(LIBRARY_GEOMETRIES_TAG);
+        final LibraryControllerParser controllerParser = (LibraryControllerParser) parsers.get(LIBRARY_CONTROLLERS_TAG);
+        final LibraryVisualSceneParser visualSceneParser = (LibraryVisualSceneParser) parsers.get(LIBRARY_VISUAL_SCENES_TAG);
 
         if (controllerParser == null || visualSceneParser == null
                 || geometriesParser == null) return new ArrayList<>();
@@ -200,9 +147,7 @@ public final class DaeSaxHandler extends DefaultHandler {
         final DaeController controller = controllerParser.
                 controllers.get(node.instanceControllerId);
 
-        final DaeSkeleton skeleton =
-                ((LibraryVisualSceneParser) parsers.get(State.library_visual_scenes))
-                        .scenes.get(0).skeletons.get(controller.getName());
+        final DaeSkeleton skeleton = visualSceneParser.scenes.get(0).skeletons.get(controller.getName());
 
         final String[] bones = skeleton.joints.keySet().toArray(new String[]{});
         final Affine[] bindTransforms = new Affine[bones.length];
@@ -247,8 +192,8 @@ public final class DaeSaxHandler extends DefaultHandler {
     }
 
     public HashMap<String, List<KeyFrame>> getKeyFramesMap() {
-        final LibraryAnimationsParser animationsParser = (LibraryAnimationsParser) parsers.get(State.library_animations);
-        final LibraryVisualSceneParser visualSceneParser = (LibraryVisualSceneParser) parsers.get(State.library_visual_scenes);
+        final LibraryAnimationsParser animationsParser = (LibraryAnimationsParser) parsers.get(LIBRARY_ANIMATIONS_TAG);
+        final LibraryVisualSceneParser visualSceneParser = (LibraryVisualSceneParser) parsers.get(LIBRARY_VISUAL_SCENES_TAG);
         if (animationsParser == null || visualSceneParser == null) return new HashMap<>();
 
         final HashMap<String, List<KeyFrame>> frames = new HashMap<>();
@@ -260,9 +205,9 @@ public final class DaeSaxHandler extends DefaultHandler {
     }
 
     private List<Material> getMaterials(String meshId) {
-        final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(State.library_geometries);
-        final LibraryMaterialsParser materialsParser = (LibraryMaterialsParser) parsers.get(State.library_materials);
-        final LibraryEffectsParser effectsParser = (LibraryEffectsParser) parsers.get(State.library_effects);
+        final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(LIBRARY_GEOMETRIES_TAG);
+        final LibraryMaterialsParser materialsParser = (LibraryMaterialsParser) parsers.get(LIBRARY_MATERIALS_TAG);
+        final LibraryEffectsParser effectsParser = (LibraryEffectsParser) parsers.get(LIBRARY_EFFECTS_TAG);
 
         final List<Material> materials;
         if (materialsParser != null && effectsParser != null) {

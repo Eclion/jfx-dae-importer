@@ -6,117 +6,20 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * @author Eclion
  */
-final class LibraryLightsParser extends DefaultHandler {
-    private static final Logger LOGGER = Logger.getLogger(LibraryLightsParser.class.getSimpleName());
-    private StringBuilder charBuf = new StringBuilder();
-    private final Map<String, String> currentId = new HashMap<>();
+final class LibraryLightsParser extends AbstractParser {
+    //private final Map<String, String> currentId = new HashMap<>();
 
-    private enum State { // all ignored for now
-        UNKNOWN,
-        adapt_thresh,
-        area_shape,
-        area_size,
-        area_sizey,
-        area_sizez,
-        atm_distance_factor,
-        atm_extinction_factor,
-        atm_turbidity,
-        att1,
-        att2,
-        backscattered_light,
-        bias,
-        blue,
-        buffers,
-        bufflag,
-        bufsize,
-        buftype,
-        clipend,
-        clipsta,
-        color,
-        compressthresh,
-        constant_attenuation,
-        dist,
-        energy,
-        extra,
-        falloff_type,
-        filtertype,
-        flag,
-        gamma,
-        green,
-        halo_intensity,
-        horizon_brightness,
-        light,
-        linear_attenuation,
-        mode,
-        point,
-        quadratic_attenuation,
-        ray_samp,
-        ray_samp_method,
-        ray_samp_type,
-        ray_sampy,
-        ray_sampz,
-        red,
-        samp,
-        shadhalostep,
-        shadow_b,
-        shadow_g,
-        shadow_r,
-        sky_colorspace,
-        sky_exposure,
-        skyblendfac,
-        skyblendtype,
-        soft,
-        spotblend,
-        spotsize,
-        spread,
-        sun_brightness,
-        sun_effect_type,
-        sun_intensity,
-        sun_size,
-        technique,
-        technique_common,
-        type
-    }
-
-    private static State state(final String name) {
-        try {
-            return State.valueOf(name);
-        } catch (Exception e) {
-            return State.UNKNOWN;
-        }
-    }
-
-    @Override
-    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
-        this.currentId.put(qName, attributes.getValue("id"));
-        this.charBuf = new StringBuilder();
-        switch (state(qName)) {
-            case UNKNOWN:
-                LOGGER.log(Level.WARNING, "Unknown element: " + qName);
-                break;
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
-        switch (state(qName)) {
-            case UNKNOWN:
-                break;
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void characters(final char[] ch, final int start, final int length) throws SAXException {
-        this.charBuf.append(ch, start, length);
+    LibraryLightsParser() {
+        final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
+        //startElementConsumer.put("*", startElement -> currentId.put(startElement.qName, startElement.getAttributeValue("id")));
+        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+        handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }
 }

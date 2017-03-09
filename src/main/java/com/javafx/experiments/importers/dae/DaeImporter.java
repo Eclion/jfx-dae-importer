@@ -32,7 +32,7 @@
 package com.javafx.experiments.importers.dae;
 
 import com.javafx.experiments.importers.Importer;
-import com.javafx.experiments.importers.dae.parsers.DaeSaxHandlerV2;
+import com.javafx.experiments.importers.dae.parsers.DaeSaxHandler;
 import javafx.animation.Timeline;
 import javafx.scene.Camera;
 import javafx.scene.Group;
@@ -98,7 +98,7 @@ public final class DaeImporter extends Importer {
             final SAXParserFactory factory = SAXParserFactory.newInstance();
             final SAXParser saxParser = factory.newSAXParser();
 
-            final DaeSaxHandlerV2 handler = new DaeSaxHandlerV2(extractRootPath(url));
+            final DaeSaxHandler handler = new DaeSaxHandler(extractRootPath(url));
             final HandlerAdapter handlerAdapter = new HandlerAdapter(handler);
             saxParser.parse(url, handlerAdapter);
 
@@ -115,7 +115,7 @@ public final class DaeImporter extends Importer {
         LOGGER.log(Level.INFO, "IMPORTED [" + url + "] in  " + ((end - start)) + "ms");
     }
 
-    private void buildTimelines(final DaeSaxHandlerV2 parser) {
+    private void buildTimelines(final DaeSaxHandler parser) {
         parser.getKeyFramesMap().entrySet()
                 .forEach(entry -> {
                             if (!timelines.containsKey(entry.getKey())) {
@@ -144,9 +144,9 @@ public final class DaeImporter extends Importer {
 
     class HandlerAdapter extends DefaultHandler {
 
-        final DaeSaxHandlerV2 daeSaxHandler;
+        final DaeSaxHandler daeSaxHandler;
 
-        HandlerAdapter(DaeSaxHandlerV2 daeSaxHandler) {
+        HandlerAdapter(DaeSaxHandler daeSaxHandler) {
             this.daeSaxHandler = daeSaxHandler;
         }
 

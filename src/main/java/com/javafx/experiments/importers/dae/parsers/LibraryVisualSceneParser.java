@@ -15,123 +15,55 @@ import org.xml.sax.helpers.DefaultHandler;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * @author Eclion
  */
-final class LibraryVisualSceneParser extends DefaultHandler {
-    private final static Logger LOGGER = Logger.getLogger(LibraryVisualSceneParser.class.getSimpleName());
-    private StringBuilder charBuf = new StringBuilder();
-    private final Map<String, String> currentId = new HashMap<>();
+final class LibraryVisualSceneParser extends AbstractParser {
+    private static final String INSTANCE_CAMERA_TAG = "instance_camera";
+    private static final String INSTANCE_CONTROLLER_TAG = "instance_controller";
+    private static final String INSTANCE_GEOMETRY_TAG = "instance_geometry";
+    private static final String INSTANCE_LIGHT_TAG = "instance_light";
+    private static final String INSTANCE_MATERIAL_TAG = "instance_material";
+    private static final String NODE_TAG = "node";
+    private static final String MATRIX_TAG = "matrix";
+    private static final String ROTATE_TAG = "rotate";
+    private static final String SCALE_TAG = "scale";
+    private static final String SKELETON_TAG = "skeleton";
+    private static final String TRANSLATE_TAG = "translate";
+    private static final String VISUAL_SCENE_TAG = "visual_scene";
+
     final LinkedList<DaeScene> scenes = new LinkedList<>();
     final LinkedList<DaeNode> nodes = new LinkedList<>();
 
-    private enum State {
-        UNKNOWN,
-        instance_camera,
-        instance_controller,
-        instance_geometry,
-        instance_light,
-        instance_material,
-        node,
-        matrix,
-        rotate,
-        skeleton,
-        translate,
-        scale,
-        visual_scene,
+    LibraryVisualSceneParser(){
+        final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
 
-        // ignored, unsupported states:
-        bind_material,
-        connect,
-        extra,
-        layer,
-        technique,
-        technique_common,
-        tip_x,
-        tip_y,
-        tip_z
+        startElementConsumer.put(INSTANCE_CAMERA_TAG, startElement -> nodes.peek().instanceCameraId = startElement.getAttributeValue("url").substring(1));
+        startElementConsumer.put(INSTANCE_CONTROLLER_TAG, startElement -> nodes.peek().instanceControllerId = startElement.getAttributeValue("url").substring(1));
+        startElementConsumer.put(INSTANCE_GEOMETRY_TAG, startElement -> nodes.peek().instanceGeometryId = startElement.getAttributeValue("url").substring(1));
+        startElementConsumer.put(INSTANCE_LIGHT_TAG, startElement -> nodes.peek().instanceLightId = startElement.getAttributeValue("url").substring(1));
+        startElementConsumer.put(INSTANCE_MATERIAL_TAG, startElement -> nodes.peek().instanceMaterialId = startElement.getAttributeValue("target").substring(1));
+        startElementConsumer.put(NODE_TAG, this::createDaeNode);
+        startElementConsumer.put(VISUAL_SCENE_TAG, this::createVisualScene);
+
+        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+
+        endElementConsumer.put(NODE_TAG, endElement -> setDaeNode());
+        endElementConsumer.put(MATRIX_TAG, this::addMatrixTransformation);
+        endElementConsumer.put(ROTATE_TAG, this::addRotation);
+        endElementConsumer.put(SCALE_TAG, this::addScaling);
+        endElementConsumer.put(TRANSLATE_TAG, this::addTranslation);
+        endElementConsumer.put(SKELETON_TAG, endElement -> nodes.peek().skeletonId = endElement.content.substring(1));
+
+        handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }
 
-    private static State state(final String name) {
-        try {
-            return State.valueOf(name);
-        } catch (Exception e) {
-            return State.UNKNOWN;
-        }
-    }
-
-    @Override
-    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
-        currentId.put(qName, attributes.getValue("id"));
-        charBuf = new StringBuilder();
-        switch (state(qName)) {
-            case UNKNOWN:
-                LOGGER.log(Level.WARNING, "Unknown element: " + qName);
-                break;
-            case instance_camera:
-                nodes.peek().instanceCameraId = attributes.getValue("url").substring(1);
-                break;
-            case instance_controller:
-                nodes.peek().instanceControllerId = attributes.getValue("url").substring(1);
-                break;
-            case instance_geometry:
-                nodes.peek().instanceGeometryId = attributes.getValue("url").substring(1);
-                break;
-            case instance_light:
-                nodes.peek().instanceLightId = attributes.getValue("url").substring(1);
-                break;
-            case instance_material:
-                nodes.peek().instanceMaterialId = attributes.getValue("target").substring(1);
-                break;
-            case node:
-                createDaeNode(attributes);
-                break;
-            case visual_scene:
-                createVisualScene(attributes);
-                break;
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
-        switch (state(qName)) {
-            case UNKNOWN:
-                break;
-            case node:
-                setDaeNode();
-                break;
-            case matrix:
-                addMatrixTransformation();
-                break;
-            case rotate:
-                addRotation();
-                break;
-            case scale:
-                addScaling();
-                break;
-            case translate:
-                addTranslation();
-                break;
-            case skeleton:
-                nodes.peek().skeletonId = charBuf.toString().trim().substring(1);
-                break;
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void characters(final char[] ch, final int start, final int length) throws SAXException {
-        charBuf.append(ch, start, length);
-    }
-
-    private void addTranslation() {
-        String[] tv = charBuf.toString().trim().split("\\s+");
+    private void addTranslation(LibraryHandler.EndElement endElement) {
+        String[] tv = endElement.content.split("\\s+");
         nodes.peek().transforms.add(new Translate(
                 Double.parseDouble(tv[0].trim()),
                 Double.parseDouble(tv[1].trim()),
@@ -139,8 +71,8 @@ final class LibraryVisualSceneParser extends DefaultHandler {
         ));
     }
 
-    private void addRotation() {
-        String[] rv = charBuf.toString().trim().split("\\s+");
+    private void addRotation(LibraryHandler.EndElement endElement) {
+        String[] rv = endElement.content.split("\\s+");
         nodes.peek().transforms.add(new Rotate(
                 Double.parseDouble(rv[3].trim()),
                 0, 0, 0,
@@ -152,8 +84,8 @@ final class LibraryVisualSceneParser extends DefaultHandler {
         ));
     }
 
-    private void addScaling() {
-        String[] sv = charBuf.toString().trim().split("\\s+");
+    private void addScaling(LibraryHandler.EndElement endElement) {
+        String[] sv = endElement.content.split("\\s+");
         nodes.peek().transforms.add(new Scale(
                 Double.parseDouble(sv[0].trim()),
                 Double.parseDouble(sv[1].trim()),
@@ -162,8 +94,8 @@ final class LibraryVisualSceneParser extends DefaultHandler {
         ));
     }
 
-    private void addMatrixTransformation() {
-        String[] mv = charBuf.toString().trim().split("\\s+");
+    private void addMatrixTransformation(LibraryHandler.EndElement endElement) {
+        String[] mv = endElement.content.split("\\s+");
         nodes.peek().transforms.add(new Affine(
                 Double.parseDouble(mv[0].trim()), // mxx
                 Double.parseDouble(mv[1].trim()), // mxy
@@ -180,15 +112,15 @@ final class LibraryVisualSceneParser extends DefaultHandler {
         ));
     }
 
-    private void createVisualScene(final Attributes attributes) {
-        scenes.push(new DaeScene(attributes.getValue("id"), attributes.getValue("name")));
+    private void createVisualScene(final StartElement startElement) {
+        scenes.push(new DaeScene(startElement.getAttributeValue("id"), startElement.getAttributeValue("name")));
     }
 
-    private void createDaeNode(final Attributes attributes) {
+    private void createDaeNode(final StartElement startElement) {
         nodes.push(new DaeNode(
-                attributes.getValue("id"),
-                attributes.getValue("name"),
-                attributes.getValue("type")
+                startElement.getAttributeValue("id"),
+                startElement.getAttributeValue("name"),
+                startElement.getAttributeValue("type")
         ));
     }
 

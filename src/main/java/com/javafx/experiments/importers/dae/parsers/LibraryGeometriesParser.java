@@ -4,24 +4,29 @@ import com.javafx.experiments.importers.dae.structures.Input;
 import com.javafx.experiments.importers.dae.utils.ParserUtils;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.shape.VertexFormat;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
 /**
  * @author Eclion
  */
-final class LibraryGeometriesParser extends DefaultHandler {
+final class LibraryGeometriesParser extends AbstractParser {
     private static final Logger LOGGER = Logger.getLogger(LibraryGeometriesParser.class.getSimpleName());
-    private StringBuilder charBuf = new StringBuilder();
+    private static final String FLOAT_ARRAY_TAG = "float_array";
+    private static final String INPUT_TAG = "input";
+    private static final String P_TAG = "p";
+    private static final String POLYGONS_TAG = "polygons";
+    private static final String POLYLIST_TAG = "polylist";
+    private static final String SOURCE_TAG = "source";
+    private static final String VCOUNT_TAG = "vcount";
+    private static final String VERTICES_TAG = "vertices";
+
     private final Map<String, String> currentId = new HashMap<>();
     private final Map<String, float[]> floatArrays = new HashMap<>();
     private final Map<String, Input> inputs = new HashMap<>();
@@ -39,102 +44,43 @@ final class LibraryGeometriesParser extends DefaultHandler {
         return materials.getOrDefault(meshId, new ArrayList<>());
     }
 
-    private enum State {
-        UNKNOWN,
-        float_array,
-        input,
-        p,
-        polygons,
-        polylist,
-        source,
-        vcount,
-        vertices,
+    LibraryGeometriesParser() {
+        final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
 
-        // ignored, unsupported states:
-        accessor,
-        double_sided,
-        extra,
-        geometry,
-        mesh,
-        param,
-        technique,
-        technique_common
-    }
-
-    private static State state(final String name) {
-        try {
-            return State.valueOf(name);
-        } catch (Exception e) {
-            return State.UNKNOWN;
-        }
-    }
-
-    @Override
-    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
-        this.currentId.put(qName, attributes.getValue("id"));
-        this.charBuf = new StringBuilder();
-        switch (state(qName)) {
-            case UNKNOWN:
-                LOGGER.log(Level.WARNING, "Unknown element: " + qName);
-                break;
-            case input:
-                Input input = ParserUtils.createInput(attributes);
-                this.inputs.put(input.semantic, input);
-                break;
-            case polylist:
-                final String materialId = attributes.getValue("material");
-                if (materialId != null)
-                {
-                    final String geometryId = currentId.get("geometry");
-                    if (!materials.containsKey(geometryId)){
-                        materials.put(geometryId, new ArrayList<>());
-                    }
-                    materials.get(geometryId).add(materialId);
+        startElementConsumer.put("*", startElement -> currentId.put(startElement.qName, startElement.getAttributeValue("id")));
+        startElementConsumer.put(INPUT_TAG, startElement -> {
+            Input input = ParserUtils.createInput(startElement);
+            this.inputs.put(input.semantic, input);
+        });
+        startElementConsumer.put(POLYLIST_TAG, startElement -> {
+            final String materialId = startElement.getAttributeValue("material");
+            if (materialId != null) {
+                final String geometryId = currentId.get("geometry");
+                if (!materials.containsKey(geometryId)) {
+                    materials.put(geometryId, new ArrayList<>());
                 }
-                this.inputs.clear();
-                this.pLists.clear();
-                break;
-            default:
-                break;
-        }
+                materials.get(geometryId).add(materialId);
+            }
+            this.inputs.clear();
+            this.pLists.clear();
+        });
+
+        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+
+        endElementConsumer.put(FLOAT_ARRAY_TAG, endElement ->
+                floatArrays.put(currentId.get(SOURCE_TAG), ParserUtils.extractFloatArray(endElement.content)));
+        endElementConsumer.put(P_TAG, this::savePoints);
+        endElementConsumer.put(POLYGONS_TAG, endElement -> createPolygonsTriangleMesh());
+        endElementConsumer.put(POLYLIST_TAG, endElement -> createPolylistTriangleMesh());
+        endElementConsumer.put(VCOUNT_TAG, this::saveVerticesCounts);
+        endElementConsumer.put(VERTICES_TAG, endElement -> saveVertices());
+
+
+        handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }
 
-    @Override
-    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
-        switch (state(qName)) {
-            case UNKNOWN:
-                break;
-            case float_array:
-                floatArrays.put(currentId.get("source"),
-                        ParserUtils.extractFloatArray(charBuf));
-                break;
-            case p:
-                savePoints();
-                break;
-            case polygons:
-                createPolygonsTriangleMesh();
-                break;
-            case polylist:
-                createPolylistTriangleMesh();
-                break;
-            case vcount:
-                saveVerticesCounts();
-                break;
-            case vertices:
-                saveVertices();
-                break;
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void characters(final char[] ch, final int start, final int length) throws SAXException {
-        charBuf.append(ch, start, length);
-    }
-
-    private void savePoints() {
-        String[] numbers = charBuf.toString().trim().split("\\s+");
+    private void savePoints(LibraryHandler.EndElement endElement) {
+        String[] numbers = endElement.content.split("\\s+");
         int[] iArray = new int[numbers.length];
         for (int i = 0; i < numbers.length; i++) {
             iArray[i] = Integer.parseInt(numbers[i].trim());
@@ -146,7 +92,7 @@ final class LibraryGeometriesParser extends DefaultHandler {
         // create mesh put in map
         final TriangleMesh mesh = new TriangleMesh();
         final String geometryId = currentId.get("geometry");
-        if (!meshes.containsKey(geometryId)){
+        if (!meshes.containsKey(geometryId)) {
             meshes.put(geometryId, new ArrayList<>());
         }
         meshes.get(geometryId).add(mesh);
@@ -188,7 +134,7 @@ final class LibraryGeometriesParser extends DefaultHandler {
         mesh.getNormals().setAll(calcNormals(normalInput));
 
         final String geometryId = currentId.get("geometry");
-        if (!meshes.containsKey(geometryId)){
+        if (!meshes.containsKey(geometryId)) {
             meshes.put(geometryId, new ArrayList<>());
         }
         meshes.get(geometryId).add(mesh);
@@ -226,8 +172,8 @@ final class LibraryGeometriesParser extends DefaultHandler {
         return faces;
     }
 
-    private void saveVerticesCounts() {
-        final String[] numbers = ParserUtils.splitCharBuffer(charBuf);
+    private void saveVerticesCounts(LibraryHandler.EndElement endElement) {
+        final String[] numbers = endElement.content.split("\\s+");
         triangulated = true;
         vCounts = new int[numbers.length];
         for (int i = 0; i < numbers.length; i++) {

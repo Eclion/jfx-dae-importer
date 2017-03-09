@@ -8,96 +8,44 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * @author Eclion
  */
-final class LibraryCamerasParser extends DefaultHandler {
-    private static final Logger LOGGER = Logger.getLogger(LibraryCamerasParser.class.getSimpleName());
+final class LibraryCamerasParser extends AbstractParser {
     private static final double DEFAULT_ASPECT_RATIO = 4d / 3d;
+    private static final String ASPECT_RATIO_TAG = "aspect_ratio";
+    private static final String CAMERA_TAG = "camera";
+    private static final String XFOV_TAG = "xfov";
+    private static final String YFOV_TAG = "yfov";
+    private static final String ZFAR_TAG = "zfar";
+    private static final String ZNEAR_TAG = "znear";
 
-    private StringBuilder charBuf = new StringBuilder();
     private final Map<String, String> currentId = new HashMap<>();
     private Double aspectRatio, xfov, yfov, znear, zfar;
     Camera firstCamera = null;
     final Map<String, Camera> cameras = new HashMap<>();
     double firstCameraAspectRatio = DEFAULT_ASPECT_RATIO;
 
-    private enum State {
-        UNKNOWN,
-        aspect_ratio,
-        camera,
-        xfov,
-        yfov,
-        zfar,
-        znear,
+    LibraryCamerasParser(){
+        final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
 
-        // ignored, unsupported states:
-        extra,
-        perspective,
-        optics,
-        shiftx,
-        shifty,
-        technique,
-        technique_common,
-        YF_dofdist
-    }
+        startElementConsumer.put("*", startElement -> currentId.put(startElement.qName, startElement.getAttributeValue("id")));
+        startElementConsumer.put(CAMERA_TAG, startElement -> aspectRatio = xfov = yfov = znear = zfar = null);
 
-    private static State state(final String name) {
-        try {
-            return State.valueOf(name);
-        } catch (Exception e) {
-            return State.UNKNOWN;
-        }
-    }
+        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
 
-    @Override
-    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
-        currentId.put(qName, attributes.getValue("id"));
-        charBuf = new StringBuilder();
-        switch (state(qName)) {
-            case UNKNOWN:
-                LOGGER.log(Level.WARNING, "Unknown element: " + qName);
-                break;
-            case camera:
-                aspectRatio = xfov = yfov = znear = zfar = null;
-                break;
-            default:
-                break;
-        }
-    }
+        endElementConsumer.put(ASPECT_RATIO_TAG, endElement -> aspectRatio = Double.parseDouble(endElement.content));
+        endElementConsumer.put(CAMERA_TAG, endElement -> saveCamera());
+        endElementConsumer.put(XFOV_TAG, endElement -> xfov = Double.parseDouble(endElement.content));
+        endElementConsumer.put(YFOV_TAG, endElement -> yfov = Double.parseDouble(endElement.content));
+        endElementConsumer.put(ZFAR_TAG, endElement -> zfar = Double.parseDouble(endElement.content));
+        endElementConsumer.put(ZNEAR_TAG, endElement -> znear = Double.parseDouble(endElement.content));
 
-    @Override
-    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
-        switch (state(qName)) {
-            case aspect_ratio:
-                aspectRatio = Double.parseDouble(charBuf.toString().trim());
-                break;
-            case camera:
-                saveCamera();
-                break;
-            case xfov:
-                xfov = Double.parseDouble(charBuf.toString().trim());
-                break;
-            case yfov:
-                yfov = Double.parseDouble(charBuf.toString().trim());
-                break;
-            case zfar:
-                zfar = Double.parseDouble(charBuf.toString().trim());
-                break;
-            case znear:
-                znear = Double.parseDouble(charBuf.toString().trim());
-                break;
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void characters(final char[] ch, final int start, final int length) throws SAXException {
-        charBuf.append(ch, start, length);
+        handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }
 
     private void saveCamera() {

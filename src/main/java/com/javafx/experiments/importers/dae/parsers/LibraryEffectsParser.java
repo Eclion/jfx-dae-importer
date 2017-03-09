@@ -1,26 +1,34 @@
 package com.javafx.experiments.importers.dae.parsers;
 
-import com.javafx.experiments.importers.dae.utils.ParserUtils;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Material;
 import javafx.scene.paint.PhongMaterial;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * @author Eclion
  */
-final class LibraryEffectsParser extends DefaultHandler {
-    private static final Logger LOGGER = Logger.getLogger(LibraryEffectsParser.class.getSimpleName());
-    private StringBuilder charBuf = new StringBuilder();
+final class LibraryEffectsParser extends AbstractParser {
+    private static final String AMBIENT_TAG = "ambient";
+    private static final String COLOR_TAG = "color";
+    private static final String DIFFUSE_TAG = "diffuse";
+    private static final String EFFECT_TAG = "effect";
+    private static final String EMISSION_TAG = "emission";
+    private static final String FLOAT_TAG = "float";
+    private static final String INDEX_OF_REFRACTION_TAG = "index_of_refraction";
+    private static final String INIT_FROM_TAG = "init_from";
+    private static final String PHONG_TAG = "phong";
+    private static final String SHININESS_TAG = "shininess";
+    private static final String SPECULAR_TAG = "specular";
+    private static final String SOURCE_TAG = "source";
+    private static final String TEXTURE_TAG = "texture";
+
     private final HashMap<String, String> currentId = new HashMap<>();
     private final HashMap<String, String> currentSid = new HashMap<>();
 
@@ -33,38 +41,44 @@ final class LibraryEffectsParser extends DefaultHandler {
     private Float tempFloat;
     private Color tempColor;
 
-    private enum State {
-        UNKNOWN,
-        ambient,
-        color,
-        diffuse,
-        effect,
-        emission,
-        _float,
-        index_of_refraction,
-        init_from,
-        phong,
-        shininess,
-        specular,
-        source,
-        texture,
+    LibraryEffectsParser() {
+        final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
 
-        // ignored, unsupported states:
-        blinn,
-        double_sided,
-        extra,
-        format,
-        magfilter,
-        minfilter,
-        newparam,
-        profile_COMMON,
-        reflective,
-        reflectivity,
-        sampler2D,
-        surface,
-        technique,
-        transparency,
-        transparent
+        startElementConsumer.put("*", startElement -> {
+            currentId.put(startElement.qName, startElement.getAttributeValue("id"));
+            currentSid.put(startElement.qName, startElement.getAttributeValue("sid"));
+        });
+        startElementConsumer.put(EFFECT_TAG, startElement -> currentEffect = new DaeEffect(this.currentId.get("effect")));
+        startElementConsumer.put(PHONG_TAG, startElement -> currentEffect.type = startElement.qName);
+        startElementConsumer.put(COLOR_TAG, startElement -> {
+            tempColor = null;
+            tempTexture = null;
+        });
+        startElementConsumer.put(FLOAT_TAG, startElement -> tempFloat = null);
+        startElementConsumer.put(TEXTURE_TAG, startElement -> {
+            tempColor = null;
+            tempTexture = startElement.getAttributeValue("texture");
+        });
+
+        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+
+        endElementConsumer.put(COLOR_TAG, endElement -> tempColor = extractColor(endElement.content));
+        Stream.of(AMBIENT_TAG, DIFFUSE_TAG, EMISSION_TAG, SPECULAR_TAG).forEach(tag ->
+                endElementConsumer.put(tag, endElement -> {
+                    if (tempColor != null) {
+                        currentEffect.colors.put(endElement.qName, tempColor);
+                    } else if (tempTexture != null) {
+                        currentEffect.textureIds.put(endElement.qName, tempTexture);
+                    }
+                }));
+        endElementConsumer.put(EFFECT_TAG, endElement -> effects.add(currentEffect));
+        endElementConsumer.put(FLOAT_TAG, endElement -> tempFloat = Float.parseFloat(endElement.content));
+        endElementConsumer.put(INDEX_OF_REFRACTION_TAG, endElement -> currentEffect.refractionIndex = tempFloat);
+        endElementConsumer.put(INIT_FROM_TAG, endElement -> currentEffect.surfaces.put(currentSid.get("newparam"), endElement.content));
+        endElementConsumer.put(SHININESS_TAG, endElement -> currentEffect.shininess = tempFloat);
+        endElementConsumer.put(SOURCE_TAG, endElement -> currentEffect.samplers.put(currentSid.get("newparam"), endElement.content));
+
+        handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }
 
     void buildEffects(final LibraryImagesParser imagesParser) {
@@ -78,95 +92,9 @@ final class LibraryEffectsParser extends DefaultHandler {
         return materials.get(effectId);
     }
 
-    private static State state(final String name) {
+    private Color extractColor(final String content) {
         try {
-            return (!Objects.equals(name, "float"))
-                    ? State.valueOf(name)
-                    : State._float;
-        } catch (Exception e) {
-            return State.UNKNOWN;
-        }
-    }
-
-    @Override
-    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
-        this.currentId.put(qName, attributes.getValue("id"));
-        this.currentSid.put(qName, attributes.getValue("sid"));
-        this.charBuf = new StringBuilder();
-        switch (state(qName)) {
-            case UNKNOWN:
-                LOGGER.log(Level.WARNING, "Unknown element: " + qName);
-                break;
-            case effect:
-                currentEffect = new DaeEffect(this.currentId.get("effect"));
-                break;
-            case phong:
-                currentEffect.type = state(qName);
-                break;
-            case color:
-                tempColor = null;
-                tempTexture = null;
-                break;
-            case _float:
-                tempFloat = null;
-                break;
-            case texture:
-                tempColor = null;
-                tempTexture = attributes.getValue("texture");
-                break;
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
-        final State currentState = state(qName);
-        switch (currentState) {
-            case color:
-                tempColor = extractColor(charBuf);
-                break;
-            case ambient:
-            case diffuse:
-            case emission:
-            case specular:
-                if (tempColor != null) {
-                    currentEffect.colors.put(currentState, tempColor);
-                } else if (tempTexture != null) {
-                    currentEffect.textureIds.put(currentState, tempTexture);
-                }
-                break;
-            case effect:
-                effects.add(currentEffect);
-                break;
-            case _float:
-                tempFloat = Float.parseFloat(charBuf.toString());
-                break;
-            case index_of_refraction:
-                currentEffect.refractionIndex = tempFloat;
-                break;
-            case init_from:
-                currentEffect.surfaces.put(currentSid.get("newparam"), charBuf.toString());
-                break;
-            case shininess:
-                currentEffect.shininess = tempFloat;
-                break;
-            case source:
-                currentEffect.samplers.put(currentSid.get("newparam"), charBuf.toString());
-                break;
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void characters(final char[] ch, final int start, final int length) throws SAXException {
-        this.charBuf.append(ch, start, length);
-    }
-
-    private Color extractColor(final StringBuilder charBuf) {
-        try {
-            final String[] colors = ParserUtils.splitCharBuffer(charBuf);
+            final String[] colors = content.split("\\s+");
             return new Color(
                     Double.parseDouble(colors[0]),
                     Double.parseDouble(colors[1]),
@@ -185,12 +113,12 @@ final class LibraryEffectsParser extends DefaultHandler {
 
         private HashMap<String, String> surfaces = new HashMap<>();
         private HashMap<String, String> samplers = new HashMap<>();
-        private HashMap<State, Color> colors = new HashMap<>();
-        private HashMap<State, String> textureIds = new HashMap<>();
+        private HashMap<String, Color> colors = new HashMap<>();
+        private HashMap<String, String> textureIds = new HashMap<>();
         private float shininess;
         private float refractionIndex;
 
-        private State type;
+        private String type;
 
         DaeEffect(final String id) {
             this.id = id;
@@ -199,7 +127,7 @@ final class LibraryEffectsParser extends DefaultHandler {
         Material build(final LibraryImagesParser imagesParser) {
             Material material = null;
             switch (this.type) {
-                case phong:
+                case PHONG_TAG:
                     material = buildPhongMaterial(imagesParser);
                     break;
                 default:
@@ -213,14 +141,14 @@ final class LibraryEffectsParser extends DefaultHandler {
 
             colors.entrySet().forEach(entry -> {
                 switch (entry.getKey()) {
-                    case ambient:
+                    case AMBIENT_TAG:
                         break;
-                    case diffuse:
+                    case DIFFUSE_TAG:
                         material.setDiffuseColor(entry.getValue());
                         break;
-                    case emission:
+                    case EMISSION_TAG:
                         break;
-                    case specular:
+                    case SPECULAR_TAG:
                         material.setSpecularColor(entry.getValue());
                         break;
                     default:
@@ -235,14 +163,14 @@ final class LibraryEffectsParser extends DefaultHandler {
                     .forEach(entry -> {
                         final Image image = imagesParser.getImage(surfaces.get(samplers.get(entry.getValue())));
                         switch (entry.getKey()) {
-                            case ambient:
+                            case AMBIENT_TAG:
                                 break;
-                            case diffuse:
+                            case DIFFUSE_TAG:
                                 material.setDiffuseMap(image);
                                 break;
-                            case emission:
+                            case EMISSION_TAG:
                                 break;
-                            case specular:
+                            case SPECULAR_TAG:
                                 material.setSpecularMap(image);
                                 break;
                             default:

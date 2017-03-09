@@ -40,13 +40,13 @@ public final class ParserTests {
 
     @Test
     public void parseLibraryEffects() throws Exception {
-        final LibraryEffectsParserV2 effectsParser = new LibraryEffectsParserV2();
+        final LibraryEffectsParser effectsParser = new LibraryEffectsParser();
         final LibraryHandler parser = effectsParser.getLibraryHandler();
         executeParsing("effects_1.xml", parser);
         //final LibraryEffectsParser effectsParser = new LibraryEffectsParser();
         //executeParsing("effects_1.xml", effectsParser);
 
-        final LibraryImagesParserV2 mockImageParser = mock(LibraryImagesParserV2.class);
+        final LibraryImagesParser mockImageParser = mock(LibraryImagesParser.class);
         when(mockImageParser.getImage(any())).thenReturn(null);
 
         effectsParser.buildEffects(mockImageParser);
@@ -60,7 +60,7 @@ public final class ParserTests {
 
     @Test
     public void parseAssets() throws Exception {
-        final AssetParserV2 assetParser = new AssetParserV2();
+        final AssetParser assetParser = new AssetParser();
         final LibraryHandler parser = assetParser.getLibraryHandler();
         executeParsing("asset_1.xml", parser);
 
@@ -76,7 +76,7 @@ public final class ParserTests {
 
     @Test
     public void parseAnimations() throws Exception {
-        final LibraryAnimationsParserV2 animationsParser = new LibraryAnimationsParserV2();
+        final LibraryAnimationsParser animationsParser = new LibraryAnimationsParser();
         final LibraryHandler parser = animationsParser.getLibraryHandler();
         executeParsing("animations_1.xml", parser);
 
@@ -95,7 +95,7 @@ public final class ParserTests {
 
     @Test
     public void parseCameras() throws Exception {
-        final LibraryCamerasParserV2 camerasParser = new LibraryCamerasParserV2();
+        final LibraryCamerasParser camerasParser = new LibraryCamerasParser();
         final LibraryHandler parser = camerasParser.getLibraryHandler();
         executeParsing("cameras_1.xml", parser);
         //final LibraryCamerasParser camerasParser = new LibraryCamerasParser();
@@ -112,7 +112,7 @@ public final class ParserTests {
 
     @Test
     public void parseControllers() throws Exception {
-        final LibraryControllerParserV2 controllerParser = new LibraryControllerParserV2();
+        final LibraryControllerParser controllerParser = new LibraryControllerParser();
         final LibraryHandler parser = controllerParser.getLibraryHandler();
         executeParsing("controllers_1.xml", parser);
         //final LibraryControllerParser controllerParser = new LibraryControllerParser();
@@ -133,7 +133,7 @@ public final class ParserTests {
 
     @Test
     public void parseGeometries() throws Exception {
-        final LibraryGeometriesParserV2 geometriesParser = new LibraryGeometriesParserV2();
+        final LibraryGeometriesParser geometriesParser = new LibraryGeometriesParser();
         final LibraryHandler parser = geometriesParser.getLibraryHandler();
         executeParsing("geometries_1.xml", parser);
         //final LibraryGeometriesParser geometriesParser = new LibraryGeometriesParser();
@@ -151,7 +151,7 @@ public final class ParserTests {
 
     @Test
     public void parseLights() throws Exception {
-        final LibraryLightsParserV2 lightsParser = new LibraryLightsParserV2();
+        final LibraryLightsParser lightsParser = new LibraryLightsParser();
         final LibraryHandler parser = lightsParser.getLibraryHandler();
         executeParsing("lights_1.xml", parser);
         //final LibraryLightsParser lightsParser = new LibraryLightsParser();
@@ -162,7 +162,7 @@ public final class ParserTests {
 
     @Test
     public void parseMaterials() throws Exception {
-        final LibraryMaterialsParserV2 materialsParser = new LibraryMaterialsParserV2();
+        final LibraryMaterialsParser materialsParser = new LibraryMaterialsParser();
         final LibraryHandler parser = materialsParser.getLibraryHandler();
         executeParsing("materials_1.xml", parser);
         //final LibraryMaterialsParser materialsParser = new LibraryMaterialsParser();
@@ -173,7 +173,7 @@ public final class ParserTests {
 
     @Test
     public void parseVisualScenes() throws Exception {
-        final LibraryVisualSceneParserV2 visualSceneParser = new LibraryVisualSceneParserV2();
+        final LibraryVisualSceneParser visualSceneParser = new LibraryVisualSceneParser();
         final LibraryHandler parser = visualSceneParser.getLibraryHandler();
         executeParsing("visual_scenes_1.xml", parser);
         //final LibraryVisualSceneParser visualSceneParser = new LibraryVisualSceneParser();

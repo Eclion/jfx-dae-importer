@@ -6,57 +6,20 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * @author Eclion
  */
-final class SceneParser extends DefaultHandler {
-    private static final Logger LOGGER = Logger.getLogger(SceneParser.class.getSimpleName());
-    private StringBuilder charBuf = new StringBuilder();
-    private final Map<String, String> currentId = new HashMap<>();
+final class SceneParser extends AbstractParser {
+    //private final Map<String, String> currentId = new HashMap<>();
 
-    private enum State {
-        UNKNOWN,
-
-        // ignored, unsupported states:
-        instance_visual_scene
-    }
-
-    private static State state(final String name) {
-        try {
-            return State.valueOf(name);
-        } catch (Exception e) {
-            return State.UNKNOWN;
-        }
-    }
-
-    @Override
-    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
-        this.currentId.put(qName, attributes.getValue("id"));
-        this.charBuf = new StringBuilder();
-        switch (state(qName)) {
-            case UNKNOWN:
-                LOGGER.log(Level.WARNING, "Unknown element: " + qName);
-                break;
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
-        switch (state(qName)) {
-            case UNKNOWN:
-                break;
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void characters(final char[] ch, final int start, final int length) throws SAXException {
-        this.charBuf.append(ch, start, length);
+    SceneParser(){
+        final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
+        //startElementConsumer.put("*", startElement -> currentId.put(startElement.qName, startElement.getAttributeValue("id")));
+        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+        handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }
 }

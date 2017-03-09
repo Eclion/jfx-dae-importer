@@ -6,68 +6,37 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * @author Eclion
  */
-final class LibraryMaterialsParser extends DefaultHandler {
-    private static final Logger LOGGER = Logger.getLogger(LibraryMaterialsParser.class.getSimpleName());
-    private StringBuilder charBuf = new StringBuilder();
+final class LibraryMaterialsParser extends AbstractParser {
+    private static final String INSTANCE_EFFECT_TAG = "instance_effect";
+    private static final String MATERIAL_TAG = "material";
+
     private final Map<String, String> currentId = new HashMap<>();
 
     private final Map<String, String> materialEffectMap = new HashMap<>();
 
+    LibraryMaterialsParser() {
+        final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
+
+        startElementConsumer.put("*", startElement -> currentId.put(startElement.qName, startElement.getAttributeValue("id")));
+        startElementConsumer.put(INSTANCE_EFFECT_TAG, startElement -> {
+            final String effectUrl = startElement.getAttributeValue("url");
+            if (effectUrl != null) {
+                materialEffectMap.put(currentId.get("material"), effectUrl.substring(1));
+            }
+        });
+
+        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+        handler = new LibraryHandler(startElementConsumer, endElementConsumer);
+    }
+
     String getEffectId(String materialId) {
         return materialEffectMap.get(materialId);
-    }
-
-    private enum State {
-        UNKNOWN,
-        instance_effect,
-
-        // ignored, unsupported states:
-        material
-    }
-
-    private static State state(final String name) {
-        try {
-            return State.valueOf(name);
-        } catch (Exception e) {
-            return State.UNKNOWN;
-        }
-    }
-
-    @Override
-    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
-        this.currentId.put(qName, attributes.getValue("id"));
-        this.charBuf = new StringBuilder();
-        switch (state(qName)) {
-            case UNKNOWN:
-                LOGGER.log(Level.WARNING, "Unknown element: " + qName);
-                break;
-            case instance_effect:
-                final String effectUrl = attributes.getValue("url");
-                if (effectUrl != null) {
-                    materialEffectMap.put(currentId.get("material"), effectUrl.substring(1));
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
-        switch (state(qName)) {
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void characters(final char[] ch, final int start, final int length) throws SAXException {
-        this.charBuf.append(ch, start, length);
     }
 }

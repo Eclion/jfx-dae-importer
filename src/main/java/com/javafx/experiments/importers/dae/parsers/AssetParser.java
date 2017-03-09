@@ -1,88 +1,39 @@
 package com.javafx.experiments.importers.dae.parsers;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.function.Consumer;
 
 /**
  * @author Eclion
  */
-final class AssetParser extends DefaultHandler {
-    private static final Logger LOGGER = Logger.getLogger(AssetParser.class.getName());
-    private StringBuilder charBuf = new StringBuilder();
-    private final Map<String, String> currentId = new HashMap<>();
+final class AssetParser extends AbstractParser {
+    private static final String AUTHOR_TAG = "author";
+    private static final String AUTHORING_TOOL_TAG = "authoring_tool";
+    private static final String UP_AXIS_TAG = "up_axis";
+    private static final String UNIT_TAG = "unit";
+
     String author;
     String authoringTool;
     String unit;
     float scale;
     String upAxis;
 
-    private enum State {
-        UNKNOWN,
-        author,
-        authoring_tool,
-        unit,
-        up_axis,
+    AssetParser() {
 
-        // ignored, unsupported states:
-        comments,
-        contributor,
-        copyright,
-        created,
-        modified,
-        source_data,
-        title
-    }
+        final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
 
-    private static State state(final String name) {
-        try {
-            return State.valueOf(name);
-        } catch (Exception e) {
-            return State.UNKNOWN;
-        }
-    }
+        startElementConsumer.put(UNIT_TAG, startElement -> {
+            unit = startElement.getAttributeValue("name");
+            scale = Float.parseFloat(startElement.getAttributeValue("meter"));
+        });
 
-    @Override
-    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
-        currentId.put(qName, attributes.getValue("id"));
-        charBuf = new StringBuilder();
-        switch (state(qName)) {
-            case UNKNOWN:
-                LOGGER.log(Level.WARNING, "Unknown element: " + qName);
-                break;
-            case unit:
-                unit = attributes.getValue("name");
-                scale = Float.parseFloat(attributes.getValue("meter"));
-                break;
-            default:
-                break;
-        }
-    }
+        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
 
-    @Override
-    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
-        switch (state(qName)) {
-            case author:
-                author = charBuf.toString().trim();
-                break;
-            case authoring_tool:
-                authoringTool = charBuf.toString().trim();
-                break;
-            case up_axis:
-                upAxis = charBuf.toString().trim();
-                break;
-            default:
-                break;
-        }
-    }
+        endElementConsumer.put(AUTHOR_TAG, endElement -> author = endElement.content);
+        endElementConsumer.put(AUTHORING_TOOL_TAG, endElement -> authoringTool = endElement.content);
+        endElementConsumer.put(UP_AXIS_TAG, endElement -> upAxis = endElement.content);
 
-    @Override
-    public void characters(final char[] ch, final int start, final int length) throws SAXException {
-        charBuf.append(ch, start, length);
+        handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }
 }
