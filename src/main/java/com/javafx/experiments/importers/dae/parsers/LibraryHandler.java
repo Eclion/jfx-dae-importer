@@ -1,20 +1,16 @@
 package com.javafx.experiments.importers.dae.parsers;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Eclion
  */
 public class LibraryHandler extends DefaultHandler {
-    private static final Logger LOGGER = Logger.getLogger(LibraryHandler.class.getName());
     private StringBuilder charBuf = new StringBuilder();
 
     private Map<String, Consumer<StartElement>> startElementConsumers = new HashMap<>();
@@ -26,28 +22,33 @@ public class LibraryHandler extends DefaultHandler {
     }
 
     @Override
-    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
+    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) {
         charBuf = new StringBuilder();
-        final StartElement startElement = new StartElement(uri, localName, qName, attributes);
+        startElement(new StartElement(uri, localName, qName, attributes));
+    }
+
+    public void startElement(StartElement startElement) {
         if (startElementConsumers.containsKey("*")) {
             startElementConsumers.get("*").accept(startElement);
         }
-        if (startElementConsumers.containsKey(qName)) {
-            startElementConsumers.get(qName).accept(startElement);
-        } else {
-            //LOGGER.log(Level.WARNING, "Unknown element: " + qName);
+        if (startElementConsumers.containsKey(startElement.qName)) {
+            startElementConsumers.get(startElement.qName).accept(startElement);
         }
     }
 
     @Override
-    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
-        if (endElementConsumers.containsKey(qName)) {
-            endElementConsumers.get(qName).accept(new EndElement(uri, localName, qName, charBuf.toString().trim()));
+    public void endElement(final String uri, final String localName, final String qName) {
+        endElement(new EndElement(uri, localName, qName, charBuf.toString().trim()));
+    }
+
+    public void endElement(EndElement endElement) {
+        if (endElementConsumers.containsKey(endElement.qName)) {
+            endElementConsumers.get(endElement.qName).accept(endElement);
         }
     }
 
     @Override
-    public void characters(final char[] ch, final int start, final int length) throws SAXException {
+    public void characters(final char[] ch, final int start, final int length) {
         charBuf.append(ch, start, length);
     }
 

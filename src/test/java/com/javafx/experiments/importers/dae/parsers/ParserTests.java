@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 
 /**
  * @author Eclion
- * TODO: improve tests, implement a system test
+ *         TODO: improve tests, implement a system test
  */
 public final class ParserTests {
 
@@ -46,7 +46,7 @@ public final class ParserTests {
         //final LibraryEffectsParser effectsParser = new LibraryEffectsParser();
         //executeParsing("effects_1.xml", effectsParser);
 
-        final LibraryImagesParser mockImageParser = mock(LibraryImagesParser.class);
+        final LibraryImagesParserV2 mockImageParser = mock(LibraryImagesParserV2.class);
         when(mockImageParser.getImage(any())).thenReturn(null);
 
         effectsParser.buildEffects(mockImageParser);
