@@ -4,11 +4,11 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Material;
 import javafx.scene.paint.PhongMaterial;
+import org.xml.sax.Attributes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 /**
@@ -42,41 +42,41 @@ final class LibraryEffectsParser extends AbstractParser {
     private Color tempColor;
 
     LibraryEffectsParser() {
-        final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
+        final HashMap<String, BiConsumer<String, Attributes>> startElementConsumer = new HashMap<>();
 
-        startElementConsumer.put("*", startElement -> {
-            currentId.put(startElement.qName, startElement.getAttributeValue("id"));
-            currentSid.put(startElement.qName, startElement.getAttributeValue("sid"));
+        startElementConsumer.put("*", (qName, attributes) -> {
+            currentId.put(qName, attributes.getValue("id"));
+            currentSid.put(qName, attributes.getValue("sid"));
         });
-        startElementConsumer.put(EFFECT_TAG, startElement -> currentEffect = new DaeEffect(this.currentId.get("effect")));
-        startElementConsumer.put(PHONG_TAG, startElement -> currentEffect.type = startElement.qName);
-        startElementConsumer.put(COLOR_TAG, startElement -> {
+        startElementConsumer.put(EFFECT_TAG, (qName, attributes) -> currentEffect = new DaeEffect(this.currentId.get("effect")));
+        startElementConsumer.put(PHONG_TAG, (qName, attributes) -> currentEffect.type = qName);
+        startElementConsumer.put(COLOR_TAG, (qName, attributes) -> {
             tempColor = null;
             tempTexture = null;
         });
-        startElementConsumer.put(FLOAT_TAG, startElement -> tempFloat = null);
-        startElementConsumer.put(TEXTURE_TAG, startElement -> {
+        startElementConsumer.put(FLOAT_TAG, (qName, attributes) -> tempFloat = null);
+        startElementConsumer.put(TEXTURE_TAG, (qName, attributes) -> {
             tempColor = null;
-            tempTexture = startElement.getAttributeValue("texture");
+            tempTexture = attributes.getValue("texture");
         });
 
-        final Map<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
+        final HashMap<String, BiConsumer<String, String>> endElementConsumer = new HashMap<>();
 
-        endElementConsumer.put(COLOR_TAG, endElement -> tempColor = extractColor(endElement.content));
+        endElementConsumer.put(COLOR_TAG, (qName, content) -> tempColor = extractColor(content));
         Stream.of(AMBIENT_TAG, DIFFUSE_TAG, EMISSION_TAG, SPECULAR_TAG).forEach(tag ->
-                endElementConsumer.put(tag, endElement -> {
+                endElementConsumer.put(tag, (qName, content) -> {
                     if (tempColor != null) {
-                        currentEffect.colors.put(endElement.qName, tempColor);
+                        currentEffect.colors.put(qName, tempColor);
                     } else if (tempTexture != null) {
-                        currentEffect.textureIds.put(endElement.qName, tempTexture);
+                        currentEffect.textureIds.put(qName, tempTexture);
                     }
                 }));
-        endElementConsumer.put(EFFECT_TAG, endElement -> effects.add(currentEffect));
-        endElementConsumer.put(FLOAT_TAG, endElement -> tempFloat = Float.parseFloat(endElement.content));
-        endElementConsumer.put(INDEX_OF_REFRACTION_TAG, endElement -> currentEffect.refractionIndex = tempFloat);
-        endElementConsumer.put(INIT_FROM_TAG, endElement -> currentEffect.surfaces.put(currentSid.get("newparam"), endElement.content));
-        endElementConsumer.put(SHININESS_TAG, endElement -> currentEffect.shininess = tempFloat);
-        endElementConsumer.put(SOURCE_TAG, endElement -> currentEffect.samplers.put(currentSid.get("newparam"), endElement.content));
+        endElementConsumer.put(EFFECT_TAG, (qName, content) -> effects.add(currentEffect));
+        endElementConsumer.put(FLOAT_TAG, (qName, content) -> tempFloat = Float.parseFloat(content));
+        endElementConsumer.put(INDEX_OF_REFRACTION_TAG, (qName, content) -> currentEffect.refractionIndex = tempFloat);
+        endElementConsumer.put(INIT_FROM_TAG, (qName, content) -> currentEffect.surfaces.put(currentSid.get("newparam"), content));
+        endElementConsumer.put(SHININESS_TAG, (qName, content) -> currentEffect.shininess = tempFloat);
+        endElementConsumer.put(SOURCE_TAG, (qName, content) -> currentEffect.samplers.put(currentSid.get("newparam"), content));
 
         handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }

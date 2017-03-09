@@ -4,12 +4,13 @@ import com.javafx.experiments.importers.dae.structures.Input;
 import com.javafx.experiments.importers.dae.utils.ParserUtils;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.shape.VertexFormat;
+import org.xml.sax.Attributes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
@@ -45,15 +46,15 @@ final class LibraryGeometriesParser extends AbstractParser {
     }
 
     LibraryGeometriesParser() {
-        final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
+        final HashMap<String, BiConsumer<String, Attributes>> startElementConsumer = new HashMap<>();
 
-        startElementConsumer.put("*", startElement -> currentId.put(startElement.qName, startElement.getAttributeValue("id")));
-        startElementConsumer.put(INPUT_TAG, startElement -> {
-            Input input = ParserUtils.createInput(startElement);
+        startElementConsumer.put("*", (qName, attributes) -> currentId.put(qName, attributes.getValue("id")));
+        startElementConsumer.put(INPUT_TAG, (qName, attributes) -> {
+            Input input = ParserUtils.createInput(qName, attributes);
             this.inputs.put(input.semantic, input);
         });
-        startElementConsumer.put(POLYLIST_TAG, startElement -> {
-            final String materialId = startElement.getAttributeValue("material");
+        startElementConsumer.put(POLYLIST_TAG, (qName, attributes) -> {
+            final String materialId = attributes.getValue("material");
             if (materialId != null) {
                 final String geometryId = currentId.get("geometry");
                 if (!materials.containsKey(geometryId)) {
@@ -65,22 +66,22 @@ final class LibraryGeometriesParser extends AbstractParser {
             this.pLists.clear();
         });
 
-        final Map<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
+        final HashMap<String, BiConsumer<String, String>> endElementConsumer = new HashMap<>();
 
-        endElementConsumer.put(FLOAT_ARRAY_TAG, endElement ->
-                floatArrays.put(currentId.get(SOURCE_TAG), ParserUtils.extractFloatArray(endElement.content)));
+        endElementConsumer.put(FLOAT_ARRAY_TAG, (qName, content) ->
+                floatArrays.put(currentId.get(SOURCE_TAG), ParserUtils.extractFloatArray(content)));
         endElementConsumer.put(P_TAG, this::savePoints);
-        endElementConsumer.put(POLYGONS_TAG, endElement -> createPolygonsTriangleMesh());
-        endElementConsumer.put(POLYLIST_TAG, endElement -> createPolylistTriangleMesh());
+        endElementConsumer.put(POLYGONS_TAG, (qName, content) -> createPolygonsTriangleMesh());
+        endElementConsumer.put(POLYLIST_TAG, (qName, content) -> createPolylistTriangleMesh());
         endElementConsumer.put(VCOUNT_TAG, this::saveVerticesCounts);
-        endElementConsumer.put(VERTICES_TAG, endElement -> saveVertices());
+        endElementConsumer.put(VERTICES_TAG, (qName, content) -> saveVertices());
 
 
         handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }
 
-    private void savePoints(EndElement endElement) {
-        String[] numbers = endElement.content.split("\\s+");
+    private void savePoints(final String qName, final String content) {
+        String[] numbers = content.split("\\s+");
         int[] iArray = new int[numbers.length];
         for (int i = 0; i < numbers.length; i++) {
             iArray[i] = Integer.parseInt(numbers[i].trim());
@@ -172,8 +173,8 @@ final class LibraryGeometriesParser extends AbstractParser {
         return faces;
     }
 
-    private void saveVerticesCounts(EndElement endElement) {
-        final String[] numbers = endElement.content.split("\\s+");
+    private void saveVerticesCounts(final String qName, final String content) {
+        final String[] numbers = content.split("\\s+");
         triangulated = true;
         vCounts = new int[numbers.length];
         for (int i = 0; i < numbers.length; i++) {

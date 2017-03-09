@@ -2,11 +2,12 @@ package com.javafx.experiments.importers.dae.parsers;
 
 import com.javafx.experiments.importers.dae.structures.DaeAnimation;
 import com.javafx.experiments.importers.dae.utils.ParserUtils;
+import org.xml.sax.Attributes;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * @author Eclion.
@@ -24,21 +25,18 @@ final class LibraryAnimationsParser extends AbstractParser {
     private final LinkedList<DaeAnimation> currentAnimations = new LinkedList<>();
 
     LibraryAnimationsParser() {
-        /*final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
-        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
-        handler = new LibraryHandler(startElementConsumer, endElementConsumer);*/
-        final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
+        final HashMap<String, BiConsumer<String, Attributes>> startElementConsumer = new HashMap<>();
 
-        startElementConsumer.put("*", startElement -> currentId.put(startElement.qName, startElement.getAttributeValue("id")));
-        startElementConsumer.put(ANIMATION_TAG, startElement -> {
-            currentAnimationId = currentId.get(startElement.qName);
+        startElementConsumer.put("*", (qName, attributes) -> currentId.put(qName, attributes.getValue("id")));
+        startElementConsumer.put(ANIMATION_TAG, (qName, attributes) -> {
+            currentAnimationId = currentId.get(qName);
             currentAnimations.push(new DaeAnimation(currentAnimationId));
         });
-        startElementConsumer.put(CHANNEL_TAG, startElement -> currentAnimations.peek().target = startElement.getAttributeValue("target"));
+        startElementConsumer.put(CHANNEL_TAG, (qName, attributes) -> currentAnimations.peek().target = attributes.getValue("target"));
 
-        final Map<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
+        final HashMap<String, BiConsumer<String, String>> endElementConsumer = new HashMap<>();
 
-        endElementConsumer.put(ANIMATION_TAG, endElement -> {
+        endElementConsumer.put(ANIMATION_TAG, (qName, content) -> {
             DaeAnimation animation = currentAnimations.pop();
             if (currentAnimations.isEmpty()) {
                 animations.put(currentAnimationId, animation);
@@ -46,15 +44,15 @@ final class LibraryAnimationsParser extends AbstractParser {
                 currentAnimations.peek().addChild(animation);
             }
         });
-        endElementConsumer.put(FLOAT_ARRAY_TAG, endElement -> {
+        endElementConsumer.put(FLOAT_ARRAY_TAG, (qName, content) -> {
             String sourceId = currentId.get(SOURCE_TAG);
             if (sourceId.equalsIgnoreCase(currentAnimationId + "-input")) {
-                currentAnimations.peek().input = ParserUtils.extractFloatArray(endElement.content);
+                currentAnimations.peek().input = ParserUtils.extractFloatArray(content);
             } else if (sourceId.equalsIgnoreCase(currentAnimationId + "-output")) {
-                currentAnimations.peek().output = ParserUtils.extractDoubleArray(endElement.content);
+                currentAnimations.peek().output = ParserUtils.extractDoubleArray(content);
             }
         });
-        endElementConsumer.put(NAME_ARRAY_TAG, endElement -> currentAnimations.peek().setInterpolations(endElement.content.split("\\s+")
+        endElementConsumer.put(NAME_ARRAY_TAG, (qName, content) -> currentAnimations.peek().setInterpolations(content.split("\\s+")
         ));
 
         handler = new LibraryHandler(startElementConsumer, endElementConsumer);

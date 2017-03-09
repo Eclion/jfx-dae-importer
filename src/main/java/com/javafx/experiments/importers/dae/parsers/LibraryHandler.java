@@ -4,7 +4,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * @author Eclion
@@ -12,40 +12,40 @@ import java.util.function.Consumer;
 public class LibraryHandler extends DefaultHandler {
     private StringBuilder charBuf = new StringBuilder();
 
-    private final Map<String, Consumer<StartElement>> startElementConsumers;
-    private final Map<String, Consumer<EndElement>> endElementConsumers;
+    private final Map<String, BiConsumer<String, Attributes>> startElementBiConsumers;
+    private final Map<String, BiConsumer<String, String>> endElementBiConsumers;
 
-    LibraryHandler(Map<String, Consumer<StartElement>> startElementConsumers, Map<String, Consumer<EndElement>> endElementConsumers) {
-        this.startElementConsumers = startElementConsumers;
-        this.endElementConsumers = endElementConsumers;
+    LibraryHandler(Map<String, BiConsumer<String, Attributes>> startElementBiConsumers, Map<String, BiConsumer<String, String>> endElementBiConsumers) {
+        this.startElementBiConsumers = startElementBiConsumers;
+        this.endElementBiConsumers = endElementBiConsumers;
     }
 
     @Override
     public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) {
         charBuf = new StringBuilder();
-        startElement(new StartElement(qName, attributes));
+        startElement(qName, attributes);
     }
 
-    public void startElement(StartElement startElement) {
-        if (startElementConsumers.containsKey("*")) {
-            startElementConsumers.get("*").accept(startElement);
+    public void startElement(final String qName, final Attributes attributes) {
+        if (startElementBiConsumers.containsKey("*")) {
+            startElementBiConsumers.get("*").accept(qName, attributes);
         }
-        if (startElementConsumers.containsKey(startElement.qName)) {
-            startElementConsumers.get(startElement.qName).accept(startElement);
+        if (startElementBiConsumers.containsKey(qName)) {
+            startElementBiConsumers.get(qName).accept(qName, attributes);
         }
     }
 
     @Override
     public void endElement(final String uri, final String localName, final String qName) {
-        endElement(new EndElement(qName, charBuf.toString().trim()));
+        endElement(qName, charBuf.toString().trim());
     }
 
-    public void endElement(EndElement endElement) {
-        if (endElementConsumers.containsKey("*")) {
-            endElementConsumers.get("*").accept(endElement);
+    public void endElement(final String qName, final String content) {
+        if (endElementBiConsumers.containsKey("*")) {
+            endElementBiConsumers.get("*").accept(qName, content);
         }
-        if (endElementConsumers.containsKey(endElement.qName)) {
-            endElementConsumers.get(endElement.qName).accept(endElement);
+        if (endElementBiConsumers.containsKey(qName)) {
+            endElementBiConsumers.get(qName).accept(qName, content);
         }
     }
 

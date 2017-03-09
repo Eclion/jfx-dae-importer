@@ -6,10 +6,11 @@ import com.javafx.experiments.importers.dae.structures.Param;
 import com.javafx.experiments.importers.dae.utils.ParserUtils;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.MatrixType;
+import org.xml.sax.Attributes;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * @author Eclion
@@ -36,44 +37,44 @@ final class LibraryControllerParser extends AbstractParser {
     private int nbPoints;
 
     LibraryControllerParser() {
-        final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
+        final HashMap<String, BiConsumer<String, Attributes>> startElementConsumer = new HashMap<>();
 
-        startElementConsumer.put("*", startElement -> currentId.put(startElement.qName, startElement.getAttributeValue("id")));
-        startElementConsumer.put(CONTROLLER_TAG, startElement -> {
-            currentControllerId = currentId.get(startElement.qName);
-            controllers.put(currentControllerId, new DaeController(currentControllerId, startElement.getAttributeValue("name")));
+        startElementConsumer.put("*", (qName, attributes) -> currentId.put(qName, attributes.getValue("id")));
+        startElementConsumer.put(CONTROLLER_TAG, (qName, attributes) -> {
+            currentControllerId = currentId.get(qName);
+            controllers.put(currentControllerId, new DaeController(currentControllerId, attributes.getValue("name")));
         });
-        startElementConsumer.put(INPUT_TAG, startElement -> {
-            Input input = ParserUtils.createInput(startElement);
+        startElementConsumer.put(INPUT_TAG, (qName, attributes) -> {
+            Input input = ParserUtils.createInput(qName, attributes);
             inputs.put(input.semantic, input);
         });
-        startElementConsumer.put(PARAM_TAG, startElement -> {
+        startElementConsumer.put(PARAM_TAG, (qName, attributes) -> {
             String sourceId = currentId.get("source");
-            params.put(sourceId, new Param(startElement.getAttributeValue("name"), startElement.getAttributeValue("type")));
+            params.put(sourceId, new Param(attributes.getValue("name"), attributes.getValue("type")));
         });
-        startElementConsumer.put(SKIN_TAG, startElement -> controllers.get(currentControllerId).skinId = startElement.getAttributeValue("source").substring(1));
-        startElementConsumer.put(VERTEX_WEIGTHS_TAG, startElement -> nbPoints = Integer.parseInt(startElement.getAttributeValue("count")));
+        startElementConsumer.put(SKIN_TAG, (qName, attributes) -> controllers.get(currentControllerId).skinId = attributes.getValue("source").substring(1));
+        startElementConsumer.put(VERTEX_WEIGTHS_TAG, (qName, attributes) -> nbPoints = Integer.parseInt(attributes.getValue("count")));
 
-        final Map<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
+        final HashMap<String, BiConsumer<String, String>> endElementConsumer = new HashMap<>();
 
-        endElementConsumer.put(BIND_SHAPE_MATRIX_TAG, endElement -> {
-            String[] matrixValues = endElement.content.split("\\s+");
+        endElementConsumer.put(BIND_SHAPE_MATRIX_TAG, (qName, content) -> {
+            String[] matrixValues = content.split("\\s+");
             controllers.get(currentControllerId).bindShapeMatrix = extractMatrixTransformation(matrixValues);
         });
-        endElementConsumer.put(CONTROLLER_TAG, endElement -> init());
-        endElementConsumer.put(FLOAT_ARRAY_TAG, endElement -> {
-            floatArrays.put(currentId.get("source"), ParserUtils.extractFloatArray(endElement.content));
+        endElementConsumer.put(CONTROLLER_TAG, (qName, content) -> init());
+        endElementConsumer.put(FLOAT_ARRAY_TAG, (qName, content) -> {
+            floatArrays.put(currentId.get("source"), ParserUtils.extractFloatArray(content));
             if (currentId.get("source").contains("bind_poses")) {
-                double[] doubleArray = ParserUtils.extractDoubleArray(endElement.content);
+                double[] doubleArray = ParserUtils.extractDoubleArray(content);
                 for (int i = 0; i < doubleArray.length / 16; i++) {
                     controllers.get(currentControllerId).bindPoses.add(new Affine(doubleArray, MatrixType.MT_3D_4x4, i * 16));
                 }
             }
         });
-        endElementConsumer.put(NAME_ARRAY_TAG, endElement -> controllers.get(currentControllerId).jointNames = endElement.content.split("\\s+"));
+        endElementConsumer.put(NAME_ARRAY_TAG, (qName, content) -> controllers.get(currentControllerId).jointNames = content.split("\\s+"));
         endElementConsumer.put(V_TAG, this::saveVertices);
         endElementConsumer.put(VCOUNT_TAG, this::saveVerticesCounts);
-        endElementConsumer.put(VERTEX_WEIGTHS_TAG, endElement -> saveWeights());
+        endElementConsumer.put(VERTEX_WEIGTHS_TAG, (qName, content) -> saveWeights());
 
         handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }
@@ -89,16 +90,16 @@ final class LibraryControllerParser extends AbstractParser {
         nbPoints = 0;
     }
 
-    private void saveVerticesCounts(EndElement endElement) {
-        String[] numbers = endElement.content.split("\\s+");
+    private void saveVerticesCounts(final String qName, final String content) {
+        String[] numbers = content.split("\\s+");
         vCounts = new int[numbers.length];
         for (int i = 0; i < numbers.length; i++) {
             vCounts[i] = Integer.parseInt(numbers[i].trim());
         }
     }
 
-    private void saveVertices(EndElement endElement) {
-        String[] numbers = endElement.content.split("\\s+");
+    private void saveVertices(final String qName, final String content) {
+        String[] numbers = content.split("\\s+");
         v = new int[numbers.length];
         for (int i = 0; i < numbers.length; i++) {
             v[i] = Integer.parseInt(numbers[i].trim());

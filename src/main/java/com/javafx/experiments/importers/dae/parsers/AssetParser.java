@@ -1,7 +1,10 @@
 package com.javafx.experiments.importers.dae.parsers;
 
+import org.xml.sax.Attributes;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -21,18 +24,18 @@ final class AssetParser extends AbstractParser {
 
     AssetParser() {
 
-        final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
+        final HashMap<String, BiConsumer<String, Attributes>> startElementConsumer = new HashMap<>();
 
-        startElementConsumer.put(UNIT_TAG, startElement -> {
-            unit = startElement.getAttributeValue("name");
-            scale = Float.parseFloat(startElement.getAttributeValue("meter"));
+        startElementConsumer.put(UNIT_TAG, (qName, attributes) -> {
+            unit = attributes.getValue("name");
+            scale = Float.parseFloat(attributes.getValue("meter"));
         });
 
-        final Map<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
+        final HashMap<String, BiConsumer<String, String>> endElementConsumer = new HashMap<>();
 
-        endElementConsumer.put(AUTHOR_TAG, endElement -> author = endElement.content);
-        endElementConsumer.put(AUTHORING_TOOL_TAG, endElement -> authoringTool = endElement.content);
-        endElementConsumer.put(UP_AXIS_TAG, endElement -> upAxis = endElement.content);
+        endElementConsumer.put(AUTHOR_TAG, (qName, content) -> author = content);
+        endElementConsumer.put(AUTHORING_TOOL_TAG, (qName, content) -> authoringTool = content);
+        endElementConsumer.put(UP_AXIS_TAG, (qName, content) -> upAxis = content);
 
         handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }

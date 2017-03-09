@@ -11,8 +11,10 @@ import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.Rotate;
+import org.xml.sax.Attributes;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -40,28 +42,28 @@ public final class DaeSaxHandler extends AbstractParser {
     private Camera firstCamera;
 
     public DaeSaxHandler(final String fileUrl) {
-        final HashMap<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
-        startElementConsumer.put("*", startElement -> {
+        final HashMap<String, BiConsumer<String, Attributes>> startElementConsumer = new HashMap<>();
+        startElementConsumer.put("*", (qName, attributes) -> {
             if (subHandler != null) {
-                subHandler.getLibraryHandler().startElement(startElement);
+                subHandler.getLibraryHandler().startElement(qName, attributes);
             }
         });
 
-        startElementConsumer.put(ASSET_TAG, startElement -> setParser(startElement.qName, new AssetParser()));
-        startElementConsumer.put(SCENE_TAG, startElement -> setParser(startElement.qName, new SceneParser()));
-        startElementConsumer.put(LIBRARY_ANIMATIONS_TAG, startElement -> setParser(startElement.qName, new LibraryAnimationsParser()));
-        startElementConsumer.put(LIBRARY_CAMERAS_TAG, startElement -> setParser(startElement.qName, new LibraryCamerasParser()));
-        startElementConsumer.put(LIBRARY_CONTROLLERS_TAG, startElement -> setParser(startElement.qName, new LibraryControllerParser()));
-        startElementConsumer.put(LIBRARY_EFFECTS_TAG, startElement -> setParser(startElement.qName, new LibraryEffectsParser()));
-        startElementConsumer.put(LIBRARY_GEOMETRIES_TAG, startElement -> setParser(startElement.qName, new LibraryGeometriesParser()));
-        startElementConsumer.put(LIBRARY_IMAGES_TAG, startElement -> setParser(startElement.qName, new LibraryImagesParser(fileUrl)));
-        startElementConsumer.put(LIBRARY_LIGHTS_TAG, startElement -> setParser(startElement.qName, new LibraryLightsParser()));
-        startElementConsumer.put(LIBRARY_MATERIALS_TAG, startElement -> setParser(startElement.qName, new LibraryMaterialsParser()));
-        startElementConsumer.put(LIBRARY_VISUAL_SCENES_TAG, startElement -> setParser(startElement.qName, new LibraryVisualSceneParser()));
+        startElementConsumer.put(ASSET_TAG, (qName, attributes) -> setParser(qName, new AssetParser()));
+        startElementConsumer.put(SCENE_TAG, (qName, attributes) -> setParser(qName, new SceneParser()));
+        startElementConsumer.put(LIBRARY_ANIMATIONS_TAG, (qName, attributes) -> setParser(qName, new LibraryAnimationsParser()));
+        startElementConsumer.put(LIBRARY_CAMERAS_TAG, (qName, attributes) -> setParser(qName, new LibraryCamerasParser()));
+        startElementConsumer.put(LIBRARY_CONTROLLERS_TAG, (qName, attributes) -> setParser(qName, new LibraryControllerParser()));
+        startElementConsumer.put(LIBRARY_EFFECTS_TAG, (qName, attributes) -> setParser(qName, new LibraryEffectsParser()));
+        startElementConsumer.put(LIBRARY_GEOMETRIES_TAG, (qName, attributes) -> setParser(qName, new LibraryGeometriesParser()));
+        startElementConsumer.put(LIBRARY_IMAGES_TAG, (qName, attributes) -> setParser(qName, new LibraryImagesParser(fileUrl)));
+        startElementConsumer.put(LIBRARY_LIGHTS_TAG, (qName, attributes) -> setParser(qName, new LibraryLightsParser()));
+        startElementConsumer.put(LIBRARY_MATERIALS_TAG, (qName, attributes) -> setParser(qName, new LibraryMaterialsParser()));
+        startElementConsumer.put(LIBRARY_VISUAL_SCENES_TAG, (qName, attributes) -> setParser(qName, new LibraryVisualSceneParser()));
 
-        final HashMap<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
+        final HashMap<String, BiConsumer<String, String>> endElementConsumer = new HashMap<>();
 
-        endElementConsumer.put("*", endElement -> subHandler.getLibraryHandler().endElement(endElement));
+        endElementConsumer.put("*", (qName, content) -> subHandler.getLibraryHandler().endElement(qName, content));
 
         handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }

@@ -8,6 +8,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,19 +32,19 @@ final class LibraryCamerasParser extends AbstractParser {
     double firstCameraAspectRatio = DEFAULT_ASPECT_RATIO;
 
     LibraryCamerasParser(){
-        final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
+        final HashMap<String, BiConsumer<String, Attributes>> startElementConsumer = new HashMap<>();
 
-        startElementConsumer.put("*", startElement -> currentId.put(startElement.qName, startElement.getAttributeValue("id")));
-        startElementConsumer.put(CAMERA_TAG, startElement -> aspectRatio = xfov = yfov = znear = zfar = null);
+        startElementConsumer.put("*", (qName, attributes) -> currentId.put(qName, attributes.getValue("id")));
+        startElementConsumer.put(CAMERA_TAG, (qName, attributes) -> aspectRatio = xfov = yfov = znear = zfar = null);
 
-        final Map<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
+        final HashMap<String, BiConsumer<String, String>> endElementConsumer = new HashMap<>();
 
-        endElementConsumer.put(ASPECT_RATIO_TAG, endElement -> aspectRatio = Double.parseDouble(endElement.content));
-        endElementConsumer.put(CAMERA_TAG, endElement -> saveCamera());
-        endElementConsumer.put(XFOV_TAG, endElement -> xfov = Double.parseDouble(endElement.content));
-        endElementConsumer.put(YFOV_TAG, endElement -> yfov = Double.parseDouble(endElement.content));
-        endElementConsumer.put(ZFAR_TAG, endElement -> zfar = Double.parseDouble(endElement.content));
-        endElementConsumer.put(ZNEAR_TAG, endElement -> znear = Double.parseDouble(endElement.content));
+        endElementConsumer.put(ASPECT_RATIO_TAG, (qName, content) -> aspectRatio = Double.parseDouble(content));
+        endElementConsumer.put(CAMERA_TAG, (qName, content) -> saveCamera());
+        endElementConsumer.put(XFOV_TAG, (qName, content) -> xfov = Double.parseDouble(content));
+        endElementConsumer.put(YFOV_TAG, (qName, content) -> yfov = Double.parseDouble(content));
+        endElementConsumer.put(ZFAR_TAG, (qName, content) -> zfar = Double.parseDouble(content));
+        endElementConsumer.put(ZNEAR_TAG, (qName, content) -> znear = Double.parseDouble(content));
 
         handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }

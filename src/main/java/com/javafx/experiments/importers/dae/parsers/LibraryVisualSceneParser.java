@@ -9,15 +9,10 @@ import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.function.BiConsumer;
 
 /**
  * @author Eclion
@@ -39,31 +34,31 @@ final class LibraryVisualSceneParser extends AbstractParser {
     final LinkedList<DaeScene> scenes = new LinkedList<>();
     final LinkedList<DaeNode> nodes = new LinkedList<>();
 
-    LibraryVisualSceneParser(){
-        final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
+    LibraryVisualSceneParser() {
+        final HashMap<String, BiConsumer<String, Attributes>> startElementConsumer = new HashMap<>();
 
-        startElementConsumer.put(INSTANCE_CAMERA_TAG, startElement -> nodes.peek().instanceCameraId = startElement.getAttributeValue("url").substring(1));
-        startElementConsumer.put(INSTANCE_CONTROLLER_TAG, startElement -> nodes.peek().instanceControllerId = startElement.getAttributeValue("url").substring(1));
-        startElementConsumer.put(INSTANCE_GEOMETRY_TAG, startElement -> nodes.peek().instanceGeometryId = startElement.getAttributeValue("url").substring(1));
-        startElementConsumer.put(INSTANCE_LIGHT_TAG, startElement -> nodes.peek().instanceLightId = startElement.getAttributeValue("url").substring(1));
-        startElementConsumer.put(INSTANCE_MATERIAL_TAG, startElement -> nodes.peek().instanceMaterialId = startElement.getAttributeValue("target").substring(1));
+        startElementConsumer.put(INSTANCE_CAMERA_TAG, (qName, attributes) -> nodes.peek().instanceCameraId = attributes.getValue("url").substring(1));
+        startElementConsumer.put(INSTANCE_CONTROLLER_TAG, (qName, attributes) -> nodes.peek().instanceControllerId = attributes.getValue("url").substring(1));
+        startElementConsumer.put(INSTANCE_GEOMETRY_TAG, (qName, attributes) -> nodes.peek().instanceGeometryId = attributes.getValue("url").substring(1));
+        startElementConsumer.put(INSTANCE_LIGHT_TAG, (qName, attributes) -> nodes.peek().instanceLightId = attributes.getValue("url").substring(1));
+        startElementConsumer.put(INSTANCE_MATERIAL_TAG, (qName, attributes) -> nodes.peek().instanceMaterialId = attributes.getValue("target").substring(1));
         startElementConsumer.put(NODE_TAG, this::createDaeNode);
         startElementConsumer.put(VISUAL_SCENE_TAG, this::createVisualScene);
 
-        final Map<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
+        final HashMap<String, BiConsumer<String, String>> endElementConsumer = new HashMap<>();
 
-        endElementConsumer.put(NODE_TAG, endElement -> setDaeNode());
+        endElementConsumer.put(NODE_TAG, (qName, content) -> setDaeNode());
         endElementConsumer.put(MATRIX_TAG, this::addMatrixTransformation);
         endElementConsumer.put(ROTATE_TAG, this::addRotation);
         endElementConsumer.put(SCALE_TAG, this::addScaling);
         endElementConsumer.put(TRANSLATE_TAG, this::addTranslation);
-        endElementConsumer.put(SKELETON_TAG, endElement -> nodes.peek().skeletonId = endElement.content.substring(1));
+        endElementConsumer.put(SKELETON_TAG, (qName, content) -> nodes.peek().skeletonId = content.substring(1));
 
         handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }
 
-    private void addTranslation(EndElement endElement) {
-        String[] tv = endElement.content.split("\\s+");
+    private void addTranslation(final String qName, final String content) {
+        String[] tv = content.split("\\s+");
         nodes.peek().transforms.add(new Translate(
                 Double.parseDouble(tv[0].trim()),
                 Double.parseDouble(tv[1].trim()),
@@ -71,8 +66,8 @@ final class LibraryVisualSceneParser extends AbstractParser {
         ));
     }
 
-    private void addRotation(EndElement endElement) {
-        String[] rv = endElement.content.split("\\s+");
+    private void addRotation(final String qName, final String content) {
+        String[] rv = content.split("\\s+");
         nodes.peek().transforms.add(new Rotate(
                 Double.parseDouble(rv[3].trim()),
                 0, 0, 0,
@@ -84,8 +79,8 @@ final class LibraryVisualSceneParser extends AbstractParser {
         ));
     }
 
-    private void addScaling(EndElement endElement) {
-        String[] sv = endElement.content.split("\\s+");
+    private void addScaling(final String qName, final String content) {
+        String[] sv = content.split("\\s+");
         nodes.peek().transforms.add(new Scale(
                 Double.parseDouble(sv[0].trim()),
                 Double.parseDouble(sv[1].trim()),
@@ -94,8 +89,8 @@ final class LibraryVisualSceneParser extends AbstractParser {
         ));
     }
 
-    private void addMatrixTransformation(EndElement endElement) {
-        String[] mv = endElement.content.split("\\s+");
+    private void addMatrixTransformation(final String qName, final String content) {
+        String[] mv = content.split("\\s+");
         nodes.peek().transforms.add(new Affine(
                 Double.parseDouble(mv[0].trim()), // mxx
                 Double.parseDouble(mv[1].trim()), // mxy
@@ -112,15 +107,19 @@ final class LibraryVisualSceneParser extends AbstractParser {
         ));
     }
 
-    private void createVisualScene(final StartElement startElement) {
-        scenes.push(new DaeScene(startElement.getAttributeValue("id"), startElement.getAttributeValue("name")));
+    private void createVisualScene(final String qName, final Attributes attributes)
+
+    {
+        scenes.push(new DaeScene(attributes.getValue("id"), attributes.getValue("name")));
     }
 
-    private void createDaeNode(final StartElement startElement) {
+    private void createDaeNode(final String qName, final Attributes attributes)
+
+    {
         nodes.push(new DaeNode(
-                startElement.getAttributeValue("id"),
-                startElement.getAttributeValue("name"),
-                startElement.getAttributeValue("type")
+                attributes.getValue("id"),
+                attributes.getValue("name"),
+                attributes.getValue("type")
         ));
     }
 
