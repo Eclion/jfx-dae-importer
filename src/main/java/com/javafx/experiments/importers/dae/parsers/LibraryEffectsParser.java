@@ -60,7 +60,7 @@ final class LibraryEffectsParser extends AbstractParser {
             tempTexture = startElement.getAttributeValue("texture");
         });
 
-        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+        final Map<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
 
         endElementConsumer.put(COLOR_TAG, endElement -> tempColor = extractColor(endElement.content));
         Stream.of(AMBIENT_TAG, DIFFUSE_TAG, EMISSION_TAG, SPECULAR_TAG).forEach(tag ->

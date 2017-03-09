@@ -65,7 +65,7 @@ final class LibraryGeometriesParser extends AbstractParser {
             this.pLists.clear();
         });
 
-        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+        final Map<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
 
         endElementConsumer.put(FLOAT_ARRAY_TAG, endElement ->
                 floatArrays.put(currentId.get(SOURCE_TAG), ParserUtils.extractFloatArray(endElement.content)));
@@ -79,7 +79,7 @@ final class LibraryGeometriesParser extends AbstractParser {
         handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }
 
-    private void savePoints(LibraryHandler.EndElement endElement) {
+    private void savePoints(EndElement endElement) {
         String[] numbers = endElement.content.split("\\s+");
         int[] iArray = new int[numbers.length];
         for (int i = 0; i < numbers.length; i++) {
@@ -172,7 +172,7 @@ final class LibraryGeometriesParser extends AbstractParser {
         return faces;
     }
 
-    private void saveVerticesCounts(LibraryHandler.EndElement endElement) {
+    private void saveVerticesCounts(EndElement endElement) {
         final String[] numbers = endElement.content.split("\\s+");
         triangulated = true;
         vCounts = new int[numbers.length];

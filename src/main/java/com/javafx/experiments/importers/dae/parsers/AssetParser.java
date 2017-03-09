@@ -28,7 +28,7 @@ final class AssetParser extends AbstractParser {
             scale = Float.parseFloat(startElement.getAttributeValue("meter"));
         });
 
-        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+        final Map<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
 
         endElementConsumer.put(AUTHOR_TAG, endElement -> author = endElement.content);
         endElementConsumer.put(AUTHORING_TOOL_TAG, endElement -> authoringTool = endElement.content);

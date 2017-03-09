@@ -54,7 +54,7 @@ final class LibraryControllerParser extends AbstractParser {
         startElementConsumer.put(SKIN_TAG, startElement -> controllers.get(currentControllerId).skinId = startElement.getAttributeValue("source").substring(1));
         startElementConsumer.put(VERTEX_WEIGTHS_TAG, startElement -> nbPoints = Integer.parseInt(startElement.getAttributeValue("count")));
 
-        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+        final Map<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
 
         endElementConsumer.put(BIND_SHAPE_MATRIX_TAG, endElement -> {
             String[] matrixValues = endElement.content.split("\\s+");
@@ -89,7 +89,7 @@ final class LibraryControllerParser extends AbstractParser {
         nbPoints = 0;
     }
 
-    private void saveVerticesCounts(LibraryHandler.EndElement endElement) {
+    private void saveVerticesCounts(EndElement endElement) {
         String[] numbers = endElement.content.split("\\s+");
         vCounts = new int[numbers.length];
         for (int i = 0; i < numbers.length; i++) {
@@ -97,7 +97,7 @@ final class LibraryControllerParser extends AbstractParser {
         }
     }
 
-    private void saveVertices(LibraryHandler.EndElement endElement) {
+    private void saveVertices(EndElement endElement) {
         String[] numbers = endElement.content.split("\\s+");
         v = new int[numbers.length];
         for (int i = 0; i < numbers.length; i++) {

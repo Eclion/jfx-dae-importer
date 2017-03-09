@@ -29,7 +29,7 @@ final class LibraryImagesParser extends AbstractParser {
 
         startElementConsumer.put("*", startElement -> currentId.put(startElement.qName, startElement.getAttributeValue("id")));
 
-        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+        final Map<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
 
         endElementConsumer.put(INIT_FROM_TAG, endElement -> {
             final String filePath = endElement.content;

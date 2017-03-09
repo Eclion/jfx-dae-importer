@@ -59,7 +59,7 @@ public final class DaeSaxHandler extends AbstractParser {
         startElementConsumer.put(LIBRARY_MATERIALS_TAG, startElement -> setParser(startElement.qName, new LibraryMaterialsParser()));
         startElementConsumer.put(LIBRARY_VISUAL_SCENES_TAG, startElement -> setParser(startElement.qName, new LibraryVisualSceneParser()));
 
-        final HashMap<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+        final HashMap<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
 
         endElementConsumer.put("*", endElement -> subHandler.getLibraryHandler().endElement(endElement));
 

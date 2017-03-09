@@ -50,7 +50,7 @@ final class LibraryVisualSceneParser extends AbstractParser {
         startElementConsumer.put(NODE_TAG, this::createDaeNode);
         startElementConsumer.put(VISUAL_SCENE_TAG, this::createVisualScene);
 
-        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+        final Map<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
 
         endElementConsumer.put(NODE_TAG, endElement -> setDaeNode());
         endElementConsumer.put(MATRIX_TAG, this::addMatrixTransformation);
@@ -62,7 +62,7 @@ final class LibraryVisualSceneParser extends AbstractParser {
         handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }
 
-    private void addTranslation(LibraryHandler.EndElement endElement) {
+    private void addTranslation(EndElement endElement) {
         String[] tv = endElement.content.split("\\s+");
         nodes.peek().transforms.add(new Translate(
                 Double.parseDouble(tv[0].trim()),
@@ -71,7 +71,7 @@ final class LibraryVisualSceneParser extends AbstractParser {
         ));
     }
 
-    private void addRotation(LibraryHandler.EndElement endElement) {
+    private void addRotation(EndElement endElement) {
         String[] rv = endElement.content.split("\\s+");
         nodes.peek().transforms.add(new Rotate(
                 Double.parseDouble(rv[3].trim()),
@@ -84,7 +84,7 @@ final class LibraryVisualSceneParser extends AbstractParser {
         ));
     }
 
-    private void addScaling(LibraryHandler.EndElement endElement) {
+    private void addScaling(EndElement endElement) {
         String[] sv = endElement.content.split("\\s+");
         nodes.peek().transforms.add(new Scale(
                 Double.parseDouble(sv[0].trim()),
@@ -94,7 +94,7 @@ final class LibraryVisualSceneParser extends AbstractParser {
         ));
     }
 
-    private void addMatrixTransformation(LibraryHandler.EndElement endElement) {
+    private void addMatrixTransformation(EndElement endElement) {
         String[] mv = endElement.content.split("\\s+");
         nodes.peek().transforms.add(new Affine(
                 Double.parseDouble(mv[0].trim()), // mxx

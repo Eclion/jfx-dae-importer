@@ -19,7 +19,7 @@ final class LibraryLightsParser extends AbstractParser {
     LibraryLightsParser() {
         final Map<String, Consumer<StartElement>> startElementConsumer = new HashMap<>();
         //startElementConsumer.put("*", startElement -> currentId.put(startElement.qName, startElement.getAttributeValue("id")));
-        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+        final Map<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
         handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }
 }

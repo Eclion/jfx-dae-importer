@@ -43,8 +43,6 @@ public final class ParserTests {
         final LibraryEffectsParser effectsParser = new LibraryEffectsParser();
         final LibraryHandler parser = effectsParser.getLibraryHandler();
         executeParsing("effects_1.xml", parser);
-        //final LibraryEffectsParser effectsParser = new LibraryEffectsParser();
-        //executeParsing("effects_1.xml", effectsParser);
 
         final LibraryImagesParser mockImageParser = mock(LibraryImagesParser.class);
         when(mockImageParser.getImage(any())).thenReturn(null);
@@ -64,9 +62,6 @@ public final class ParserTests {
         final LibraryHandler parser = assetParser.getLibraryHandler();
         executeParsing("asset_1.xml", parser);
 
-        //final AssetParser assetParser = new AssetParser();
-        //executeParsing("asset_1.xml", assetParser);
-
         assertEquals("Z_UP", assetParser.upAxis);
         assertEquals("meter", assetParser.unit);
         assertEquals(1.0f, assetParser.scale, 0.0f);
@@ -79,9 +74,6 @@ public final class ParserTests {
         final LibraryAnimationsParser animationsParser = new LibraryAnimationsParser();
         final LibraryHandler parser = animationsParser.getLibraryHandler();
         executeParsing("animations_1.xml", parser);
-
-        //final LibraryAnimationsParser animationsParser = new LibraryAnimationsParser();
-        //executeParsing("animations_1.xml", animationsParser);
 
         final DaeAnimation actualArmatureBoneAnimation = animationsParser.animations.get("Armature_Bone_pose_matrix");
 
@@ -98,8 +90,6 @@ public final class ParserTests {
         final LibraryCamerasParser camerasParser = new LibraryCamerasParser();
         final LibraryHandler parser = camerasParser.getLibraryHandler();
         executeParsing("cameras_1.xml", parser);
-        //final LibraryCamerasParser camerasParser = new LibraryCamerasParser();
-        //executeParsing("cameras_1.xml", camerasParser);
 
         PerspectiveCamera actualCamera = (PerspectiveCamera) camerasParser.cameras.get("Camera-camera");
 
@@ -115,8 +105,6 @@ public final class ParserTests {
         final LibraryControllerParser controllerParser = new LibraryControllerParser();
         final LibraryHandler parser = controllerParser.getLibraryHandler();
         executeParsing("controllers_1.xml", parser);
-        //final LibraryControllerParser controllerParser = new LibraryControllerParser();
-        //executeParsing("controllers_1.xml", controllerParser);
 
         DaeController actualController = controllerParser.controllers.get("Armature_Cube-skin");
 
@@ -136,8 +124,6 @@ public final class ParserTests {
         final LibraryGeometriesParser geometriesParser = new LibraryGeometriesParser();
         final LibraryHandler parser = geometriesParser.getLibraryHandler();
         executeParsing("geometries_1.xml", parser);
-        //final LibraryGeometriesParser geometriesParser = new LibraryGeometriesParser();
-        //executeParsing("geometries_1.xml", geometriesParser);
 
         TriangleMesh actualMesh = geometriesParser.getMeshes("Cube-mesh").get(0);
         assertEquals(24, actualMesh.getPoints().size());
@@ -154,8 +140,6 @@ public final class ParserTests {
         final LibraryLightsParser lightsParser = new LibraryLightsParser();
         final LibraryHandler parser = lightsParser.getLibraryHandler();
         executeParsing("lights_1.xml", parser);
-        //final LibraryLightsParser lightsParser = new LibraryLightsParser();
-        //executeParsing("lights_1.xml", lightsParser);
 
         throw new Exception("Nothing implemented yet for the lights");
     }
@@ -165,8 +149,6 @@ public final class ParserTests {
         final LibraryMaterialsParser materialsParser = new LibraryMaterialsParser();
         final LibraryHandler parser = materialsParser.getLibraryHandler();
         executeParsing("materials_1.xml", parser);
-        //final LibraryMaterialsParser materialsParser = new LibraryMaterialsParser();
-        //executeParsing("materials_1.xml", materialsParser);
 
         assertEquals("Material-effect", materialsParser.getEffectId("Material-material"));
     }
@@ -176,8 +158,6 @@ public final class ParserTests {
         final LibraryVisualSceneParser visualSceneParser = new LibraryVisualSceneParser();
         final LibraryHandler parser = visualSceneParser.getLibraryHandler();
         executeParsing("visual_scenes_1.xml", parser);
-        //final LibraryVisualSceneParser visualSceneParser = new LibraryVisualSceneParser();
-        //executeParsing("visual_scenes_1.xml", visualSceneParser);
 
         DaeScene actualScene = visualSceneParser.scenes.get(0);
 

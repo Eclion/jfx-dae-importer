@@ -36,7 +36,7 @@ final class LibraryAnimationsParser extends AbstractParser {
         });
         startElementConsumer.put(CHANNEL_TAG, startElement -> currentAnimations.peek().target = startElement.getAttributeValue("target"));
 
-        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+        final Map<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
 
         endElementConsumer.put(ANIMATION_TAG, endElement -> {
             DaeAnimation animation = currentAnimations.pop();

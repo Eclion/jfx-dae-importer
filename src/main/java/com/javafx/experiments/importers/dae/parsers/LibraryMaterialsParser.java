@@ -32,7 +32,7 @@ final class LibraryMaterialsParser extends AbstractParser {
             }
         });
 
-        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+        final Map<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
         handler = new LibraryHandler(startElementConsumer, endElementConsumer);
     }
 

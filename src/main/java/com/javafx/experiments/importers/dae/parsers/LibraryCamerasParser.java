@@ -36,7 +36,7 @@ final class LibraryCamerasParser extends AbstractParser {
         startElementConsumer.put("*", startElement -> currentId.put(startElement.qName, startElement.getAttributeValue("id")));
         startElementConsumer.put(CAMERA_TAG, startElement -> aspectRatio = xfov = yfov = znear = zfar = null);
 
-        final Map<String, Consumer<LibraryHandler.EndElement>> endElementConsumer = new HashMap<>();
+        final Map<String, Consumer<EndElement>> endElementConsumer = new HashMap<>();
 
         endElementConsumer.put(ASPECT_RATIO_TAG, endElement -> aspectRatio = Double.parseDouble(endElement.content));
         endElementConsumer.put(CAMERA_TAG, endElement -> saveCamera());
