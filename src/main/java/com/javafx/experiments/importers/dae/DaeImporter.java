@@ -38,7 +38,9 @@ import javafx.scene.Camera;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
+import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -95,8 +97,10 @@ public final class DaeImporter extends Importer {
         try {
             final SAXParserFactory factory = SAXParserFactory.newInstance();
             final SAXParser saxParser = factory.newSAXParser();
+
             final DaeSaxHandlerV2 handler = new DaeSaxHandlerV2(extractRootPath(url));
-            saxParser.parse(url, handler);
+            final HandlerAdapter handlerAdapter = new HandlerAdapter(handler);
+            saxParser.parse(url, handlerAdapter);
 
             buildTimelines(handler);
 
@@ -136,5 +140,30 @@ public final class DaeImporter extends Importer {
         final File file = new File(relativeUrl);
 
         return file.getCanonicalFile().getParent();
+    }
+
+    class HandlerAdapter extends DefaultHandler {
+
+        final DaeSaxHandlerV2 daeSaxHandler;
+
+        HandlerAdapter(DaeSaxHandlerV2 daeSaxHandler) {
+            this.daeSaxHandler = daeSaxHandler;
+        }
+
+        @Override
+        public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
+            daeSaxHandler.getLibraryHandler().startElement(uri, localName, qName, attributes);
+        }
+
+        @Override
+        public void endElement(final String uri, final String localName, final String qName) throws SAXException {
+            daeSaxHandler.getLibraryHandler().endElement(uri, localName, qName);
+        }
+
+        @Override
+        public void characters(final char[] ch, final int start, final int length) throws SAXException {
+            daeSaxHandler.getLibraryHandler().characters(ch, start, length);
+        }
+
     }
 }

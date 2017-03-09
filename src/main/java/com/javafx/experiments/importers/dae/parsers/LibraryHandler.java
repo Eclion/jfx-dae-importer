@@ -42,6 +42,9 @@ public class LibraryHandler extends DefaultHandler {
     }
 
     public void endElement(EndElement endElement) {
+        if (endElementConsumers.containsKey("*")) {
+            endElementConsumers.get("*").accept(endElement);
+        }
         if (endElementConsumers.containsKey(endElement.qName)) {
             endElementConsumers.get(endElement.qName).accept(endElement);
         }
