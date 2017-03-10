@@ -37,7 +37,7 @@ public final class DaeSaxHandler extends AbstractParser {
 
     private AbstractParser subHandler;
 
-    private HashMap<String, AbstractParser> parsers = new HashMap<>();
+    private final HashMap<String, AbstractParser> parsers = new HashMap<>();
 
     private Camera firstCamera;
 

@@ -65,7 +65,7 @@ public final class DaeImporter extends Importer {
     private final Group rootNode = new Group();
     private Camera firstCamera;
     private double firstCameraAspectRatio;
-    private HashMap<String, Timeline> timelines = new HashMap<>();
+    private final HashMap<String, Timeline> timelines = new HashMap<>();
 
     public Scene createScene(final int width) {
         Scene scene = new Scene(rootNode, width, (int) (width / firstCameraAspectRatio), true);

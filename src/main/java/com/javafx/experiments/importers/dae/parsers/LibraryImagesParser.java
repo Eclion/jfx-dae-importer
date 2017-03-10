@@ -22,9 +22,8 @@ final class LibraryImagesParser extends AbstractParser {
         addStartElementBiConsumer("*", (qName, attributes) -> currentId.put(qName, attributes.getValue("id")));
 
         addEndElementBiConsumer(INIT_FROM_TAG, (qName, content) -> {
-            final String filePath = content;
             final File folder = new File(rootUrl);
-            final Path imagePath = folder.toPath().resolve(filePath);
+            final Path imagePath = folder.toPath().resolve(content);
             final Image image = new Image("file:" + imagePath.toString());
             images.put(currentId.get("image"), image);
         });

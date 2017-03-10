@@ -101,12 +101,12 @@ final class LibraryEffectsParser extends AbstractParser {
 
     private final class DaeEffect {
 
-        private String id;
+        private final String id;
 
-        private HashMap<String, String> surfaces = new HashMap<>();
-        private HashMap<String, String> samplers = new HashMap<>();
-        private HashMap<String, Color> colors = new HashMap<>();
-        private HashMap<String, String> textureIds = new HashMap<>();
+        private final HashMap<String, String> surfaces = new HashMap<>();
+        private final HashMap<String, String> samplers = new HashMap<>();
+        private final HashMap<String, Color> colors = new HashMap<>();
+        private final HashMap<String, String> textureIds = new HashMap<>();
         private float shininess;
         private float refractionIndex;
 
