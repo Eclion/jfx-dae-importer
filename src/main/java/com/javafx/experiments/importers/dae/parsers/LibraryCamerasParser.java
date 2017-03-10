@@ -19,7 +19,11 @@ final class LibraryCamerasParser extends AbstractParser {
     private static final String ZNEAR_TAG = "znear";
 
     private final Map<String, String> currentId = new HashMap<>();
-    private Double aspectRatio, xfov, yfov, znear, zfar;
+    private Double aspectRatio;
+    private Double xfov;
+    private Double yfov;
+    private Double znear;
+    private Double zfar;
     Camera firstCamera = null;
     final Map<String, Camera> cameras = new HashMap<>();
     double firstCameraAspectRatio = DEFAULT_ASPECT_RATIO;

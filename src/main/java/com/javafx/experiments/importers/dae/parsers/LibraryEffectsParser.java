@@ -76,9 +76,9 @@ final class LibraryEffectsParser extends AbstractParser {
     }
 
     void buildEffects(final LibraryImagesParser imagesParser) {
-        effects.stream()
-                .filter(effect -> effect.type != null)
-                .forEach(effect -> materials.put(effect.id, effect.build(imagesParser))
+        effects.stream().
+                filter(effect -> effect.type != null).
+                forEach(effect -> materials.put(effect.id, effect.build(imagesParser))
                 );
     }
 

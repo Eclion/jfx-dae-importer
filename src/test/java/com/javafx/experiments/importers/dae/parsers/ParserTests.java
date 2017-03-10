@@ -35,7 +35,7 @@ import static org.mockito.Mockito.when;
  */
 public final class ParserTests {
 
-    private void executeParsing(String testResource, DefaultHandler parser) throws ParserConfigurationException, SAXException, IOException, URISyntaxException {
+    private void executeParsing(final String testResource, final DefaultHandler parser) throws ParserConfigurationException, SAXException, IOException, URISyntaxException {
         final File resource = new File(this.getClass().getResource(testResource).toURI());
         final SAXParserFactory factory = SAXParserFactory.newInstance();
         final SAXParser saxParser = factory.newSAXParser();

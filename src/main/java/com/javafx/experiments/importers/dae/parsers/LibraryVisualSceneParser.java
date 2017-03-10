@@ -3,6 +3,7 @@ package com.javafx.experiments.importers.dae.parsers;
 import com.javafx.experiments.importers.dae.structures.DaeNode;
 import com.javafx.experiments.importers.dae.structures.DaeScene;
 import com.javafx.experiments.importers.dae.structures.DaeSkeleton;
+import com.sun.xml.internal.bind.v2.model.core.ID;
 import javafx.geometry.Point3D;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.Rotate;
@@ -28,16 +29,21 @@ final class LibraryVisualSceneParser extends AbstractParser {
     private static final String SKELETON_TAG = "skeleton";
     private static final String TRANSLATE_TAG = "translate";
     private static final String VISUAL_SCENE_TAG = "visual_scene";
-    public static final String WHITESPACES_REGEX = "\\s+";
+
+    private static final String URL_STR = "url";
+    private static final String ID_STR = "id";
+    private static final String NAME_STR = "name";
+
+    private static final String WHITESPACES_REGEX = "\\s+";
 
     final LinkedList<DaeScene> scenes = new LinkedList<>();
     final LinkedList<DaeNode> nodes = new LinkedList<>();
 
     LibraryVisualSceneParser() {
-        addStartElementBiConsumer(INSTANCE_CAMERA_TAG, (qName, attributes) -> nodes.peek().instanceCameraId = attributes.getValue("url").substring(1));
-        addStartElementBiConsumer(INSTANCE_CONTROLLER_TAG, (qName, attributes) -> nodes.peek().instanceControllerId = attributes.getValue("url").substring(1));
-        addStartElementBiConsumer(INSTANCE_GEOMETRY_TAG, (qName, attributes) -> nodes.peek().instanceGeometryId = attributes.getValue("url").substring(1));
-        addStartElementBiConsumer(INSTANCE_LIGHT_TAG, (qName, attributes) -> nodes.peek().instanceLightId = attributes.getValue("url").substring(1));
+        addStartElementBiConsumer(INSTANCE_CAMERA_TAG, (qName, attributes) -> nodes.peek().instanceCameraId = attributes.getValue(URL_STR).substring(1));
+        addStartElementBiConsumer(INSTANCE_CONTROLLER_TAG, (qName, attributes) -> nodes.peek().instanceControllerId = attributes.getValue(URL_STR).substring(1));
+        addStartElementBiConsumer(INSTANCE_GEOMETRY_TAG, (qName, attributes) -> nodes.peek().instanceGeometryId = attributes.getValue(URL_STR).substring(1));
+        addStartElementBiConsumer(INSTANCE_LIGHT_TAG, (qName, attributes) -> nodes.peek().instanceLightId = attributes.getValue(URL_STR).substring(1));
         addStartElementBiConsumer(INSTANCE_MATERIAL_TAG, (qName, attributes) -> nodes.peek().instanceMaterialId = attributes.getValue("target").substring(1));
         addStartElementBiConsumer(NODE_TAG, (qName, attributes) -> createDaeNode(attributes));
         addStartElementBiConsumer(VISUAL_SCENE_TAG, (qName, attributes) -> createVisualScene(attributes));
@@ -101,13 +107,13 @@ final class LibraryVisualSceneParser extends AbstractParser {
     }
 
     private void createVisualScene(final Attributes attributes) {
-        scenes.push(new DaeScene(attributes.getValue("id"), attributes.getValue("name")));
+        scenes.push(new DaeScene(attributes.getValue(ID_STR), attributes.getValue(NAME_STR)));
     }
 
     private void createDaeNode(final Attributes attributes) {
         nodes.push(new DaeNode(
-                attributes.getValue("id"),
-                attributes.getValue("name"),
+                attributes.getValue(ID_STR),
+                attributes.getValue(NAME_STR),
                 attributes.getValue("type")
         ));
     }

@@ -173,33 +173,6 @@ public final class SkinningMesh extends TriangleMesh {
         this.setVertexFormat(mesh.getVertexFormat());
     }
 
-    private final class JointIndex {
-        private final Node node;
-        private final int index;
-        private final List<JointIndex> children = new ArrayList<>();
-        private JointIndex parent = null;
-        private Transform localToGlobalTransform;
-
-        JointIndex(final Node n, final int ind, final List<Joint> orderedJoints) {
-            node = n;
-            index = ind;
-            if (!(node instanceof Parent)) {
-                return;
-            }
-            ((Parent) node).
-                    getChildrenUnmodifiable().
-                    stream().
-                    filter(childJoint -> childJoint instanceof Parent).
-                    forEach(childJoint -> {
-                                final int childInd = orderedJoints.indexOf(childJoint);
-                                final JointIndex childJointIndex = new JointIndex(childJoint, childInd, orderedJoints);
-                                childJointIndex.parent = this;
-                                children.add(childJointIndex);
-                            }
-                    );
-        }
-    }
-
     // Updates the jointToRootTransforms by doing a a depth-first search of the jointIndexForest
     private void updateLocalToGlobalTransforms(final List<JointIndex> jointIndexForest) {
         for (final JointIndex jointIndex : jointIndexForest) {
@@ -216,7 +189,7 @@ public final class SkinningMesh extends TriangleMesh {
     }
 
     // Updates its points only if any of the joints' transforms have changed
-    public final void update() {
+    public void update() {
         if (!jointsTransformDirty) {
             return;
         }
@@ -267,13 +240,40 @@ public final class SkinningMesh extends TriangleMesh {
         getNormals().setAll(normals);
     }
 
-    private Point3D getPoint(int index) {
+    private Point3D getPoint(final int index) {
         return new Point3D(getPoints().get(3 * index), getPoints().get(3 * index + 1), getPoints().get(3 * index + 2));
     }
 
-    private Point3D calculateNormal(Point3D p1, Point3D p2, Point3D p3) {
-        Point3D u = p2.subtract(p1);
-        Point3D v = p3.subtract(p1);
+    private Point3D calculateNormal(final Point3D p1, final Point3D p2, final Point3D p3) {
+        final Point3D u = p2.subtract(p1);
+        final Point3D v = p3.subtract(p1);
         return u.crossProduct(v).normalize();
+    }
+
+    private final class JointIndex {
+        private final Node node;
+        private final int index;
+        private final List<JointIndex> children = new ArrayList<>();
+        private JointIndex parent = null;
+        private Transform localToGlobalTransform;
+
+        JointIndex(final Node n, final int ind, final List<Joint> orderedJoints) {
+            node = n;
+            index = ind;
+            if (!(node instanceof Parent)) {
+                return;
+            }
+            ((Parent) node).
+                    getChildrenUnmodifiable().
+                    stream().
+                    filter(childJoint -> childJoint instanceof Parent).
+                    forEach(childJoint -> {
+                                final int childInd = orderedJoints.indexOf(childJoint);
+                                final JointIndex childJointIndex = new JointIndex(childJoint, childInd, orderedJoints);
+                                childJointIndex.parent = this;
+                                children.add(childJointIndex);
+                            }
+                    );
+        }
     }
 }
