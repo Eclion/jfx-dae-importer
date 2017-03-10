@@ -62,7 +62,7 @@ public final class SimpleViewerApp extends Application {
     private final Translate cameraPosition = new Translate(0, 0, -10);
 
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(final Stage stage) throws Exception {
         final List<String> args = getParameters().getRaw();
         final Scene scene = new Scene(root3D, 1920, 1080, true);
         scene.setFill(Color.TRANSPARENT);
@@ -100,7 +100,7 @@ public final class SimpleViewerApp extends Application {
         stage.show();
     }
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         launch(args);
     }
 }

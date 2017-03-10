@@ -10,17 +10,17 @@ import java.util.function.BiConsumer;
 /**
  * @author Eclion
  */
-public class LibraryHandler extends DefaultHandler {
+public final class LibraryHandler extends DefaultHandler {
     private StringBuilder charBuf = new StringBuilder();
 
     private final Map<String, BiConsumer<String, Attributes>> startElementBiConsumers = new HashMap<>();
     private final Map<String, BiConsumer<String, String>> endElementBiConsumers = new HashMap<>();
 
-    protected final void addStartElementBiConsumer(final String tag, final BiConsumer<String, Attributes> startElementBiConsumer) {
+    protected void addStartElementBiConsumer(final String tag, final BiConsumer<String, Attributes> startElementBiConsumer) {
         startElementBiConsumers.put(tag, startElementBiConsumer);
     }
 
-    protected final void addEndElementBiConsumer(final String tag, final BiConsumer<String, String> endElementBiConsumer) {
+    protected void addEndElementBiConsumer(final String tag, final BiConsumer<String, String> endElementBiConsumer) {
         endElementBiConsumers.put(tag, endElementBiConsumer);
     }
 

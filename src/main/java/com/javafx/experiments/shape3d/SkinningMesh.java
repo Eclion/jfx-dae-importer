@@ -254,7 +254,7 @@ public final class SkinningMesh extends TriangleMesh {
         private final Node node;
         private final int index;
         private final List<JointIndex> children = new ArrayList<>();
-        private JointIndex parent = null;
+        private JointIndex parent;
         private Transform localToGlobalTransform;
 
         JointIndex(final Node n, final int ind, final List<Joint> orderedJoints) {

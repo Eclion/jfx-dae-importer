@@ -26,6 +26,8 @@ final class LibraryControllerParser extends AbstractParser {
     private static final String VERTEX_WEIGTHS_TAG = "vertex_weights";
     private static final String WHITESPACES_REGEX = "\\s+";
 
+    private static final String SOURCE_STR = "source";
+
     private String currentControllerId = "";
     private final Map<String, String> currentId = new HashMap<>();
     private final Map<String, Input> inputs = new HashMap<>();
@@ -47,10 +49,10 @@ final class LibraryControllerParser extends AbstractParser {
             inputs.put(input.semantic, input);
         });
         addStartElementBiConsumer(PARAM_TAG, (qName, attributes) -> {
-            String sourceId = currentId.get("source");
+            String sourceId = currentId.get(SOURCE_STR);
             params.put(sourceId, new Param(attributes.getValue("name"), attributes.getValue("type")));
         });
-        addStartElementBiConsumer(SKIN_TAG, (qName, attributes) -> controllers.get(currentControllerId).skinId = attributes.getValue("source").substring(1));
+        addStartElementBiConsumer(SKIN_TAG, (qName, attributes) -> controllers.get(currentControllerId).skinId = attributes.getValue(SOURCE_STR).substring(1));
         addStartElementBiConsumer(VERTEX_WEIGTHS_TAG, (qName, attributes) -> nbPoints = Integer.parseInt(attributes.getValue("count")));
 
         addEndElementBiConsumer(BIND_SHAPE_MATRIX_TAG, (qName, content) -> {
@@ -59,8 +61,8 @@ final class LibraryControllerParser extends AbstractParser {
         });
         addEndElementBiConsumer(CONTROLLER_TAG, (qName, content) -> init());
         addEndElementBiConsumer(FLOAT_ARRAY_TAG, (qName, content) -> {
-            floatArrays.put(currentId.get("source"), ParserUtils.extractFloatArray(content));
-            if (!currentId.get("source").contains("bind_poses")) {
+            floatArrays.put(currentId.get(SOURCE_STR), ParserUtils.extractFloatArray(content));
+            if (!currentId.get(SOURCE_STR).contains("bind_poses")) {
                 return;
             }
             double[] doubleArray = ParserUtils.extractDoubleArray(content);

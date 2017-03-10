@@ -101,7 +101,7 @@ public final class DaeSaxHandler extends AbstractParser {
     }
 
     private Camera getCamera(final DaeNode node) {
-        final LibraryCamerasParser camerasParser = ((LibraryCamerasParser) parsers.get(LIBRARY_CAMERAS_TAG));
+        final LibraryCamerasParser camerasParser = (LibraryCamerasParser) parsers.get(LIBRARY_CAMERAS_TAG);
         if (camerasParser == null) return null;
         final Camera camera = camerasParser.cameras.get(node.instanceCameraId);
         camera.setId(node.name);
@@ -197,21 +197,19 @@ public final class DaeSaxHandler extends AbstractParser {
         return frames;
     }
 
-    private List<Material> getMaterials(String meshId) {
+    private List<Material> getMaterials(final String meshId) {
         final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(LIBRARY_GEOMETRIES_TAG);
         final LibraryMaterialsParser materialsParser = (LibraryMaterialsParser) parsers.get(LIBRARY_MATERIALS_TAG);
         final LibraryEffectsParser effectsParser = (LibraryEffectsParser) parsers.get(LIBRARY_EFFECTS_TAG);
 
-        final List<Material> materials;
+        final List<Material> materials = new ArrayList<>();
         if (materialsParser != null && effectsParser != null) {
-            materials = geometriesParser.
+            geometriesParser.
                     getMaterialIds(meshId).
                     stream().
                     map(materialsParser::getEffectId).
-                    map(effectsParser::getEffectMaterial)
-                    .collect(Collectors.toList());
-        } else {
-            materials = new ArrayList<>();
+                    map(effectsParser::getEffectMaterial).
+                    forEach(materials::add);
         }
         return materials;
     }

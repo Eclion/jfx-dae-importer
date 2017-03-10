@@ -30,7 +30,7 @@ final class LibraryImagesParser extends AbstractParser {
         });
     }
 
-    Image getImage(String imageId) {
+    Image getImage(final String imageId) {
         return images.get(imageId);
     }
 }

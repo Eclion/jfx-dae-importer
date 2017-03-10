@@ -23,7 +23,7 @@ final class LibraryMaterialsParser extends AbstractParser {
         });
     }
 
-    String getEffectId(String materialId) {
+    String getEffectId(final String materialId) {
         return materialEffectMap.get(materialId);
     }
 }
