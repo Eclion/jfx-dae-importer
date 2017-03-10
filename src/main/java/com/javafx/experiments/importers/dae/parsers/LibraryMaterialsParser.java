@@ -8,7 +8,6 @@ import java.util.Map;
  */
 final class LibraryMaterialsParser extends AbstractParser {
     private static final String INSTANCE_EFFECT_TAG = "instance_effect";
-    private static final String MATERIAL_TAG = "material";
 
     private final Map<String, String> currentId = new HashMap<>();
 

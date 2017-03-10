@@ -32,16 +32,7 @@
 package com.javafx.experiments.shape3d;
 
 import com.javafx.experiments.importers.dae.structures.Joint;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.collections.ObservableFloatArray;
 import javafx.geometry.Point3D;
 import javafx.scene.Node;
@@ -52,6 +43,13 @@ import javafx.scene.transform.Affine;
 import javafx.scene.transform.MatrixType;
 import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.scene.transform.Transform;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * PolygonMesh that knows how to update itself given changes in joint transforms.

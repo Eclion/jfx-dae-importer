@@ -53,9 +53,7 @@ import java.util.logging.Logger;
 
 /**
  * Loader for ".dae" 3D files
- * <p>
  * Notes:
- * <p>
  * - Assume Y is up for now
  * - Assume 1 Unit = 1 FX Unit
  */

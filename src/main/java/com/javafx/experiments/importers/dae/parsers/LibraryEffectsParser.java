@@ -7,6 +7,8 @@ import javafx.scene.paint.PhongMaterial;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 /**
@@ -27,11 +29,11 @@ final class LibraryEffectsParser extends AbstractParser {
     private static final String SOURCE_TAG = "source";
     private static final String TEXTURE_TAG = "texture";
 
-    private final HashMap<String, String> currentId = new HashMap<>();
-    private final HashMap<String, String> currentSid = new HashMap<>();
+    private final Map<String, String> currentId = new HashMap<>();
+    private final Map<String, String> currentSid = new HashMap<>();
 
-    private final HashMap<String, Material> materials = new HashMap<>();
-    private final ArrayList<DaeEffect> effects = new ArrayList<>();
+    private final Map<String, Material> materials = new HashMap<>();
+    private final List<DaeEffect> effects = new ArrayList<>();
 
     private DaeEffect currentEffect;
     private String tempTexture;
@@ -103,10 +105,10 @@ final class LibraryEffectsParser extends AbstractParser {
 
         private final String id;
 
-        private final HashMap<String, String> surfaces = new HashMap<>();
-        private final HashMap<String, String> samplers = new HashMap<>();
-        private final HashMap<String, Color> colors = new HashMap<>();
-        private final HashMap<String, String> textureIds = new HashMap<>();
+        private final Map<String, String> surfaces = new HashMap<>();
+        private final Map<String, String> samplers = new HashMap<>();
+        private final Map<String, Color> colors = new HashMap<>();
+        private final Map<String, String> textureIds = new HashMap<>();
         private float shininess;
         private float refractionIndex;
 

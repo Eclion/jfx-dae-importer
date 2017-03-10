@@ -28,6 +28,7 @@ final class LibraryVisualSceneParser extends AbstractParser {
     private static final String SKELETON_TAG = "skeleton";
     private static final String TRANSLATE_TAG = "translate";
     private static final String VISUAL_SCENE_TAG = "visual_scene";
+    public static final String WHITESPACES_REGEX = "\\s+";
 
     final LinkedList<DaeScene> scenes = new LinkedList<>();
     final LinkedList<DaeNode> nodes = new LinkedList<>();
@@ -38,19 +39,19 @@ final class LibraryVisualSceneParser extends AbstractParser {
         addStartElementBiConsumer(INSTANCE_GEOMETRY_TAG, (qName, attributes) -> nodes.peek().instanceGeometryId = attributes.getValue("url").substring(1));
         addStartElementBiConsumer(INSTANCE_LIGHT_TAG, (qName, attributes) -> nodes.peek().instanceLightId = attributes.getValue("url").substring(1));
         addStartElementBiConsumer(INSTANCE_MATERIAL_TAG, (qName, attributes) -> nodes.peek().instanceMaterialId = attributes.getValue("target").substring(1));
-        addStartElementBiConsumer(NODE_TAG, this::createDaeNode);
-        addStartElementBiConsumer(VISUAL_SCENE_TAG, this::createVisualScene);
+        addStartElementBiConsumer(NODE_TAG, (qName, attributes) -> createDaeNode(attributes));
+        addStartElementBiConsumer(VISUAL_SCENE_TAG, (qName, attributes) -> createVisualScene(attributes));
 
         addEndElementBiConsumer(NODE_TAG, (qName, content) -> setDaeNode());
-        addEndElementBiConsumer(MATRIX_TAG, this::addMatrixTransformation);
-        addEndElementBiConsumer(ROTATE_TAG, this::addRotation);
-        addEndElementBiConsumer(SCALE_TAG, this::addScaling);
-        addEndElementBiConsumer(TRANSLATE_TAG, this::addTranslation);
+        addEndElementBiConsumer(MATRIX_TAG, (qName, content) -> addMatrixTransformation(content));
+        addEndElementBiConsumer(ROTATE_TAG, (qName, content) -> addRotation(content));
+        addEndElementBiConsumer(SCALE_TAG, (qName, content) -> addScaling(content));
+        addEndElementBiConsumer(TRANSLATE_TAG, (qName, content) -> addTranslation(content));
         addEndElementBiConsumer(SKELETON_TAG, (qName, content) -> nodes.peek().skeletonId = content.substring(1));
     }
 
-    private void addTranslation(final String qName, final String content) {
-        String[] tv = content.split("\\s+");
+    private void addTranslation(final String content) {
+        final String[] tv = content.split(WHITESPACES_REGEX);
         nodes.peek().transforms.add(new Translate(
                 Double.parseDouble(tv[0].trim()),
                 Double.parseDouble(tv[1].trim()),
@@ -58,8 +59,8 @@ final class LibraryVisualSceneParser extends AbstractParser {
         ));
     }
 
-    private void addRotation(final String qName, final String content) {
-        String[] rv = content.split("\\s+");
+    private void addRotation(final String content) {
+        final String[] rv = content.split(WHITESPACES_REGEX);
         nodes.peek().transforms.add(new Rotate(
                 Double.parseDouble(rv[3].trim()),
                 0, 0, 0,
@@ -71,8 +72,8 @@ final class LibraryVisualSceneParser extends AbstractParser {
         ));
     }
 
-    private void addScaling(final String qName, final String content) {
-        String[] sv = content.split("\\s+");
+    private void addScaling(final String content) {
+        final String[] sv = content.split(WHITESPACES_REGEX);
         nodes.peek().transforms.add(new Scale(
                 Double.parseDouble(sv[0].trim()),
                 Double.parseDouble(sv[1].trim()),
@@ -81,8 +82,8 @@ final class LibraryVisualSceneParser extends AbstractParser {
         ));
     }
 
-    private void addMatrixTransformation(final String qName, final String content) {
-        String[] mv = content.split("\\s+");
+    private void addMatrixTransformation(final String content) {
+        final String[] mv = content.split(WHITESPACES_REGEX);
         nodes.peek().transforms.add(new Affine(
                 Double.parseDouble(mv[0].trim()), // mxx
                 Double.parseDouble(mv[1].trim()), // mxy
@@ -99,13 +100,13 @@ final class LibraryVisualSceneParser extends AbstractParser {
         ));
     }
 
-    private void createVisualScene(final String qName, final Attributes attributes)
+    private void createVisualScene(final Attributes attributes)
 
     {
         scenes.push(new DaeScene(attributes.getValue("id"), attributes.getValue("name")));
     }
 
-    private void createDaeNode(final String qName, final Attributes attributes)
+    private void createDaeNode(final Attributes attributes)
 
     {
         nodes.push(new DaeNode(
@@ -116,7 +117,7 @@ final class LibraryVisualSceneParser extends AbstractParser {
     }
 
     private void setDaeNode() {
-        DaeNode thisNode = nodes.pop();
+        final DaeNode thisNode = nodes.pop();
         if (nodes.isEmpty()) {
             if (thisNode.isCamera()) {
                 scenes.peek().cameraNodes.put(thisNode.id, thisNode);

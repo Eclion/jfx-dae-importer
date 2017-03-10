@@ -12,10 +12,7 @@ import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.Rotate;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -23,21 +20,21 @@ import java.util.stream.Collectors;
  */
 public final class DaeSaxHandler extends AbstractParser {
 
-    private final static String ASSET_TAG = "asset";
-    private final static String SCENE_TAG = "scene";
-    private final static String LIBRARY_ANIMATIONS_TAG = "library_animations";
-    private final static String LIBRARY_CAMERAS_TAG = "library_cameras";
-    private final static String LIBRARY_CONTROLLERS_TAG = "library_controllers";
-    private final static String LIBRARY_EFFECTS_TAG = "library_effects";
-    private final static String LIBRARY_GEOMETRIES_TAG = "library_geometries";
-    private final static String LIBRARY_IMAGES_TAG = "library_images";
-    private final static String LIBRARY_LIGHTS_TAG = "library_lights";
-    private final static String LIBRARY_MATERIALS_TAG = "library_materials";
-    private final static String LIBRARY_VISUAL_SCENES_TAG = "library_visual_scenes";
+    private static final String ASSET_TAG = "asset";
+    private static final String SCENE_TAG = "scene";
+    private static final String LIBRARY_ANIMATIONS_TAG = "library_animations";
+    private static final String LIBRARY_CAMERAS_TAG = "library_cameras";
+    private static final String LIBRARY_CONTROLLERS_TAG = "library_controllers";
+    private static final String LIBRARY_EFFECTS_TAG = "library_effects";
+    private static final String LIBRARY_GEOMETRIES_TAG = "library_geometries";
+    private static final String LIBRARY_IMAGES_TAG = "library_images";
+    private static final String LIBRARY_LIGHTS_TAG = "library_lights";
+    private static final String LIBRARY_MATERIALS_TAG = "library_materials";
+    private static final String LIBRARY_VISUAL_SCENES_TAG = "library_visual_scenes";
 
     private AbstractParser subHandler;
 
-    private final HashMap<String, AbstractParser> parsers = new HashMap<>();
+    private final Map<String, AbstractParser> parsers = new HashMap<>();
 
     private Camera firstCamera;
 

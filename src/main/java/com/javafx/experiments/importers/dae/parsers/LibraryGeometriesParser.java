@@ -64,20 +64,11 @@ final class LibraryGeometriesParser extends AbstractParser {
 
         addEndElementBiConsumer(FLOAT_ARRAY_TAG, (qName, content) ->
                 floatArrays.put(currentId.get(SOURCE_TAG), ParserUtils.extractFloatArray(content)));
-        addEndElementBiConsumer(P_TAG, this::savePoints);
+        addEndElementBiConsumer(P_TAG, (qName, content) -> pLists.add(ParserUtils.extractIntArray(content)));
         addEndElementBiConsumer(POLYGONS_TAG, (qName, content) -> createPolygonsTriangleMesh());
         addEndElementBiConsumer(POLYLIST_TAG, (qName, content) -> createPolylistTriangleMesh());
-        addEndElementBiConsumer(VCOUNT_TAG, this::saveVerticesCounts);
+        addEndElementBiConsumer(VCOUNT_TAG, (qName, content) -> saveVerticesCounts(content));
         addEndElementBiConsumer(VERTICES_TAG, (qName, content) -> saveVertices());
-    }
-
-    private void savePoints(final String qName, final String content) {
-        String[] numbers = content.split("\\s+");
-        int[] iArray = new int[numbers.length];
-        for (int i = 0; i < numbers.length; i++) {
-            iArray[i] = Integer.parseInt(numbers[i].trim());
-        }
-        pLists.add(iArray);
     }
 
     private void createPolygonsTriangleMesh() {
@@ -164,7 +155,7 @@ final class LibraryGeometriesParser extends AbstractParser {
         return faces;
     }
 
-    private void saveVerticesCounts(final String qName, final String content) {
+    private void saveVerticesCounts(final String content) {
         final String[] numbers = content.split("\\s+");
         triangulated = true;
         vCounts = new int[numbers.length];
@@ -178,9 +169,6 @@ final class LibraryGeometriesParser extends AbstractParser {
         // put vertex float into map again with new ID
         String sourceId = inputs.get("POSITION").source.substring(1);
         float[] points = floatArrays.get(sourceId);
-        floatArrays.put(
-                currentId.get("vertices"),
-                points);
+        floatArrays.put(currentId.get("vertices"), points);
     }
-
 }

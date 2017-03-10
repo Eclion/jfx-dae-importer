@@ -4,6 +4,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
@@ -12,8 +13,8 @@ import java.util.function.BiConsumer;
 public class LibraryHandler extends DefaultHandler {
     private StringBuilder charBuf = new StringBuilder();
 
-    private final HashMap<String, BiConsumer<String, Attributes>> startElementBiConsumers = new HashMap<>();
-    private final HashMap<String, BiConsumer<String, String>> endElementBiConsumers = new HashMap<>();
+    private final Map<String, BiConsumer<String, Attributes>> startElementBiConsumers = new HashMap<>();
+    private final Map<String, BiConsumer<String, String>> endElementBiConsumers = new HashMap<>();
 
     protected void addStartElementBiConsumer(final String tag, final BiConsumer<String, Attributes> startElementBiConsumer) {
         startElementBiConsumers.put(tag, startElementBiConsumer);

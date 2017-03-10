@@ -24,6 +24,8 @@ final class LibraryControllerParser extends AbstractParser {
     private static final String V_TAG = "v";
     private static final String VCOUNT_TAG = "vcount";
     private static final String VERTEX_WEIGTHS_TAG = "vertex_weights";
+    private static final String WHITESPACES_REGEX = "\\s+";
+
     private String currentControllerId = "";
     private final Map<String, String> currentId = new HashMap<>();
     private final Map<String, Input> inputs = new HashMap<>();
@@ -52,7 +54,7 @@ final class LibraryControllerParser extends AbstractParser {
         addStartElementBiConsumer(VERTEX_WEIGTHS_TAG, (qName, attributes) -> nbPoints = Integer.parseInt(attributes.getValue("count")));
 
         addEndElementBiConsumer(BIND_SHAPE_MATRIX_TAG, (qName, content) -> {
-            String[] matrixValues = content.split("\\s+");
+            String[] matrixValues = content.split(WHITESPACES_REGEX);
             controllers.get(currentControllerId).bindShapeMatrix = extractMatrixTransformation(matrixValues);
         });
         addEndElementBiConsumer(CONTROLLER_TAG, (qName, content) -> init());
@@ -66,7 +68,7 @@ final class LibraryControllerParser extends AbstractParser {
                 controllers.get(currentControllerId).bindPoses.add(new Affine(doubleArray, MatrixType.MT_3D_4x4, i * 16));
             }
         });
-        addEndElementBiConsumer(NAME_ARRAY_TAG, (qName, content) -> controllers.get(currentControllerId).jointNames = content.split("\\s+"));
+        addEndElementBiConsumer(NAME_ARRAY_TAG, (qName, content) -> controllers.get(currentControllerId).jointNames = content.split(WHITESPACES_REGEX));
         addEndElementBiConsumer(V_TAG, (qName, content) -> v = ParserUtils.extractIntArray(content));
         addEndElementBiConsumer(VCOUNT_TAG, (qName, content) -> vCounts = ParserUtils.extractIntArray(content));
         addEndElementBiConsumer(VERTEX_WEIGTHS_TAG, (qName, content) -> saveWeights());
