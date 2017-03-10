@@ -8,9 +8,7 @@ This repo host a Collada (dae v1.4) importer for JavaFX on pure Java.
 
 It's based on [TeamFX's openjfx-8u-dev-rt repo](https://github.com/teamfx/openjfx-8u-dev-rt/).
 
-The motivation behind is the lack of a Collada importer supporting animations.
-
-Please do not hesitate to contribute, or to send your collada files
+The motivation behind is the lack of a Collada importer supporting animations for JavaFX.
 
 ## "Roadmap"
 
@@ -26,3 +24,7 @@ Please do not hesitate to contribute, or to send your collada files
 If the features aren't implemented, it's surely because I don't need it. ;)
 
 #### V2: physics import (not planned)
+
+## Contributing
+
+Please do not hesitate to contribute, or to send your collada files
