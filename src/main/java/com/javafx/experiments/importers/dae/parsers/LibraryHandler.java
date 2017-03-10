@@ -3,7 +3,7 @@ package com.javafx.experiments.importers.dae.parsers;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.Map;
+import java.util.HashMap;
 import java.util.function.BiConsumer;
 
 /**
@@ -12,12 +12,15 @@ import java.util.function.BiConsumer;
 public class LibraryHandler extends DefaultHandler {
     private StringBuilder charBuf = new StringBuilder();
 
-    private final Map<String, BiConsumer<String, Attributes>> startElementBiConsumers;
-    private final Map<String, BiConsumer<String, String>> endElementBiConsumers;
+    private final HashMap<String, BiConsumer<String, Attributes>> startElementBiConsumers = new HashMap<>();
+    private final HashMap<String, BiConsumer<String, String>> endElementBiConsumers = new HashMap<>();
 
-    LibraryHandler(Map<String, BiConsumer<String, Attributes>> startElementBiConsumers, Map<String, BiConsumer<String, String>> endElementBiConsumers) {
-        this.startElementBiConsumers = startElementBiConsumers;
-        this.endElementBiConsumers = endElementBiConsumers;
+    protected void addStartElementBiConsumer(final String tag, final BiConsumer<String, Attributes> startElementBiConsumer) {
+        startElementBiConsumers.put(tag, startElementBiConsumer);
+    }
+
+    protected void addEndElementBiConsumer(final String tag, final BiConsumer<String, String> endElementBiConsumer) {
+        endElementBiConsumers.put(tag, endElementBiConsumer);
     }
 
     @Override
@@ -26,7 +29,7 @@ public class LibraryHandler extends DefaultHandler {
         startElement(qName, attributes);
     }
 
-    public void startElement(final String qName, final Attributes attributes) {
+    void startElement(final String qName, final Attributes attributes) {
         if (startElementBiConsumers.containsKey("*")) {
             startElementBiConsumers.get("*").accept(qName, attributes);
         }
@@ -40,7 +43,7 @@ public class LibraryHandler extends DefaultHandler {
         endElement(qName, charBuf.toString().trim());
     }
 
-    public void endElement(final String qName, final String content) {
+    void endElement(final String qName, final String content) {
         if (endElementBiConsumers.containsKey("*")) {
             endElementBiConsumers.get("*").accept(qName, content);
         }

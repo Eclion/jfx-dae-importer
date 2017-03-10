@@ -6,11 +6,9 @@ import com.javafx.experiments.importers.dae.structures.Param;
 import com.javafx.experiments.importers.dae.utils.ParserUtils;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.MatrixType;
-import org.xml.sax.Attributes;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 /**
  * @author Eclion
@@ -37,46 +35,41 @@ final class LibraryControllerParser extends AbstractParser {
     private int nbPoints;
 
     LibraryControllerParser() {
-        final HashMap<String, BiConsumer<String, Attributes>> startElementConsumer = new HashMap<>();
-
-        startElementConsumer.put("*", (qName, attributes) -> currentId.put(qName, attributes.getValue("id")));
-        startElementConsumer.put(CONTROLLER_TAG, (qName, attributes) -> {
+        addStartElementBiConsumer("*", (qName, attributes) -> currentId.put(qName, attributes.getValue("id")));
+        addStartElementBiConsumer(CONTROLLER_TAG, (qName, attributes) -> {
             currentControllerId = currentId.get(qName);
             controllers.put(currentControllerId, new DaeController(currentControllerId, attributes.getValue("name")));
         });
-        startElementConsumer.put(INPUT_TAG, (qName, attributes) -> {
+        addStartElementBiConsumer(INPUT_TAG, (qName, attributes) -> {
             Input input = ParserUtils.createInput(qName, attributes);
             inputs.put(input.semantic, input);
         });
-        startElementConsumer.put(PARAM_TAG, (qName, attributes) -> {
+        addStartElementBiConsumer(PARAM_TAG, (qName, attributes) -> {
             String sourceId = currentId.get("source");
             params.put(sourceId, new Param(attributes.getValue("name"), attributes.getValue("type")));
         });
-        startElementConsumer.put(SKIN_TAG, (qName, attributes) -> controllers.get(currentControllerId).skinId = attributes.getValue("source").substring(1));
-        startElementConsumer.put(VERTEX_WEIGTHS_TAG, (qName, attributes) -> nbPoints = Integer.parseInt(attributes.getValue("count")));
+        addStartElementBiConsumer(SKIN_TAG, (qName, attributes) -> controllers.get(currentControllerId).skinId = attributes.getValue("source").substring(1));
+        addStartElementBiConsumer(VERTEX_WEIGTHS_TAG, (qName, attributes) -> nbPoints = Integer.parseInt(attributes.getValue("count")));
 
-        final HashMap<String, BiConsumer<String, String>> endElementConsumer = new HashMap<>();
-
-        endElementConsumer.put(BIND_SHAPE_MATRIX_TAG, (qName, content) -> {
+        addEndElementBiConsumer(BIND_SHAPE_MATRIX_TAG, (qName, content) -> {
             String[] matrixValues = content.split("\\s+");
             controllers.get(currentControllerId).bindShapeMatrix = extractMatrixTransformation(matrixValues);
         });
-        endElementConsumer.put(CONTROLLER_TAG, (qName, content) -> init());
-        endElementConsumer.put(FLOAT_ARRAY_TAG, (qName, content) -> {
+        addEndElementBiConsumer(CONTROLLER_TAG, (qName, content) -> init());
+        addEndElementBiConsumer(FLOAT_ARRAY_TAG, (qName, content) -> {
             floatArrays.put(currentId.get("source"), ParserUtils.extractFloatArray(content));
-            if (currentId.get("source").contains("bind_poses")) {
-                double[] doubleArray = ParserUtils.extractDoubleArray(content);
-                for (int i = 0; i < doubleArray.length / 16; i++) {
-                    controllers.get(currentControllerId).bindPoses.add(new Affine(doubleArray, MatrixType.MT_3D_4x4, i * 16));
-                }
+            if (!currentId.get("source").contains("bind_poses")) {
+                return;
+            }
+            double[] doubleArray = ParserUtils.extractDoubleArray(content);
+            for (int i = 0; i < doubleArray.length / 16; i++) {
+                controllers.get(currentControllerId).bindPoses.add(new Affine(doubleArray, MatrixType.MT_3D_4x4, i * 16));
             }
         });
-        endElementConsumer.put(NAME_ARRAY_TAG, (qName, content) -> controllers.get(currentControllerId).jointNames = content.split("\\s+"));
-        endElementConsumer.put(V_TAG, this::saveVertices);
-        endElementConsumer.put(VCOUNT_TAG, this::saveVerticesCounts);
-        endElementConsumer.put(VERTEX_WEIGTHS_TAG, (qName, content) -> saveWeights());
-
-        handler = new LibraryHandler(startElementConsumer, endElementConsumer);
+        addEndElementBiConsumer(NAME_ARRAY_TAG, (qName, content) -> controllers.get(currentControllerId).jointNames = content.split("\\s+"));
+        addEndElementBiConsumer(V_TAG, (qName, content) -> v = ParserUtils.extractIntArray(content));
+        addEndElementBiConsumer(VCOUNT_TAG, (qName, content) -> vCounts = ParserUtils.extractIntArray(content));
+        addEndElementBiConsumer(VERTEX_WEIGTHS_TAG, (qName, content) -> saveWeights());
     }
 
     private void init() {
@@ -88,22 +81,6 @@ final class LibraryControllerParser extends AbstractParser {
         vCounts = new int[0];
         v = new int[0];
         nbPoints = 0;
-    }
-
-    private void saveVerticesCounts(final String qName, final String content) {
-        String[] numbers = content.split("\\s+");
-        vCounts = new int[numbers.length];
-        for (int i = 0; i < numbers.length; i++) {
-            vCounts[i] = Integer.parseInt(numbers[i].trim());
-        }
-    }
-
-    private void saveVertices(final String qName, final String content) {
-        String[] numbers = content.split("\\s+");
-        v = new int[numbers.length];
-        for (int i = 0; i < numbers.length; i++) {
-            v[i] = Integer.parseInt(numbers[i].trim());
-        }
     }
 
     private void saveWeights() {

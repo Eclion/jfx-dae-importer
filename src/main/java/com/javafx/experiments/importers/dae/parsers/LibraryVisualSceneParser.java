@@ -10,9 +10,7 @@ import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
 import org.xml.sax.Attributes;
 
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.function.BiConsumer;
 
 /**
  * @author Eclion
@@ -35,26 +33,20 @@ final class LibraryVisualSceneParser extends AbstractParser {
     final LinkedList<DaeNode> nodes = new LinkedList<>();
 
     LibraryVisualSceneParser() {
-        final HashMap<String, BiConsumer<String, Attributes>> startElementConsumer = new HashMap<>();
+        addStartElementBiConsumer(INSTANCE_CAMERA_TAG, (qName, attributes) -> nodes.peek().instanceCameraId = attributes.getValue("url").substring(1));
+        addStartElementBiConsumer(INSTANCE_CONTROLLER_TAG, (qName, attributes) -> nodes.peek().instanceControllerId = attributes.getValue("url").substring(1));
+        addStartElementBiConsumer(INSTANCE_GEOMETRY_TAG, (qName, attributes) -> nodes.peek().instanceGeometryId = attributes.getValue("url").substring(1));
+        addStartElementBiConsumer(INSTANCE_LIGHT_TAG, (qName, attributes) -> nodes.peek().instanceLightId = attributes.getValue("url").substring(1));
+        addStartElementBiConsumer(INSTANCE_MATERIAL_TAG, (qName, attributes) -> nodes.peek().instanceMaterialId = attributes.getValue("target").substring(1));
+        addStartElementBiConsumer(NODE_TAG, this::createDaeNode);
+        addStartElementBiConsumer(VISUAL_SCENE_TAG, this::createVisualScene);
 
-        startElementConsumer.put(INSTANCE_CAMERA_TAG, (qName, attributes) -> nodes.peek().instanceCameraId = attributes.getValue("url").substring(1));
-        startElementConsumer.put(INSTANCE_CONTROLLER_TAG, (qName, attributes) -> nodes.peek().instanceControllerId = attributes.getValue("url").substring(1));
-        startElementConsumer.put(INSTANCE_GEOMETRY_TAG, (qName, attributes) -> nodes.peek().instanceGeometryId = attributes.getValue("url").substring(1));
-        startElementConsumer.put(INSTANCE_LIGHT_TAG, (qName, attributes) -> nodes.peek().instanceLightId = attributes.getValue("url").substring(1));
-        startElementConsumer.put(INSTANCE_MATERIAL_TAG, (qName, attributes) -> nodes.peek().instanceMaterialId = attributes.getValue("target").substring(1));
-        startElementConsumer.put(NODE_TAG, this::createDaeNode);
-        startElementConsumer.put(VISUAL_SCENE_TAG, this::createVisualScene);
-
-        final HashMap<String, BiConsumer<String, String>> endElementConsumer = new HashMap<>();
-
-        endElementConsumer.put(NODE_TAG, (qName, content) -> setDaeNode());
-        endElementConsumer.put(MATRIX_TAG, this::addMatrixTransformation);
-        endElementConsumer.put(ROTATE_TAG, this::addRotation);
-        endElementConsumer.put(SCALE_TAG, this::addScaling);
-        endElementConsumer.put(TRANSLATE_TAG, this::addTranslation);
-        endElementConsumer.put(SKELETON_TAG, (qName, content) -> nodes.peek().skeletonId = content.substring(1));
-
-        handler = new LibraryHandler(startElementConsumer, endElementConsumer);
+        addEndElementBiConsumer(NODE_TAG, (qName, content) -> setDaeNode());
+        addEndElementBiConsumer(MATRIX_TAG, this::addMatrixTransformation);
+        addEndElementBiConsumer(ROTATE_TAG, this::addRotation);
+        addEndElementBiConsumer(SCALE_TAG, this::addScaling);
+        addEndElementBiConsumer(TRANSLATE_TAG, this::addTranslation);
+        addEndElementBiConsumer(SKELETON_TAG, (qName, content) -> nodes.peek().skeletonId = content.substring(1));
     }
 
     private void addTranslation(final String qName, final String content) {

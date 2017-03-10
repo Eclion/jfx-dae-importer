@@ -1,12 +1,5 @@
 package com.javafx.experiments.importers.dae.parsers;
 
-import org.xml.sax.Attributes;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-
 /**
  * @author Eclion
  */
@@ -24,19 +17,13 @@ final class AssetParser extends AbstractParser {
 
     AssetParser() {
 
-        final HashMap<String, BiConsumer<String, Attributes>> startElementConsumer = new HashMap<>();
-
-        startElementConsumer.put(UNIT_TAG, (qName, attributes) -> {
+        addStartElementBiConsumer(UNIT_TAG, (qName, attributes) -> {
             unit = attributes.getValue("name");
             scale = Float.parseFloat(attributes.getValue("meter"));
         });
 
-        final HashMap<String, BiConsumer<String, String>> endElementConsumer = new HashMap<>();
-
-        endElementConsumer.put(AUTHOR_TAG, (qName, content) -> author = content);
-        endElementConsumer.put(AUTHORING_TOOL_TAG, (qName, content) -> authoringTool = content);
-        endElementConsumer.put(UP_AXIS_TAG, (qName, content) -> upAxis = content);
-
-        handler = new LibraryHandler(startElementConsumer, endElementConsumer);
+        addEndElementBiConsumer(AUTHOR_TAG, (qName, content) -> author = content);
+        addEndElementBiConsumer(AUTHORING_TOOL_TAG, (qName, content) -> authoringTool = content);
+        addEndElementBiConsumer(UP_AXIS_TAG, (qName, content) -> upAxis = content);
     }
 }

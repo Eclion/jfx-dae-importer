@@ -4,13 +4,11 @@ import com.javafx.experiments.importers.dae.structures.Input;
 import com.javafx.experiments.importers.dae.utils.ParserUtils;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.shape.VertexFormat;
-import org.xml.sax.Attributes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
@@ -46,14 +44,12 @@ final class LibraryGeometriesParser extends AbstractParser {
     }
 
     LibraryGeometriesParser() {
-        final HashMap<String, BiConsumer<String, Attributes>> startElementConsumer = new HashMap<>();
-
-        startElementConsumer.put("*", (qName, attributes) -> currentId.put(qName, attributes.getValue("id")));
-        startElementConsumer.put(INPUT_TAG, (qName, attributes) -> {
+        addStartElementBiConsumer("*", (qName, attributes) -> currentId.put(qName, attributes.getValue("id")));
+        addStartElementBiConsumer(INPUT_TAG, (qName, attributes) -> {
             Input input = ParserUtils.createInput(qName, attributes);
             this.inputs.put(input.semantic, input);
         });
-        startElementConsumer.put(POLYLIST_TAG, (qName, attributes) -> {
+        addStartElementBiConsumer(POLYLIST_TAG, (qName, attributes) -> {
             final String materialId = attributes.getValue("material");
             if (materialId != null) {
                 final String geometryId = currentId.get("geometry");
@@ -66,18 +62,13 @@ final class LibraryGeometriesParser extends AbstractParser {
             this.pLists.clear();
         });
 
-        final HashMap<String, BiConsumer<String, String>> endElementConsumer = new HashMap<>();
-
-        endElementConsumer.put(FLOAT_ARRAY_TAG, (qName, content) ->
+        addEndElementBiConsumer(FLOAT_ARRAY_TAG, (qName, content) ->
                 floatArrays.put(currentId.get(SOURCE_TAG), ParserUtils.extractFloatArray(content)));
-        endElementConsumer.put(P_TAG, this::savePoints);
-        endElementConsumer.put(POLYGONS_TAG, (qName, content) -> createPolygonsTriangleMesh());
-        endElementConsumer.put(POLYLIST_TAG, (qName, content) -> createPolylistTriangleMesh());
-        endElementConsumer.put(VCOUNT_TAG, this::saveVerticesCounts);
-        endElementConsumer.put(VERTICES_TAG, (qName, content) -> saveVertices());
-
-
-        handler = new LibraryHandler(startElementConsumer, endElementConsumer);
+        addEndElementBiConsumer(P_TAG, this::savePoints);
+        addEndElementBiConsumer(POLYGONS_TAG, (qName, content) -> createPolygonsTriangleMesh());
+        addEndElementBiConsumer(POLYLIST_TAG, (qName, content) -> createPolylistTriangleMesh());
+        addEndElementBiConsumer(VCOUNT_TAG, this::saveVerticesCounts);
+        addEndElementBiConsumer(VERTICES_TAG, (qName, content) -> saveVertices());
     }
 
     private void savePoints(final String qName, final String content) {

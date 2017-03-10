@@ -105,7 +105,8 @@ public final class SkinningMesh extends TriangleMesh {
 
         this.processJoints(joints, jointForest);
 
-        updateNormals();
+        jointsTransformDirty = true;
+        update();
     }
 
     // Create the jointIndexForest forest. Its structure is the same as jointForest, except that this forest have

@@ -4,11 +4,9 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Material;
 import javafx.scene.paint.PhongMaterial;
-import org.xml.sax.Attributes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 /**
@@ -42,43 +40,37 @@ final class LibraryEffectsParser extends AbstractParser {
     private Color tempColor;
 
     LibraryEffectsParser() {
-        final HashMap<String, BiConsumer<String, Attributes>> startElementConsumer = new HashMap<>();
-
-        startElementConsumer.put("*", (qName, attributes) -> {
+        addStartElementBiConsumer("*", (qName, attributes) -> {
             currentId.put(qName, attributes.getValue("id"));
             currentSid.put(qName, attributes.getValue("sid"));
         });
-        startElementConsumer.put(EFFECT_TAG, (qName, attributes) -> currentEffect = new DaeEffect(this.currentId.get("effect")));
-        startElementConsumer.put(PHONG_TAG, (qName, attributes) -> currentEffect.type = qName);
-        startElementConsumer.put(COLOR_TAG, (qName, attributes) -> {
+        addStartElementBiConsumer(EFFECT_TAG, (qName, attributes) -> currentEffect = new DaeEffect(this.currentId.get("effect")));
+        addStartElementBiConsumer(PHONG_TAG, (qName, attributes) -> currentEffect.type = qName);
+        addStartElementBiConsumer(COLOR_TAG, (qName, attributes) -> {
             tempColor = null;
             tempTexture = null;
         });
-        startElementConsumer.put(FLOAT_TAG, (qName, attributes) -> tempFloat = null);
-        startElementConsumer.put(TEXTURE_TAG, (qName, attributes) -> {
+        addStartElementBiConsumer(FLOAT_TAG, (qName, attributes) -> tempFloat = null);
+        addStartElementBiConsumer(TEXTURE_TAG, (qName, attributes) -> {
             tempColor = null;
             tempTexture = attributes.getValue("texture");
         });
 
-        final HashMap<String, BiConsumer<String, String>> endElementConsumer = new HashMap<>();
-
-        endElementConsumer.put(COLOR_TAG, (qName, content) -> tempColor = extractColor(content));
+        addEndElementBiConsumer(COLOR_TAG, (qName, content) -> tempColor = extractColor(content));
         Stream.of(AMBIENT_TAG, DIFFUSE_TAG, EMISSION_TAG, SPECULAR_TAG).forEach(tag ->
-                endElementConsumer.put(tag, (qName, content) -> {
+                addEndElementBiConsumer(tag, (qName, content) -> {
                     if (tempColor != null) {
                         currentEffect.colors.put(qName, tempColor);
                     } else if (tempTexture != null) {
                         currentEffect.textureIds.put(qName, tempTexture);
                     }
                 }));
-        endElementConsumer.put(EFFECT_TAG, (qName, content) -> effects.add(currentEffect));
-        endElementConsumer.put(FLOAT_TAG, (qName, content) -> tempFloat = Float.parseFloat(content));
-        endElementConsumer.put(INDEX_OF_REFRACTION_TAG, (qName, content) -> currentEffect.refractionIndex = tempFloat);
-        endElementConsumer.put(INIT_FROM_TAG, (qName, content) -> currentEffect.surfaces.put(currentSid.get("newparam"), content));
-        endElementConsumer.put(SHININESS_TAG, (qName, content) -> currentEffect.shininess = tempFloat);
-        endElementConsumer.put(SOURCE_TAG, (qName, content) -> currentEffect.samplers.put(currentSid.get("newparam"), content));
-
-        handler = new LibraryHandler(startElementConsumer, endElementConsumer);
+        addEndElementBiConsumer(EFFECT_TAG, (qName, content) -> effects.add(currentEffect));
+        addEndElementBiConsumer(FLOAT_TAG, (qName, content) -> tempFloat = Float.parseFloat(content));
+        addEndElementBiConsumer(INDEX_OF_REFRACTION_TAG, (qName, content) -> currentEffect.refractionIndex = tempFloat);
+        addEndElementBiConsumer(INIT_FROM_TAG, (qName, content) -> currentEffect.surfaces.put(currentSid.get("newparam"), content));
+        addEndElementBiConsumer(SHININESS_TAG, (qName, content) -> currentEffect.shininess = tempFloat);
+        addEndElementBiConsumer(SOURCE_TAG, (qName, content) -> currentEffect.samplers.put(currentSid.get("newparam"), content));
     }
 
     void buildEffects(final LibraryImagesParser imagesParser) {

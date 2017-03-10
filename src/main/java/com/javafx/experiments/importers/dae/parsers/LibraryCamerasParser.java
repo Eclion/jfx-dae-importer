@@ -2,16 +2,9 @@ package com.javafx.experiments.importers.dae.parsers;
 
 import javafx.scene.Camera;
 import javafx.scene.PerspectiveCamera;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Eclion
@@ -31,22 +24,16 @@ final class LibraryCamerasParser extends AbstractParser {
     final Map<String, Camera> cameras = new HashMap<>();
     double firstCameraAspectRatio = DEFAULT_ASPECT_RATIO;
 
-    LibraryCamerasParser(){
-        final HashMap<String, BiConsumer<String, Attributes>> startElementConsumer = new HashMap<>();
+    LibraryCamerasParser() {
+        addStartElementBiConsumer("*", (qName, attributes) -> currentId.put(qName, attributes.getValue("id")));
+        addStartElementBiConsumer(CAMERA_TAG, (qName, attributes) -> aspectRatio = xfov = yfov = znear = zfar = null);
 
-        startElementConsumer.put("*", (qName, attributes) -> currentId.put(qName, attributes.getValue("id")));
-        startElementConsumer.put(CAMERA_TAG, (qName, attributes) -> aspectRatio = xfov = yfov = znear = zfar = null);
-
-        final HashMap<String, BiConsumer<String, String>> endElementConsumer = new HashMap<>();
-
-        endElementConsumer.put(ASPECT_RATIO_TAG, (qName, content) -> aspectRatio = Double.parseDouble(content));
-        endElementConsumer.put(CAMERA_TAG, (qName, content) -> saveCamera());
-        endElementConsumer.put(XFOV_TAG, (qName, content) -> xfov = Double.parseDouble(content));
-        endElementConsumer.put(YFOV_TAG, (qName, content) -> yfov = Double.parseDouble(content));
-        endElementConsumer.put(ZFAR_TAG, (qName, content) -> zfar = Double.parseDouble(content));
-        endElementConsumer.put(ZNEAR_TAG, (qName, content) -> znear = Double.parseDouble(content));
-
-        handler = new LibraryHandler(startElementConsumer, endElementConsumer);
+        addEndElementBiConsumer(ASPECT_RATIO_TAG, (qName, content) -> aspectRatio = Double.parseDouble(content));
+        addEndElementBiConsumer(CAMERA_TAG, (qName, content) -> saveCamera());
+        addEndElementBiConsumer(XFOV_TAG, (qName, content) -> xfov = Double.parseDouble(content));
+        addEndElementBiConsumer(YFOV_TAG, (qName, content) -> yfov = Double.parseDouble(content));
+        addEndElementBiConsumer(ZFAR_TAG, (qName, content) -> zfar = Double.parseDouble(content));
+        addEndElementBiConsumer(ZNEAR_TAG, (qName, content) -> znear = Double.parseDouble(content));
     }
 
     private void saveCamera() {

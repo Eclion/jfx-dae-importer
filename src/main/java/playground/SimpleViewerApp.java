@@ -83,7 +83,7 @@ public class SimpleViewerApp extends Application {
         final DaeImporter importer = new DaeImporter();
         try {
             if (args.isEmpty()) {
-                importer.load("models\\animated_cube.dae");
+                importer.load("models/animated_ball.dae");
             } else {
                 importer.load(new File(args.get(0)).toURI().toURL().toExternalForm());
             }
