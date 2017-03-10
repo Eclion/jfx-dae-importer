@@ -16,11 +16,11 @@ public class AbstractParser {
     }
 
 
-    void addStartElementBiConsumer(final String tag, final BiConsumer<String, Attributes> startElementBiConsumer) {
+    final void addStartElementBiConsumer(final String tag, final BiConsumer<String, Attributes> startElementBiConsumer) {
         handler.addStartElementBiConsumer(tag, startElementBiConsumer);
     }
 
-    void addEndElementBiConsumer(final String tag, final BiConsumer<String, String> endElementBiConsumer) {
+    final void addEndElementBiConsumer(final String tag, final BiConsumer<String, String> endElementBiConsumer) {
         handler.addEndElementBiConsumer(tag, endElementBiConsumer);
     }
 }

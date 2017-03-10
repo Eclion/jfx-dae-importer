@@ -97,7 +97,7 @@ final class LibraryControllerParser extends AbstractParser {
 
         int index = 0;
         for (int i = 0; i < vCounts.length; i++) {
-            for (int _v = 0; _v < vCounts[i]; _v++) {
+            for (int vCountIter = 0; vCountIter < vCounts[i]; ++vCountIter) {
                 int jointIndex = v[index + jointOffset];
                 int weightIndex = v[index + weightOffset];
                 weights[jointIndex][i] = weightValues[weightIndex];

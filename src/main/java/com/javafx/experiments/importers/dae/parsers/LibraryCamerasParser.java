@@ -47,7 +47,7 @@ final class LibraryCamerasParser extends AbstractParser {
         }
         if (znear != null) camera.setNearClip(znear);
         if (zfar != null) camera.setFarClip(zfar);
-        cameras.put(currentId.get("camera"), camera);
+        cameras.put(currentId.get(CAMERA_TAG), camera);
         if (firstCamera == null) {
             firstCamera = camera;
             if (aspectRatio != null) firstCameraAspectRatio = aspectRatio;

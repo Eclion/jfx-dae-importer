@@ -186,11 +186,11 @@ public final class SkinningMesh extends TriangleMesh {
             if (!(node instanceof Parent)) {
                 return;
             }
-            ((Parent) node)
-                    .getChildrenUnmodifiable()
-                    .stream()
-                    .filter(childJoint -> childJoint instanceof Parent)
-                    .forEach(childJoint -> {
+            ((Parent) node).
+                    getChildrenUnmodifiable().
+                    stream().
+                    filter(childJoint -> childJoint instanceof Parent).
+                    forEach(childJoint -> {
                                 final int childInd = orderedJoints.indexOf(childJoint);
                                 final JointIndex childJointIndex = new JointIndex(childJoint, childInd, orderedJoints);
                                 childJointIndex.parent = this;

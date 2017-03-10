@@ -100,15 +100,11 @@ final class LibraryVisualSceneParser extends AbstractParser {
         ));
     }
 
-    private void createVisualScene(final Attributes attributes)
-
-    {
+    private void createVisualScene(final Attributes attributes) {
         scenes.push(new DaeScene(attributes.getValue("id"), attributes.getValue("name")));
     }
 
-    private void createDaeNode(final Attributes attributes)
-
-    {
+    private void createDaeNode(final Attributes attributes) {
         nodes.push(new DaeNode(
                 attributes.getValue("id"),
                 attributes.getValue("name"),

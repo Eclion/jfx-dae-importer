@@ -150,11 +150,11 @@ final class LibraryEffectsParser extends AbstractParser {
                 }
             });
 
-            textureIds.entrySet().stream()
-                    .filter(entry -> samplers.containsKey(entry.getValue()))
-                    .filter(entry -> surfaces.containsKey(samplers.get(entry.getValue())))
-                    .filter(entry -> imagesParser.getImage(surfaces.get(samplers.get(entry.getValue()))) != null)
-                    .forEach(entry -> {
+            textureIds.entrySet().stream().
+                    filter(entry -> samplers.containsKey(entry.getValue())).
+                    filter(entry -> surfaces.containsKey(samplers.get(entry.getValue()))).
+                    filter(entry -> imagesParser.getImage(surfaces.get(samplers.get(entry.getValue()))) != null).
+                    forEach(entry -> {
                         final Image image = imagesParser.getImage(surfaces.get(samplers.get(entry.getValue())));
                         switch (entry.getKey()) {
                             case AMBIENT_TAG:

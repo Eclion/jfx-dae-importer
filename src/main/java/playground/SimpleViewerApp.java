@@ -50,7 +50,7 @@ import javafx.stage.StageStyle;
 /**
  * JavaFX 3D Viewer Application
  */
-public class SimpleViewerApp extends Application {
+public final class SimpleViewerApp extends Application {
     private final Group root3D = new Group();
     private final PerspectiveCamera camera = new PerspectiveCamera(true);
     private final Rotate cameraXRotate = new Rotate(-10, 0, 0, 0, Rotate.X_AXIS);
@@ -60,7 +60,6 @@ public class SimpleViewerApp extends Application {
     private final Rotate cameraLookXRotate = new Rotate(0, 0, 0, 0, Rotate.X_AXIS);
     private final Rotate cameraLookZRotate = new Rotate(0, 0, 0, 0, Rotate.Z_AXIS);
     private final Translate cameraPosition = new Translate(0, 0, -10);
-    private AutoScalingGroup autoScalingGroup = new AutoScalingGroup(2);
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -78,7 +77,6 @@ public class SimpleViewerApp extends Application {
         camera.setNearClip(0.1);
         camera.setFarClip(100);
         scene.setCamera(camera);
-        root3D.getChildren().addAll(camera, autoScalingGroup);
 
         final DaeImporter importer = new DaeImporter();
         try {
@@ -91,7 +89,7 @@ public class SimpleViewerApp extends Application {
             e.printStackTrace();
         }
 
-        autoScalingGroup.getChildren().add(importer.getRoot());
+        root3D.getChildren().addAll(camera, importer.getRoot());
 
         final Timeline timeline = new Timeline();
         importer.getTimelines().values().forEach(tl -> timeline.getKeyFrames().addAll(tl.getKeyFrames()));

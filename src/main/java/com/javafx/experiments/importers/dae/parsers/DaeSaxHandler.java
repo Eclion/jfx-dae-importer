@@ -184,15 +184,15 @@ public final class DaeSaxHandler extends AbstractParser {
         return views;
     }
 
-    public HashMap<String, List<KeyFrame>> getKeyFramesMap() {
+    public Map<String, List<KeyFrame>> getKeyFramesMap() {
         final LibraryAnimationsParser animationsParser = (LibraryAnimationsParser) parsers.get(LIBRARY_ANIMATIONS_TAG);
         final LibraryVisualSceneParser visualSceneParser = (LibraryVisualSceneParser) parsers.get(LIBRARY_VISUAL_SCENES_TAG);
         if (animationsParser == null || visualSceneParser == null) return new HashMap<>();
 
-        final HashMap<String, List<KeyFrame>> frames = new HashMap<>();
-        visualSceneParser.scenes.peek().skeletons.values()
-                .forEach(skeleton -> animationsParser.animations.values()
-                        .forEach(animation -> frames.put(animation.id, animation.calculateAnimation(skeleton)))
+        final Map<String, List<KeyFrame>> frames = new HashMap<>();
+        visualSceneParser.scenes.peek().skeletons.values().
+                forEach(skeleton -> animationsParser.animations.values().
+                        forEach(animation -> frames.put(animation.id, animation.calculateAnimation(skeleton)))
                 );
         return frames;
     }

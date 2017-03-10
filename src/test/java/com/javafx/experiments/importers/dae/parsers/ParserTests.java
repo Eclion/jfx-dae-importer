@@ -19,7 +19,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -141,7 +145,7 @@ public final class ParserTests {
         final LibraryHandler parser = lightsParser.getLibraryHandler();
         executeParsing("lights_1.xml", parser);
 
-        throw new Exception("Nothing implemented yet for the lights");
+        fail("Nothing implemented yet for the lights");
     }
 
     @Test

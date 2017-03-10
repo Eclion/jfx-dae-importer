@@ -80,5 +80,3 @@ public final class Joint extends Group {
         this.getTransforms().addAll(t, is, joz, joy, jox, rz, ry, rx, s, a);
     }
 }
-
-

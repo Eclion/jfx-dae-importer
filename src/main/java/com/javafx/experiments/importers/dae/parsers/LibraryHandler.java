@@ -16,11 +16,11 @@ public class LibraryHandler extends DefaultHandler {
     private final Map<String, BiConsumer<String, Attributes>> startElementBiConsumers = new HashMap<>();
     private final Map<String, BiConsumer<String, String>> endElementBiConsumers = new HashMap<>();
 
-    protected void addStartElementBiConsumer(final String tag, final BiConsumer<String, Attributes> startElementBiConsumer) {
+    protected final void addStartElementBiConsumer(final String tag, final BiConsumer<String, Attributes> startElementBiConsumer) {
         startElementBiConsumers.put(tag, startElementBiConsumer);
     }
 
-    protected void addEndElementBiConsumer(final String tag, final BiConsumer<String, String> endElementBiConsumer) {
+    protected final void addEndElementBiConsumer(final String tag, final BiConsumer<String, String> endElementBiConsumer) {
         endElementBiConsumers.put(tag, endElementBiConsumer);
     }
 

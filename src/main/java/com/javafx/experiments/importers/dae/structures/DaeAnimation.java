@@ -82,7 +82,7 @@ public final class DaeAnimation {
         }
     }
 
-    private Interpolator getInterpolatorFromString(String interpolation) {
+    private Interpolator getInterpolatorFromString(final String interpolation) {
         switch (interpolation.toLowerCase()) {
             case "linear":
             default:

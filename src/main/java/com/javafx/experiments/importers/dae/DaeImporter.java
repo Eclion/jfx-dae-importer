@@ -111,8 +111,8 @@ public final class DaeImporter extends Importer {
     }
 
     private void buildTimelines(final DaeSaxHandler parser) {
-        parser.getKeyFramesMap().entrySet()
-                .forEach(entry -> {
+        parser.getKeyFramesMap().entrySet().
+                forEach(entry -> {
                             if (!timelines.containsKey(entry.getKey())) {
                                 timelines.put(entry.getKey(), new Timeline());
                             }
