@@ -24,7 +24,7 @@ final class LibraryCamerasParser extends AbstractParser {
     private Double yfov;
     private Double znear;
     private Double zfar;
-    Camera firstCamera = null;
+    Camera firstCamera;
     final Map<String, Camera> cameras = new HashMap<>();
     double firstCameraAspectRatio = DEFAULT_ASPECT_RATIO;
 

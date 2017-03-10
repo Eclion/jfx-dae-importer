@@ -13,7 +13,6 @@ import javafx.scene.transform.Affine;
 import javafx.scene.transform.Rotate;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Eclion

@@ -3,7 +3,6 @@ package com.javafx.experiments.importers.dae.parsers;
 import com.javafx.experiments.importers.dae.structures.DaeNode;
 import com.javafx.experiments.importers.dae.structures.DaeScene;
 import com.javafx.experiments.importers.dae.structures.DaeSkeleton;
-import com.sun.xml.internal.bind.v2.model.core.ID;
 import javafx.geometry.Point3D;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.Rotate;
