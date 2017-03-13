@@ -121,6 +121,7 @@ public final class DaeSaxHandler extends AbstractParser {
             final MeshView meshView = new MeshView(meshes.get(i));
             meshView.setId(node.name);
             if (i < materials.size()) meshView.setMaterial(materials.get(i));
+            meshView.getTransforms().addAll(node.transforms);
             views.add(meshView);
         }
 
@@ -177,6 +178,7 @@ public final class DaeSaxHandler extends AbstractParser {
 
             meshView.setId(node.name);
             if (i < materials.size()) meshView.setMaterial(materials.get(i));
+            meshView.getTransforms().addAll(node.transforms);
             views.add(meshView);
         }
 
