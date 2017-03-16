@@ -1,15 +1,9 @@
 package com.javafx.experiments.importers.dae.parsers;
 
-import com.javafx.experiments.animation.SkinningMeshTimer;
 import com.javafx.experiments.importers.dae.structures.*;
-import com.javafx.experiments.shape3d.SkinningMesh;
 import javafx.animation.KeyFrame;
 import javafx.scene.Camera;
 import javafx.scene.Group;
-import javafx.scene.paint.Material;
-import javafx.scene.shape.MeshView;
-import javafx.scene.shape.TriangleMesh;
-import javafx.scene.transform.Affine;
 import javafx.scene.transform.Rotate;
 
 import java.util.*;
@@ -77,14 +71,8 @@ public final class DaeSaxHandler extends AbstractParser {
 
     public Group buildScene() {
         final LibraryVisualSceneParser visualSceneParser = (LibraryVisualSceneParser) parsers.get(LIBRARY_VISUAL_SCENES_TAG);
-        final LibraryImagesParser imagesParser = (LibraryImagesParser) parsers.get(LIBRARY_IMAGES_TAG);
-        final LibraryEffectsParser effectsParser = (LibraryEffectsParser) parsers.get(LIBRARY_EFFECTS_TAG);
-        final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(LIBRARY_GEOMETRIES_TAG);
-        final LibraryControllerParser controllerParser = (LibraryControllerParser) parsers.get(LIBRARY_CONTROLLERS_TAG);
-        final LibraryMaterialsParser materialsParser = (LibraryMaterialsParser) parsers.get(LIBRARY_MATERIALS_TAG);
-        final LibraryCamerasParser camerasParser = (LibraryCamerasParser) parsers.get(LIBRARY_CAMERAS_TAG);
 
-        if (visualSceneParser == null) return new Group();
+        if (visualSceneParser == null || visualSceneParser.scenes.isEmpty()) return new Group();
 
         final DaeScene rootNode = visualSceneParser.scenes.peek();
 
@@ -98,38 +86,62 @@ public final class DaeSaxHandler extends AbstractParser {
             rootNode.getTransforms().add(new Rotate(180, 0, 0, 0, Rotate.X_AXIS));
         }
 
-        //TODO
+        final DaeBuildHelper buildHelper = new DaeBuildHelper();
+
+        addCamerasToBuildHelper(buildHelper);
+        addControllersToBuildHelper(buildHelper);
+        addGeometriesToBuildHelper(buildHelper);
+        addMaterialsToBuildHelper(buildHelper);
+
+        buildHelper.withSkeletons(rootNode.skeletons);
+
+        rootNode.build(buildHelper);
+
+        return rootNode;
+    }
+
+    private void addCamerasToBuildHelper(DaeBuildHelper buildHelper) {
+        final LibraryCamerasParser camerasParser = (LibraryCamerasParser) parsers.get(LIBRARY_CAMERAS_TAG);
+
+        if (camerasParser != null) {
+            buildHelper.withCameras(camerasParser.cameras);
+        }
+    }
+
+    private void addControllersToBuildHelper(DaeBuildHelper buildHelper) {
+        final LibraryControllerParser controllerParser = (LibraryControllerParser) parsers.get(LIBRARY_CONTROLLERS_TAG);
+
+        if (controllerParser != null) {
+            buildHelper.withControllers(controllerParser.controllers);
+        }
+
+    }
+
+    private void addGeometriesToBuildHelper(DaeBuildHelper buildHelper) {
+        final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(LIBRARY_GEOMETRIES_TAG);
+
+        if (geometriesParser != null) {
+            buildHelper.withMeshes(geometriesParser.meshes)
+                    .withMeshMaterialIds(geometriesParser.materials);
+        }
+    }
+
+    private void addMaterialsToBuildHelper(DaeBuildHelper buildHelper) {
+        final LibraryEffectsParser effectsParser = (LibraryEffectsParser) parsers.get(LIBRARY_EFFECTS_TAG);
+        final LibraryMaterialsParser materialsParser = (LibraryMaterialsParser) parsers.get(LIBRARY_MATERIALS_TAG);
+        final LibraryImagesParser imagesParser = (LibraryImagesParser) parsers.get(LIBRARY_IMAGES_TAG);
+
         if (imagesParser != null && effectsParser != null) {
             effectsParser.buildEffects(imagesParser.images);
         }
 
-        DaeBuildHelper buildHelper = new DaeBuildHelper();
-
         if (materialsParser != null && effectsParser != null) {
-            buildHelper = buildHelper.withMaterialMap(
+            buildHelper.withMaterialMap(
                     mergeMaps(
                             materialsParser.materialIdToEffectIdMap,
                             effectsParser.effectIdToMaterialMap));
         }
 
-        if (geometriesParser != null) {
-            buildHelper = buildHelper.withMeshes(geometriesParser.meshes)
-                    .withMeshMaterialIds(geometriesParser.materials);
-        }
-
-        if (controllerParser != null) {
-            buildHelper = buildHelper.withControllers(controllerParser.controllers);
-        }
-
-        if (camerasParser != null) {
-            buildHelper = buildHelper.withCameras(camerasParser.cameras);
-        }
-
-        buildHelper = buildHelper.withSkeletons(rootNode.skeletons);
-
-        rootNode.build(buildHelper);
-
-        return rootNode;
     }
 
     public Map<String, List<KeyFrame>> getKeyFramesMap() {
