@@ -2,7 +2,6 @@ package com.javafx.experiments.importers.dae.structures;
 
 import com.javafx.experiments.animation.SkinningMeshTimer;
 import com.javafx.experiments.shape3d.SkinningMesh;
-import javafx.scene.Camera;
 import javafx.scene.Group;
 import javafx.scene.paint.Material;
 import javafx.scene.shape.MeshView;
@@ -105,7 +104,11 @@ public final class DaeNode extends Group {
                 break;
         }
 
-        getChildren().stream()
+        daeNodeTreeBuild(this, buildHelper);
+    }
+
+    static void daeNodeTreeBuild(Group node, DaeBuildHelper buildHelper) {
+        node.getChildren().stream()
                 .filter(child -> child instanceof DaeNode)
                 .map(child -> (DaeNode) child)
                 .forEach(child -> child.build(buildHelper));
