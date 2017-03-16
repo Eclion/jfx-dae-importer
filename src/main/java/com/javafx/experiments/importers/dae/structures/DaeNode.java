@@ -62,10 +62,10 @@ public final class DaeNode extends Group {
     }
 
     public boolean hasJoints() {
-        return getChildren().stream()
-                .filter(node -> node instanceof DaeNode)
-                .map(node -> (DaeNode) node)
-                .anyMatch(DaeNode::isJoint);
+        return getChildren().stream().
+                filter(node -> node instanceof DaeNode).
+                map(node -> (DaeNode) node).
+                anyMatch(DaeNode::isJoint);
     }
 
     boolean isJoint() {
@@ -104,10 +104,10 @@ public final class DaeNode extends Group {
     }
 
     static void daeNodeTreeBuild(final Group node, final DaeBuildHelper buildHelper) {
-        node.getChildren().stream()
-                .filter(child -> child instanceof DaeNode)
-                .map(child -> (DaeNode) child)
-                .forEach(child -> child.build(buildHelper));
+        node.getChildren().stream().
+                filter(child -> child instanceof DaeNode).
+                map(child -> (DaeNode) child).
+                forEach(child -> child.build(buildHelper));
     }
 
     private void buildCamera(final DaeBuildHelper buildHelper) {

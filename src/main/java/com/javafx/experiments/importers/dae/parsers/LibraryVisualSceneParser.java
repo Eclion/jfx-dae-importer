@@ -55,7 +55,7 @@ final class LibraryVisualSceneParser extends AbstractParser {
         addEndElementBiConsumer(SKELETON_TAG, (qName, content) -> nodes.peek().skeletonId = content.substring(1));
     }
 
-    private String extractUrl(Attributes attributes) {
+    private String extractUrl(final Attributes attributes) {
         return attributes.getValue(URL_STR).substring(1);
     }
 
