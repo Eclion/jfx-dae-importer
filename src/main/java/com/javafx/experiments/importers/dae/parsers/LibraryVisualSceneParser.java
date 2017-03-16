@@ -36,13 +36,13 @@ final class LibraryVisualSceneParser extends AbstractParser {
     private static final String WHITESPACES_REGEX = "\\s+";
 
     final LinkedList<DaeScene> scenes = new LinkedList<>();
-    final LinkedList<DaeNode> nodes = new LinkedList<>();
+    private final LinkedList<DaeNode> nodes = new LinkedList<>();
 
     LibraryVisualSceneParser() {
-        addStartElementBiConsumer(INSTANCE_CAMERA_TAG, (qName, attributes) -> nodes.peek().instanceCameraId = attributes.getValue(URL_STR).substring(1));
-        addStartElementBiConsumer(INSTANCE_CONTROLLER_TAG, (qName, attributes) -> nodes.peek().instanceControllerId = attributes.getValue(URL_STR).substring(1));
-        addStartElementBiConsumer(INSTANCE_GEOMETRY_TAG, (qName, attributes) -> nodes.peek().instanceGeometryId = attributes.getValue(URL_STR).substring(1));
-        addStartElementBiConsumer(INSTANCE_LIGHT_TAG, (qName, attributes) -> nodes.peek().instanceLightId = attributes.getValue(URL_STR).substring(1));
+        addStartElementBiConsumer(INSTANCE_CAMERA_TAG, (qName, attributes) -> nodes.peek().setInstanceCameraId(attributes.getValue(URL_STR).substring(1)));
+        addStartElementBiConsumer(INSTANCE_CONTROLLER_TAG, (qName, attributes) -> nodes.peek().setInstanceControllerId(attributes.getValue(URL_STR).substring(1)));
+        addStartElementBiConsumer(INSTANCE_GEOMETRY_TAG, (qName, attributes) -> nodes.peek().setInstanceGeometryId(attributes.getValue(URL_STR).substring(1)));
+        addStartElementBiConsumer(INSTANCE_LIGHT_TAG, (qName, attributes) -> nodes.peek().setInstanceLightId(attributes.getValue(URL_STR).substring(1)));
         addStartElementBiConsumer(INSTANCE_MATERIAL_TAG, (qName, attributes) -> nodes.peek().instanceMaterialId = attributes.getValue("target").substring(1));
         addStartElementBiConsumer(NODE_TAG, (qName, attributes) -> createDaeNode(attributes));
         addStartElementBiConsumer(VISUAL_SCENE_TAG, (qName, attributes) -> createVisualScene(attributes));
@@ -57,7 +57,7 @@ final class LibraryVisualSceneParser extends AbstractParser {
 
     private void addTranslation(final String content) {
         final String[] tv = content.split(WHITESPACES_REGEX);
-        nodes.peek().transforms.add(new Translate(
+        nodes.peek().getTransforms().add(new Translate(
                 Double.parseDouble(tv[0].trim()),
                 Double.parseDouble(tv[1].trim()),
                 Double.parseDouble(tv[2].trim())
@@ -66,7 +66,7 @@ final class LibraryVisualSceneParser extends AbstractParser {
 
     private void addRotation(final String content) {
         final String[] rv = content.split(WHITESPACES_REGEX);
-        nodes.peek().transforms.add(new Rotate(
+        nodes.peek().getTransforms().add(new Rotate(
                 Double.parseDouble(rv[3].trim()),
                 0, 0, 0,
                 new Point3D(
@@ -79,7 +79,7 @@ final class LibraryVisualSceneParser extends AbstractParser {
 
     private void addScaling(final String content) {
         final String[] sv = content.split(WHITESPACES_REGEX);
-        nodes.peek().transforms.add(new Scale(
+        nodes.peek().getTransforms().add(new Scale(
                 Double.parseDouble(sv[0].trim()),
                 Double.parseDouble(sv[1].trim()),
                 Double.parseDouble(sv[2].trim()),
@@ -89,7 +89,7 @@ final class LibraryVisualSceneParser extends AbstractParser {
 
     private void addMatrixTransformation(final String content) {
         final String[] mv = content.split(WHITESPACES_REGEX);
-        nodes.peek().transforms.add(new Affine(
+        nodes.peek().getTransforms().add(new Affine(
                 Double.parseDouble(mv[0].trim()), // mxx
                 Double.parseDouble(mv[1].trim()), // mxy
                 Double.parseDouble(mv[2].trim()), // mxz
@@ -120,19 +120,12 @@ final class LibraryVisualSceneParser extends AbstractParser {
     private void setDaeNode() {
         final DaeNode thisNode = nodes.pop();
         if (nodes.isEmpty()) {
-            if (thisNode.isCamera()) {
-                scenes.peek().cameraNodes.put(thisNode.id, thisNode);
-            } else if (thisNode.isLight()) {
-                scenes.peek().lightNodes.put(thisNode.id, thisNode);
-            } else if (thisNode.hasJoints()) {
-                scenes.peek().skeletons.put(thisNode.id, DaeSkeleton.fromDaeNode(thisNode));
-            } else if (thisNode.isMesh()) {
-                scenes.peek().meshNodes.put(thisNode.id, thisNode);
-            } else if (thisNode.isController()) {
-                scenes.peek().controllerNodes.put(thisNode.id, thisNode);
+            scenes.peek().getChildren().add(thisNode);
+            if (thisNode.hasJoints()) {
+                scenes.peek().skeletons.put(thisNode.getId(), DaeSkeleton.fromDaeNode(thisNode));
             }
         } else {
-            nodes.peek().children.put(thisNode.id, thisNode);
+            nodes.peek().getChildren().add(thisNode);
         }
     }
 }

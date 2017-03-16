@@ -18,6 +18,7 @@ import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 
 
 import static org.junit.Assert.fail;
@@ -48,10 +49,7 @@ public final class ParserTests {
         final LibraryHandler parser = effectsParser.getLibraryHandler();
         executeParsing("effects_1.xml", parser);
 
-        final LibraryImagesParser mockImageParser = mock(LibraryImagesParser.class);
-        when(mockImageParser.getImage(any())).thenReturn(null);
-
-        effectsParser.buildEffects(mockImageParser);
+        effectsParser.buildEffects(new HashMap<>());
 
         final PhongMaterial actualMaterial = (PhongMaterial) effectsParser.getEffectMaterial("shine-fx");
 
@@ -165,11 +163,7 @@ public final class ParserTests {
 
         DaeScene actualScene = visualSceneParser.scenes.get(0);
 
-        assertEquals("Scene", actualScene.id);
-        assertEquals(1, actualScene.cameraNodes.size());
-        assertEquals(1, actualScene.lightNodes.size());
-        assertEquals(0, actualScene.meshNodes.size());
+        assertEquals("Scene", actualScene.getId());
         assertEquals(1, actualScene.skeletons.size());
-        assertEquals(1, actualScene.controllerNodes.size());
     }
 }

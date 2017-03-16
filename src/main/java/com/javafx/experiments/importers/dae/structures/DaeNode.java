@@ -1,68 +1,172 @@
 package com.javafx.experiments.importers.dae.structures;
 
-import javafx.scene.transform.Transform;
+import com.javafx.experiments.animation.SkinningMeshTimer;
+import com.javafx.experiments.shape3d.SkinningMesh;
+import javafx.scene.Camera;
+import javafx.scene.Group;
+import javafx.scene.paint.Material;
+import javafx.scene.shape.MeshView;
+import javafx.scene.shape.TriangleMesh;
+import javafx.scene.transform.Affine;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
  * @author Eclion
  *         make subclasses of this one
  */
-public final class DaeNode {
-    public final String id;
+public final class DaeNode extends Group {
     public final String name;
     public final String type;
-    public final List<Transform> transforms = new ArrayList<>();
-    public String instanceCameraId;
-    public String instanceGeometryId;
-    public String instanceControllerId;
-    public String instanceLightId;
+    private Category instanceCategory = Category.NONE;
+    private String instanceId;
     public String instanceMaterialId;
     public String skeletonId;
-    public final Map<String, DaeNode> children = new HashMap<>();
+
+    private enum Category {
+        CAMERA,
+        GEOMETRY,
+        CONTROLLER,
+        LIGHT,
+        NONE
+    }
 
     public DaeNode(final String id, final String name, final String type) {
-        this.id = id;
+        this.setId(id);
         this.name = name;
         this.type = type;
     }
 
-    public boolean isCamera() {
-        return instanceCameraId != null;
+
+    public void setInstanceCameraId(final String instanceCameraId) {
+        instanceCategory = Category.CAMERA;
+        instanceId = instanceCameraId;
     }
 
-    public boolean isLight() {
-        return instanceLightId != null;
+    public void setInstanceGeometryId(final String instanceGeometryId) {
+        instanceId = instanceGeometryId;
+        instanceCategory = Category.GEOMETRY;
     }
 
-    public boolean isMesh() {
-        return instanceGeometryId != null;
+    public void setInstanceControllerId(final String instanceControllerId) {
+        instanceId = instanceControllerId;
+        instanceCategory = Category.CONTROLLER;
     }
 
-    public boolean isController() {
-        return instanceControllerId != null;
+    public void setInstanceLightId(final String instanceLightId) {
+        instanceId = instanceLightId;
+        instanceCategory = Category.LIGHT;
+    }
+
+
+    public void setInstanceMaterialId(final String instanceMaterialId) {
+        this.instanceMaterialId = instanceMaterialId;
     }
 
     public boolean hasJoints() {
-        return children.values().stream().anyMatch(DaeNode::isJoint);
+        return getChildren().stream()
+                .filter(node -> node instanceof DaeNode)
+                .map(node -> (DaeNode) node)
+                .anyMatch(DaeNode::isJoint);
     }
 
     boolean isJoint() {
         return "JOINT".equalsIgnoreCase(type);
     }
 
+
     @Override
     public String toString() {
         return "DaeNode{"
-                + "id='" + this.id + '\''
+                + "id='" + this.getId() + '\''
                 + ", name='" + this.name + '\''
-                + ", instance_camera=" + this.instanceCameraId
-                + ", instance_geometry=" + this.instanceGeometryId
-                + ", instance_controller=" + this.instanceControllerId
+                + ", instance=" + this.instanceId
+                + ", instance_category=" + this.instanceCategory.toString().toLowerCase()
                 + '}';
+    }
+
+
+    void build(DaeBuildHelper buildHelper) {
+        switch (instanceCategory) {
+            case CAMERA:
+                buildCamera(buildHelper);
+                break;
+            case CONTROLLER:
+                buildController(buildHelper);
+                break;
+            case GEOMETRY:
+                buildGeometry(buildHelper);
+                break;
+            case LIGHT:
+                break;
+            case NONE:
+            default:
+                break;
+        }
+
+        getChildren().stream()
+                .filter(child -> child instanceof DaeNode)
+                .map(child -> (DaeNode) child)
+                .forEach(child -> child.build(buildHelper));
+    }
+
+    private void buildCamera(DaeBuildHelper buildHelper) {
+        getChildren().add(buildHelper.getCamera(instanceId));
+    }
+
+    private void buildController(DaeBuildHelper buildHelper) {
+        final DaeController controller = buildHelper.getController(instanceId);
+
+        final DaeSkeleton skeleton = buildHelper.getSkeleton(controller.getName());
+
+        final String[] bones = skeleton.joints.keySet().toArray(new String[]{});
+        final Affine[] bindTransforms = new Affine[bones.length];
+        final Joint[] joints = new Joint[bones.length];
+
+        for (int i = 0; i < bones.length; i++) {
+            bindTransforms[i] = controller.bindPoses.get(i);
+            joints[i] = skeleton.joints.get(bones[i]);
+        }
+
+        final List<TriangleMesh> meshes = buildHelper.getMeshes(controller.skinId);
+
+        final List<Material> materials = buildHelper.getMaterials(controller.skinId);
+
+        for (int i = 0; i < meshes.size(); i++) {
+            final SkinningMesh skinningMesh = new SkinningMesh(
+                    meshes.get(i), controller.vertexWeights, bindTransforms,
+                    controller.bindShapeMatrix, Arrays.asList(joints), Arrays.asList(skeleton));
+
+            final MeshView meshView = new MeshView(skinningMesh);
+
+            final SkinningMeshTimer skinningMeshTimer = new SkinningMeshTimer(skinningMesh);
+            if (meshView.getScene() != null) {
+                skinningMeshTimer.start();
+            }
+            meshView.sceneProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue == null) {
+                    skinningMeshTimer.stop();
+                } else {
+                    skinningMeshTimer.start();
+                }
+            });
+
+            if (i < materials.size()) meshView.setMaterial(materials.get(i));
+            getChildren().add(meshView);
+        }
+    }
+
+    private void buildGeometry(DaeBuildHelper buildHelper) {
+        final List<TriangleMesh> meshes = buildHelper.getMeshes(instanceId);
+
+        final List<Material> materials = buildHelper.getMaterials(instanceId);
+
+        for (int i = 0; i < meshes.size(); i++) {
+            final MeshView meshView = new MeshView(meshes.get(i));
+            if (i < materials.size()) meshView.setMaterial(materials.get(i));
+            getChildren().add(meshView);
+        }
+
     }
 }

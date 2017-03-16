@@ -75,139 +75,61 @@ public final class DaeSaxHandler extends AbstractParser {
                 : 4.0 / 3.0;
     }
 
-    public void buildScene(final Group rootNode) {
+    public Group buildScene() {
         final LibraryVisualSceneParser visualSceneParser = (LibraryVisualSceneParser) parsers.get(LIBRARY_VISUAL_SCENES_TAG);
         final LibraryImagesParser imagesParser = (LibraryImagesParser) parsers.get(LIBRARY_IMAGES_TAG);
         final LibraryEffectsParser effectsParser = (LibraryEffectsParser) parsers.get(LIBRARY_EFFECTS_TAG);
         final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(LIBRARY_GEOMETRIES_TAG);
         final LibraryControllerParser controllerParser = (LibraryControllerParser) parsers.get(LIBRARY_CONTROLLERS_TAG);
         final LibraryMaterialsParser materialsParser = (LibraryMaterialsParser) parsers.get(LIBRARY_MATERIALS_TAG);
+        final LibraryCamerasParser camerasParser = (LibraryCamerasParser) parsers.get(LIBRARY_CAMERAS_TAG);
 
-        if (visualSceneParser == null) return;
+        if (visualSceneParser == null) return new Group();
 
-        final DaeScene scene = visualSceneParser.scenes.peek();
+        final DaeScene rootNode = visualSceneParser.scenes.peek();
+
         final String upAxis = parsers.containsKey(ASSET_TAG)
                 ? ((AssetParser) parsers.get(ASSET_TAG)).upAxis
                 : "Z_UP";
+
         if ("Z_UP".equals(upAxis)) {
             rootNode.getTransforms().add(new Rotate(90, 0, 0, 0, Rotate.X_AXIS));
         } else if ("Y_UP".equals(upAxis)) {
             rootNode.getTransforms().add(new Rotate(180, 0, 0, 0, Rotate.X_AXIS));
         }
-        rootNode.setId(scene.id);
 
+        //TODO
         if (imagesParser != null && effectsParser != null) {
             effectsParser.buildEffects(imagesParser.images);
         }
 
-        final Map<String, Material> materialIdToMaterialMap =
-                (materialsParser == null || effectsParser == null)
-                        ? new HashMap<>()
-                        : mergeMaps(materialsParser.materialIdToEffectIdMap, effectsParser.effectIdToMaterialMap);
+        DaeBuildHelper buildHelper = new DaeBuildHelper();
 
+        if (materialsParser != null && effectsParser != null) {
+            buildHelper = buildHelper.withMaterialMap(
+                    mergeMaps(
+                            materialsParser.materialIdToEffectIdMap,
+                            effectsParser.effectIdToMaterialMap));
+        }
 
         if (geometriesParser != null) {
-            scene.meshNodes.values().stream()
-                    .map(meshNode -> getMeshes(meshNode, geometriesParser, materialIdToMaterialMap))
-                    .forEach(rootNode.getChildren()::addAll);
-
-            if (controllerParser != null) {
-                scene.controllerNodes.values().stream()
-                        .map(controllerNode -> getControllers(controllerNode, geometriesParser, controllerParser, scene, materialIdToMaterialMap))
-                        .forEach(rootNode.getChildren()::addAll);
-            }
+            buildHelper = buildHelper.withMeshes(geometriesParser.meshes)
+                    .withMeshMaterialIds(geometriesParser.materials);
         }
 
-    }
-
-    private Camera getCamera(final DaeNode node, LibraryCamerasParser camerasParser) {
-        if (camerasParser == null) return null;
-        final Camera camera = camerasParser.cameras.get(node.instanceCameraId);
-        camera.setId(node.name);
-        camera.getTransforms().addAll(node.transforms);
-        return camera;
-    }
-
-    private List<MeshView> getMeshes(final DaeNode node,
-                                     LibraryGeometriesParser geometriesParser,
-                                     Map<String, Material> materialIdToMaterialMap) {
-        final List<MeshView> views = new ArrayList<>();
-        if (geometriesParser == null) return views;
-
-        final List<TriangleMesh> meshes = geometriesParser.getMeshes(node.instanceGeometryId);
-
-
-        final List<Material> materials = getMaterials(
-                geometriesParser.getMaterialIds(node.instanceGeometryId),
-                materialIdToMaterialMap);
-
-
-        for (int i = 0; i < meshes.size(); i++) {
-            final MeshView meshView = new MeshView(meshes.get(i));
-            meshView.setId(node.name);
-            if (i < materials.size()) meshView.setMaterial(materials.get(i));
-            meshView.getTransforms().addAll(node.transforms);
-            views.add(meshView);
+        if (controllerParser != null) {
+            buildHelper = buildHelper.withControllers(controllerParser.controllers);
         }
 
-        return views;
-
-    }
-
-    private List<MeshView> getControllers(final DaeNode node, LibraryGeometriesParser geometriesParser,
-                                          LibraryControllerParser controllerParser, DaeScene scene, Map<String, Material> materialIdToMaterialMap) {
-
-        if (controllerParser == null || scene == null
-                || geometriesParser == null) return new ArrayList<>();
-
-        final DaeController controller = controllerParser.
-                controllers.get(node.instanceControllerId);
-
-        final DaeSkeleton skeleton = scene.skeletons.get(controller.getName());
-
-        final String[] bones = skeleton.joints.keySet().toArray(new String[]{});
-        final Affine[] bindTransforms = new Affine[bones.length];
-        final Joint[] joints = new Joint[bones.length];
-
-        for (int i = 0; i < bones.length; i++) {
-            bindTransforms[i] = controller.bindPoses.get(i);
-            joints[i] = skeleton.joints.get(bones[i]);
+        if (camerasParser != null) {
+            buildHelper = buildHelper.withCameras(camerasParser.cameras);
         }
 
-        final List<TriangleMesh> meshes = geometriesParser.getMeshes(controller.skinId);
+        buildHelper = buildHelper.withSkeletons(rootNode.skeletons);
 
-        final List<Material> materials = getMaterials(
-                geometriesParser.getMaterialIds(controller.skinId),
-                materialIdToMaterialMap);
+        rootNode.build(buildHelper);
 
-        final List<MeshView> views = new ArrayList<>();
-
-        for (int i = 0; i < meshes.size(); i++) {
-            final SkinningMesh skinningMesh = new SkinningMesh(
-                    meshes.get(i), controller.vertexWeights, bindTransforms,
-                    controller.bindShapeMatrix, Arrays.asList(joints), Arrays.asList(skeleton));
-
-            final MeshView meshView = new MeshView(skinningMesh);
-
-            final SkinningMeshTimer skinningMeshTimer = new SkinningMeshTimer(skinningMesh);
-            if (meshView.getScene() != null) {
-                skinningMeshTimer.start();
-            }
-            meshView.sceneProperty().addListener((observable, oldValue, newValue) -> {
-                if (newValue == null) {
-                    skinningMeshTimer.stop();
-                } else {
-                    skinningMeshTimer.start();
-                }
-            });
-
-            meshView.setId(node.name);
-            if (i < materials.size()) meshView.setMaterial(materials.get(i));
-            meshView.getTransforms().addAll(node.transforms);
-            views.add(meshView);
-        }
-
-        return views;
+        return rootNode;
     }
 
     public Map<String, List<KeyFrame>> getKeyFramesMap() {
@@ -221,17 +143,6 @@ public final class DaeSaxHandler extends AbstractParser {
                         forEach(animation -> frames.put(animation.id, animation.calculateAnimation(skeleton)))
                 );
         return frames;
-    }
-
-    private List<Material> getMaterials(List<String> materialIds, Map<String, Material> materialIdToMaterialMap) {
-        final List<Material> materials = new ArrayList<>();
-
-        if (!materialIdToMaterialMap.isEmpty()) {
-            materialIds.stream().
-                    map(materialIdToMaterialMap::get).
-                    forEach(materials::add);
-        }
-        return materials;
     }
 
     private <A, B, C> Map<A, C> mergeMaps(Map<A, B> abMap, Map<B, C> bcMap) {

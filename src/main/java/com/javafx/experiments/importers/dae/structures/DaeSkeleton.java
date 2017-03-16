@@ -24,12 +24,16 @@ public final class DaeSkeleton extends Parent {
     }
 
     public static DaeSkeleton fromDaeNode(final DaeNode rootNode) {
-        final DaeSkeleton skeleton = new DaeSkeleton(rootNode.id, rootNode.name);
+        final DaeSkeleton skeleton = new DaeSkeleton(rootNode.getId(), rootNode.name);
 
-        skeleton.getTransforms().addAll(rootNode.transforms);
+        skeleton.getTransforms().addAll(rootNode.getTransforms());
 
         List<DaeNode> rootDaeNodes = new ArrayList<>();
-        rootDaeNodes.addAll(rootNode.children.values().stream().filter(DaeNode::isJoint).collect(Collectors.toList()));
+        rootDaeNodes.addAll(rootNode.getChildren().stream()
+                .filter(node -> node instanceof DaeNode)
+                .map(node -> (DaeNode) node)
+                .filter(DaeNode::isJoint)
+                .collect(Collectors.toList()));
 
         skeleton.getChildren().addAll(buildBone(rootDaeNodes, skeleton.joints, skeleton.bindTransforms));
 
@@ -40,18 +44,22 @@ public final class DaeSkeleton extends Parent {
         return daeNodes.stream().
                 map(node -> {
                     final Joint joint = new Joint();
-                    joint.setId(node.id);
+                    joint.setId(node.getId());
 
                     joints.put(joint.getId(), joint);
 
-                    node.transforms.stream().
+                    node.getTransforms().stream().
                             filter(transform -> transform instanceof Affine).
                             findFirst().
                             ifPresent(joint.a::setToTransform);
 
                     bindTransforms.put(joint.getId(), joint.a);
 
-                    final List<DaeNode> children = node.children.values().stream().filter(DaeNode::isJoint).collect(Collectors.toList());
+                    final List<DaeNode> children = node.getChildren().stream()
+                            .filter(n -> n instanceof DaeNode)
+                            .map(n -> (DaeNode) n)
+                            .filter(DaeNode::isJoint)
+                            .collect(Collectors.toList());
                     joint.getChildren().addAll(buildBone(children, joints, bindTransforms));
                     return joint;
                 }).
