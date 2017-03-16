@@ -60,7 +60,7 @@ import java.util.logging.Logger;
 @SuppressWarnings("UnusedDeclaration")
 public final class DaeImporter extends Importer {
     private static final Logger LOGGER = Logger.getLogger(DaeImporter.class.getSimpleName());
-    private final Group rootNode = new Group();
+    private Group rootNode = new Group();
     private Camera firstCamera;
     private double firstCameraAspectRatio;
     private final Map<String, Timeline> timelines = new HashMap<>();
@@ -99,7 +99,7 @@ public final class DaeImporter extends Importer {
 
             buildTimelines(handler);
 
-            handler.buildScene(rootNode);
+            rootNode = handler.buildScene();
             firstCamera = handler.getFirstCamera();
             firstCameraAspectRatio = handler.getFirstCameraAspectRatio();
 
