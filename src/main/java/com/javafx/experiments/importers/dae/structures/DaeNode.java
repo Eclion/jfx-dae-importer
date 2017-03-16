@@ -20,7 +20,7 @@ public final class DaeNode extends Group {
     public final String type;
     private Category instanceCategory = Category.NONE;
     private String instanceId;
-    public String instanceMaterialId;
+    private String instanceMaterialId;
     public String skeletonId;
 
     private enum Category {
@@ -36,7 +36,6 @@ public final class DaeNode extends Group {
         this.name = name;
         this.type = type;
     }
-
 
     public void setInstanceCameraId(final String instanceCameraId) {
         instanceCategory = Category.CAMERA;
@@ -58,7 +57,6 @@ public final class DaeNode extends Group {
         instanceCategory = Category.LIGHT;
     }
 
-
     public void setInstanceMaterialId(final String instanceMaterialId) {
         this.instanceMaterialId = instanceMaterialId;
     }
@@ -74,7 +72,6 @@ public final class DaeNode extends Group {
         return "JOINT".equalsIgnoreCase(type);
     }
 
-
     @Override
     public String toString() {
         return "DaeNode{"
@@ -85,8 +82,7 @@ public final class DaeNode extends Group {
                 + '}';
     }
 
-
-    void build(DaeBuildHelper buildHelper) {
+    void build(final DaeBuildHelper buildHelper) {
         switch (instanceCategory) {
             case CAMERA:
                 buildCamera(buildHelper);
@@ -107,18 +103,18 @@ public final class DaeNode extends Group {
         daeNodeTreeBuild(this, buildHelper);
     }
 
-    static void daeNodeTreeBuild(Group node, DaeBuildHelper buildHelper) {
+    static void daeNodeTreeBuild(final Group node, final DaeBuildHelper buildHelper) {
         node.getChildren().stream()
                 .filter(child -> child instanceof DaeNode)
                 .map(child -> (DaeNode) child)
                 .forEach(child -> child.build(buildHelper));
     }
 
-    private void buildCamera(DaeBuildHelper buildHelper) {
+    private void buildCamera(final DaeBuildHelper buildHelper) {
         getChildren().add(buildHelper.getCamera(instanceId));
     }
 
-    private void buildController(DaeBuildHelper buildHelper) {
+    private void buildController(final DaeBuildHelper buildHelper) {
         final DaeController controller = buildHelper.getController(instanceId);
 
         final DaeSkeleton skeleton = buildHelper.getSkeleton(controller.getName());
@@ -160,7 +156,7 @@ public final class DaeNode extends Group {
         }
     }
 
-    private void buildGeometry(DaeBuildHelper buildHelper) {
+    private void buildGeometry(final DaeBuildHelper buildHelper) {
         final List<TriangleMesh> meshes = buildHelper.getMeshes(instanceId);
 
         final List<Material> materials = buildHelper.getMaterials(instanceId);

@@ -1,7 +1,6 @@
 package com.javafx.experiments.importers.dae.structures;
 
 import javafx.scene.Camera;
-import javafx.scene.Node;
 import javafx.scene.paint.Material;
 import javafx.scene.shape.TriangleMesh;
 

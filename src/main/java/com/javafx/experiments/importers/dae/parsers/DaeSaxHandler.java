@@ -100,7 +100,7 @@ public final class DaeSaxHandler extends AbstractParser {
         return rootNode;
     }
 
-    private void addCamerasToBuildHelper(DaeBuildHelper buildHelper) {
+    private void addCamerasToBuildHelper(final DaeBuildHelper buildHelper) {
         final LibraryCamerasParser camerasParser = (LibraryCamerasParser) parsers.get(LIBRARY_CAMERAS_TAG);
 
         if (camerasParser != null) {
@@ -108,7 +108,7 @@ public final class DaeSaxHandler extends AbstractParser {
         }
     }
 
-    private void addControllersToBuildHelper(DaeBuildHelper buildHelper) {
+    private void addControllersToBuildHelper(final DaeBuildHelper buildHelper) {
         final LibraryControllerParser controllerParser = (LibraryControllerParser) parsers.get(LIBRARY_CONTROLLERS_TAG);
 
         if (controllerParser != null) {
@@ -117,16 +117,16 @@ public final class DaeSaxHandler extends AbstractParser {
 
     }
 
-    private void addGeometriesToBuildHelper(DaeBuildHelper buildHelper) {
+    private void addGeometriesToBuildHelper(final DaeBuildHelper buildHelper) {
         final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(LIBRARY_GEOMETRIES_TAG);
 
         if (geometriesParser != null) {
-            buildHelper.withMeshes(geometriesParser.meshes)
-                    .withMeshMaterialIds(geometriesParser.materials);
+            buildHelper.withMeshes(geometriesParser.meshes).
+                    withMeshMaterialIds(geometriesParser.materials);
         }
     }
 
-    private void addMaterialsToBuildHelper(DaeBuildHelper buildHelper) {
+    private void addMaterialsToBuildHelper(final DaeBuildHelper buildHelper) {
         final LibraryEffectsParser effectsParser = (LibraryEffectsParser) parsers.get(LIBRARY_EFFECTS_TAG);
         final LibraryMaterialsParser materialsParser = (LibraryMaterialsParser) parsers.get(LIBRARY_MATERIALS_TAG);
         final LibraryImagesParser imagesParser = (LibraryImagesParser) parsers.get(LIBRARY_IMAGES_TAG);
@@ -157,8 +157,8 @@ public final class DaeSaxHandler extends AbstractParser {
         return frames;
     }
 
-    private <A, B, C> Map<A, C> mergeMaps(Map<A, B> abMap, Map<B, C> bcMap) {
-        Map<A, C> acMap = new HashMap<>();
+    private <A, B, C> Map<A, C> mergeMaps(final Map<A, B> abMap, final Map<B, C> bcMap) {
+        final Map<A, C> acMap = new HashMap<>();
         abMap.forEach((key, value) -> {
             if (bcMap.containsKey(value)) acMap.put(key, bcMap.get(value));
         });
