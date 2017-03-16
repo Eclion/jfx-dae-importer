@@ -43,7 +43,7 @@ final class LibraryVisualSceneParser extends AbstractParser {
         addStartElementBiConsumer(INSTANCE_CONTROLLER_TAG, (qName, attributes) -> nodes.peek().setInstanceControllerId(extractUrl(attributes)));
         addStartElementBiConsumer(INSTANCE_GEOMETRY_TAG, (qName, attributes) -> nodes.peek().setInstanceGeometryId(extractUrl(attributes)));
         addStartElementBiConsumer(INSTANCE_LIGHT_TAG, (qName, attributes) -> nodes.peek().setInstanceLightId(extractUrl(attributes)));
-        addStartElementBiConsumer(INSTANCE_MATERIAL_TAG, (qName, attributes) -> nodes.peek().instanceMaterialId = attributes.getValue("target").substring(1));
+        addStartElementBiConsumer(INSTANCE_MATERIAL_TAG, (qName, attributes) -> nodes.peek().setInstanceMaterialId(attributes.getValue("target").substring(1)));
         addStartElementBiConsumer(NODE_TAG, (qName, attributes) -> createDaeNode(attributes));
         addStartElementBiConsumer(VISUAL_SCENE_TAG, (qName, attributes) -> createVisualScene(attributes));
 

@@ -56,7 +56,7 @@ public final class DaeEffect {
         return material;
     }
 
-    private void buildPhongMaterialColors(PhongMaterial material) {
+    private void buildPhongMaterialColors(final PhongMaterial material) {
         colors.entrySet().forEach(entry -> {
             switch (entry.getKey()) {
                 case AMBIENT_TAG:
@@ -75,7 +75,7 @@ public final class DaeEffect {
         });
     }
 
-    private void buildPhongMaterialTextures(PhongMaterial material, Map<String, Image> images) {
+    private void buildPhongMaterialTextures(final PhongMaterial material, final Map<String, Image> images) {
         textureIds.entrySet().stream().
                 filter(entry -> samplers.containsKey(entry.getValue())).
                 filter(entry -> surfaces.containsKey(samplers.get(entry.getValue()))).
