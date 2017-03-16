@@ -50,6 +50,13 @@ public final class DaeEffect {
     PhongMaterial buildPhongMaterial(final Map<String, Image> images) {
         final PhongMaterial material = new PhongMaterial();
 
+        buildPhongMaterialColors(material);
+
+        buildPhongMaterialTextures(material, images);
+        return material;
+    }
+
+    private void buildPhongMaterialColors(PhongMaterial material) {
         colors.entrySet().forEach(entry -> {
             switch (entry.getKey()) {
                 case AMBIENT_TAG:
@@ -66,7 +73,9 @@ public final class DaeEffect {
                     break;
             }
         });
+    }
 
+    private void buildPhongMaterialTextures(PhongMaterial material, Map<String, Image> images) {
         textureIds.entrySet().stream().
                 filter(entry -> samplers.containsKey(entry.getValue())).
                 filter(entry -> surfaces.containsKey(samplers.get(entry.getValue()))).
@@ -88,6 +97,5 @@ public final class DaeEffect {
                             break;
                     }
                 });
-        return material;
     }
 }
