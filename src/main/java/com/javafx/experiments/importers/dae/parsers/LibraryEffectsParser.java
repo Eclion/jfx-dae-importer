@@ -1,9 +1,9 @@
 package com.javafx.experiments.importers.dae.parsers;
 
+import com.javafx.experiments.importers.dae.structures.DaeEffect;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Material;
-import javafx.scene.paint.PhongMaterial;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,7 +32,7 @@ final class LibraryEffectsParser extends AbstractParser {
     private final Map<String, String> currentId = new HashMap<>();
     private final Map<String, String> currentSid = new HashMap<>();
 
-    private final Map<String, Material> materials = new HashMap<>();
+    final Map<String, Material> effectIdToMaterialMap = new HashMap<>();
     private final List<DaeEffect> effects = new ArrayList<>();
 
     private DaeEffect currentEffect;
@@ -75,15 +75,15 @@ final class LibraryEffectsParser extends AbstractParser {
         addEndElementBiConsumer(SOURCE_TAG, (qName, content) -> currentEffect.samplers.put(currentSid.get("newparam"), content));
     }
 
-    void buildEffects(final LibraryImagesParser imagesParser) {
+    void buildEffects(final Map<String, Image> images) {
         effects.stream().
                 filter(effect -> effect.type != null).
-                forEach(effect -> materials.put(effect.id, effect.build(imagesParser))
+                forEach(effect -> effectIdToMaterialMap.put(effect.id, effect.build(images))
                 );
     }
 
     Material getEffectMaterial(final String effectId) {
-        return materials.get(effectId);
+        return effectIdToMaterialMap.get(effectId);
     }
 
     private Color extractColor(final String content) {
@@ -101,77 +101,4 @@ final class LibraryEffectsParser extends AbstractParser {
         return null;
     }
 
-    private final class DaeEffect {
-
-        private final String id;
-
-        private final Map<String, String> surfaces = new HashMap<>();
-        private final Map<String, String> samplers = new HashMap<>();
-        private final Map<String, Color> colors = new HashMap<>();
-        private final Map<String, String> textureIds = new HashMap<>();
-        private float shininess;
-        private float refractionIndex;
-
-        private String type;
-
-        DaeEffect(final String id) {
-            this.id = id;
-        }
-
-        Material build(final LibraryImagesParser imagesParser) {
-            Material material = null;
-            switch (this.type) {
-                case PHONG_TAG:
-                    material = buildPhongMaterial(imagesParser);
-                    break;
-                default:
-                    break;
-            }
-            return material;
-        }
-
-        PhongMaterial buildPhongMaterial(final LibraryImagesParser imagesParser) {
-            final PhongMaterial material = new PhongMaterial();
-
-            colors.entrySet().forEach(entry -> {
-                switch (entry.getKey()) {
-                    case AMBIENT_TAG:
-                        break;
-                    case DIFFUSE_TAG:
-                        material.setDiffuseColor(entry.getValue());
-                        break;
-                    case EMISSION_TAG:
-                        break;
-                    case SPECULAR_TAG:
-                        material.setSpecularColor(entry.getValue());
-                        break;
-                    default:
-                        break;
-                }
-            });
-
-            textureIds.entrySet().stream().
-                    filter(entry -> samplers.containsKey(entry.getValue())).
-                    filter(entry -> surfaces.containsKey(samplers.get(entry.getValue()))).
-                    filter(entry -> imagesParser.getImage(surfaces.get(samplers.get(entry.getValue()))) != null).
-                    forEach(entry -> {
-                        final Image image = imagesParser.getImage(surfaces.get(samplers.get(entry.getValue())));
-                        switch (entry.getKey()) {
-                            case AMBIENT_TAG:
-                                break;
-                            case DIFFUSE_TAG:
-                                material.setDiffuseMap(image);
-                                break;
-                            case EMISSION_TAG:
-                                break;
-                            case SPECULAR_TAG:
-                                material.setSpecularMap(image);
-                                break;
-                            default:
-                                break;
-                        }
-                    });
-            return material;
-        }
-    }
 }
