@@ -13,11 +13,11 @@ import java.util.Map;
  */
 public final class DaeEffect {
 
-    private final String PHONG_TAG = "phong";
-    private final String AMBIENT_TAG = "ambient";
-    private final String DIFFUSE_TAG = "diffuse";
-    private final String EMISSION_TAG = "emission";
-    private final String SPECULAR_TAG = "specular";
+    private static final String PHONG_TAG = "phong";
+    private static final String AMBIENT_TAG = "ambient";
+    private static final String DIFFUSE_TAG = "diffuse";
+    private static final String EMISSION_TAG = "emission";
+    private static final String SPECULAR_TAG = "specular";
 
 
     public final String id;

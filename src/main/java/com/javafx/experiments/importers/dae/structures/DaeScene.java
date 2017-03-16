@@ -17,7 +17,7 @@ public final class DaeScene extends Group {
         this.name = name;
     }
 
-    public void build(DaeBuildHelper buildHelper) {
+    public void build(final DaeBuildHelper buildHelper) {
         System.out.println(this.getId());
         DaeNode.daeNodeTreeBuild(this, buildHelper);
     }
