@@ -14,7 +14,7 @@ final class LibraryImagesParser extends AbstractParser {
     private static final String INIT_FROM_TAG = "init_from";
 
     private final Map<String, String> currentId = new HashMap<>();
-    private final Map<String, Image> images = new HashMap<>();
+    final Map<String, Image> images = new HashMap<>();
     private final String rootUrl;
 
     LibraryImagesParser(final String fileUrl) {

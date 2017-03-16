@@ -77,7 +77,14 @@ public final class DaeSaxHandler extends AbstractParser {
 
     public void buildScene(final Group rootNode) {
         final LibraryVisualSceneParser visualSceneParser = (LibraryVisualSceneParser) parsers.get(LIBRARY_VISUAL_SCENES_TAG);
+        final LibraryImagesParser imagesParser = (LibraryImagesParser) parsers.get(LIBRARY_IMAGES_TAG);
+        final LibraryEffectsParser effectsParser = (LibraryEffectsParser) parsers.get(LIBRARY_EFFECTS_TAG);
+        final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(LIBRARY_GEOMETRIES_TAG);
+        final LibraryControllerParser controllerParser = (LibraryControllerParser) parsers.get(LIBRARY_CONTROLLERS_TAG);
+        final LibraryMaterialsParser materialsParser = (LibraryMaterialsParser) parsers.get(LIBRARY_MATERIALS_TAG);
+
         if (visualSceneParser == null) return;
+
         final DaeScene scene = visualSceneParser.scenes.peek();
         final String upAxis = parsers.containsKey(ASSET_TAG)
                 ? ((AssetParser) parsers.get(ASSET_TAG)).upAxis
@@ -89,18 +96,31 @@ public final class DaeSaxHandler extends AbstractParser {
         }
         rootNode.setId(scene.id);
 
-        final LibraryImagesParser imagesParser = (LibraryImagesParser) parsers.get(LIBRARY_IMAGES_TAG);
-        final LibraryEffectsParser effectsParser = (LibraryEffectsParser) parsers.get(LIBRARY_EFFECTS_TAG);
         if (imagesParser != null && effectsParser != null) {
-            effectsParser.buildEffects(imagesParser);
+            effectsParser.buildEffects(imagesParser.images);
         }
 
-        scene.meshNodes.values().stream().map(this::getMeshes).forEach(rootNode.getChildren()::addAll);
-        scene.controllerNodes.values().stream().map(this::getControllers).forEach(rootNode.getChildren()::addAll);
+        final Map<String, Material> materialIdToMaterialMap =
+                (materialsParser == null || effectsParser == null)
+                        ? new HashMap<>()
+                        : mergeMaps(materialsParser.materialIdToEffectIdMap, effectsParser.effectIdToMaterialMap);
+
+
+        if (geometriesParser != null) {
+            scene.meshNodes.values().stream()
+                    .map(meshNode -> getMeshes(meshNode, geometriesParser, materialIdToMaterialMap))
+                    .forEach(rootNode.getChildren()::addAll);
+
+            if (controllerParser != null) {
+                scene.controllerNodes.values().stream()
+                        .map(controllerNode -> getControllers(controllerNode, geometriesParser, controllerParser, scene, materialIdToMaterialMap))
+                        .forEach(rootNode.getChildren()::addAll);
+            }
+        }
+
     }
 
-    private Camera getCamera(final DaeNode node) {
-        final LibraryCamerasParser camerasParser = (LibraryCamerasParser) parsers.get(LIBRARY_CAMERAS_TAG);
+    private Camera getCamera(final DaeNode node, LibraryCamerasParser camerasParser) {
         if (camerasParser == null) return null;
         final Camera camera = camerasParser.cameras.get(node.instanceCameraId);
         camera.setId(node.name);
@@ -108,14 +128,19 @@ public final class DaeSaxHandler extends AbstractParser {
         return camera;
     }
 
-    private List<MeshView> getMeshes(final DaeNode node) {
-        final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(LIBRARY_GEOMETRIES_TAG);
-        if (geometriesParser == null) return new ArrayList<>();
+    private List<MeshView> getMeshes(final DaeNode node,
+                                     LibraryGeometriesParser geometriesParser,
+                                     Map<String, Material> materialIdToMaterialMap) {
+        final List<MeshView> views = new ArrayList<>();
+        if (geometriesParser == null) return views;
 
         final List<TriangleMesh> meshes = geometriesParser.getMeshes(node.instanceGeometryId);
-        final List<Material> materials = getMaterials(node.instanceGeometryId);
 
-        final List<MeshView> views = new ArrayList<>();
+
+        final List<Material> materials = getMaterials(
+                geometriesParser.getMaterialIds(node.instanceGeometryId),
+                materialIdToMaterialMap);
+
 
         for (int i = 0; i < meshes.size(); i++) {
             final MeshView meshView = new MeshView(meshes.get(i));
@@ -129,18 +154,16 @@ public final class DaeSaxHandler extends AbstractParser {
 
     }
 
-    private List<MeshView> getControllers(final DaeNode node) {
-        final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(LIBRARY_GEOMETRIES_TAG);
-        final LibraryControllerParser controllerParser = (LibraryControllerParser) parsers.get(LIBRARY_CONTROLLERS_TAG);
-        final LibraryVisualSceneParser visualSceneParser = (LibraryVisualSceneParser) parsers.get(LIBRARY_VISUAL_SCENES_TAG);
+    private List<MeshView> getControllers(final DaeNode node, LibraryGeometriesParser geometriesParser,
+                                          LibraryControllerParser controllerParser, DaeScene scene, Map<String, Material> materialIdToMaterialMap) {
 
-        if (controllerParser == null || visualSceneParser == null
+        if (controllerParser == null || scene == null
                 || geometriesParser == null) return new ArrayList<>();
 
         final DaeController controller = controllerParser.
                 controllers.get(node.instanceControllerId);
 
-        final DaeSkeleton skeleton = visualSceneParser.scenes.get(0).skeletons.get(controller.getName());
+        final DaeSkeleton skeleton = scene.skeletons.get(controller.getName());
 
         final String[] bones = skeleton.joints.keySet().toArray(new String[]{});
         final Affine[] bindTransforms = new Affine[bones.length];
@@ -153,7 +176,9 @@ public final class DaeSaxHandler extends AbstractParser {
 
         final List<TriangleMesh> meshes = geometriesParser.getMeshes(controller.skinId);
 
-        final List<Material> materials = getMaterials(controller.skinId);
+        final List<Material> materials = getMaterials(
+                geometriesParser.getMaterialIds(controller.skinId),
+                materialIdToMaterialMap);
 
         final List<MeshView> views = new ArrayList<>();
 
@@ -198,20 +223,22 @@ public final class DaeSaxHandler extends AbstractParser {
         return frames;
     }
 
-    private List<Material> getMaterials(final String meshId) {
-        final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(LIBRARY_GEOMETRIES_TAG);
-        final LibraryMaterialsParser materialsParser = (LibraryMaterialsParser) parsers.get(LIBRARY_MATERIALS_TAG);
-        final LibraryEffectsParser effectsParser = (LibraryEffectsParser) parsers.get(LIBRARY_EFFECTS_TAG);
-
+    private List<Material> getMaterials(List<String> materialIds, Map<String, Material> materialIdToMaterialMap) {
         final List<Material> materials = new ArrayList<>();
-        if (materialsParser != null && effectsParser != null) {
-            geometriesParser.
-                    getMaterialIds(meshId).
-                    stream().
-                    map(materialsParser::getEffectId).
-                    map(effectsParser::getEffectMaterial).
+
+        if (!materialIdToMaterialMap.isEmpty()) {
+            materialIds.stream().
+                    map(materialIdToMaterialMap::get).
                     forEach(materials::add);
         }
         return materials;
+    }
+
+    private <A, B, C> Map<A, C> mergeMaps(Map<A, B> abMap, Map<B, C> bcMap) {
+        Map<A, C> acMap = new HashMap<>();
+        abMap.forEach((key, value) -> {
+            if (bcMap.containsKey(value)) acMap.put(key, bcMap.get(value));
+        });
+        return acMap;
     }
 }

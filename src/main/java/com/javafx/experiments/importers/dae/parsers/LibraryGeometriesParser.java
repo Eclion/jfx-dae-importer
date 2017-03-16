@@ -30,8 +30,8 @@ final class LibraryGeometriesParser extends AbstractParser {
     private final Map<String, float[]> floatArrays = new HashMap<>();
     private final Map<String, Input> inputs = new HashMap<>();
     private final List<int[]> pLists = new ArrayList<>();
-    private final Map<String, List<TriangleMesh>> meshes = new HashMap<>();
-    private final Map<String, List<String>> materials = new HashMap<>();
+    final Map<String, List<TriangleMesh>> meshes = new HashMap<>();
+    final Map<String, List<String>> materials = new HashMap<>();
     private int[] vCounts;
     private boolean triangulated = true;
 
