@@ -5,10 +5,8 @@ import com.javafx.experiments.importers.dae.utils.ParserUtils;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.shape.VertexFormat;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
@@ -50,14 +48,14 @@ final class LibraryGeometriesParser extends AbstractParser {
             this.inputs.put(input.semantic, input);
         });
         addStartElementBiConsumer(POLYLIST_TAG, (qName, attributes) -> {
-            final String materialId = attributes.getValue("material");
-            if (materialId != null) {
-                final String geometryId = currentId.get("geometry");
-                if (!materials.containsKey(geometryId)) {
-                    materials.put(geometryId, new ArrayList<>());
-                }
-                materials.get(geometryId).add(materialId);
-            }
+            Optional.ofNullable(attributes.getValue("material"))
+                    .ifPresent(materialId -> {
+                        final String geometryId = currentId.get("geometry");
+                        if (!materials.containsKey(geometryId)) {
+                            materials.put(geometryId, new ArrayList<>());
+                        }
+                        materials.get(geometryId).add(materialId);
+                    });
             this.inputs.clear();
             this.pLists.clear();
         });
@@ -92,20 +90,28 @@ final class LibraryGeometriesParser extends AbstractParser {
         // create mesh put in map
         int faceStep = 1;
 
+        final String geometryId = currentId.get("geometry");
+
         final Input vertexInput = inputs.get("VERTEX");
         final Input texInput = inputs.get("TEXCOORD");
         final Input normalInput = inputs.get("NORMAL");
 
-        if (vertexInput != null && (vertexInput.offset + 1) > faceStep)
+        if (vertexInput != null && (vertexInput.offset + 1) > faceStep) {
             faceStep = vertexInput.offset + 1;
+        } else if (vertexInput == null) {
+            LOGGER.log(Level.SEVERE, "Incorrect vertex inputs for " + geometryId);
+            return;
+        }
 
-        if (texInput != null && (texInput.offset + 1) > faceStep)
+        if (texInput != null && (texInput.offset + 1) > faceStep) {
             faceStep = texInput.offset + 1;
+        }
 
         if (normalInput != null) {
             mesh.setVertexFormat(VertexFormat.POINT_NORMAL_TEXCOORD);
-            if ((normalInput.offset + 1) > faceStep)
+            if ((normalInput.offset + 1) > faceStep) {
                 faceStep = normalInput.offset + 1;
+            }
         }
 
         final float[] points = floatArrays.get(vertexInput.source.substring(1));
@@ -116,23 +122,23 @@ final class LibraryGeometriesParser extends AbstractParser {
         mesh.getTexCoords().setAll(calcTexCoords(texInput));
         mesh.getNormals().setAll(calcNormals(normalInput));
 
-        final String geometryId = currentId.get("geometry");
         if (!meshes.containsKey(geometryId)) {
             meshes.put(geometryId, new ArrayList<>());
         }
+
         meshes.get(geometryId).add(mesh);
     }
 
     private float[] calcTexCoords(final Input texInput) {
-        return (texInput == null)
-                ? new float[]{0, 0}
-                : floatArrays.get(texInput.source.substring(1));
+        return Optional.ofNullable(texInput).
+                map(input -> floatArrays.get(input.source.substring(1)))
+                .orElse(new float[]{0, 0});
     }
 
     private float[] calcNormals(final Input normalInput) {
-        return (normalInput == null)
-                ? new float[]{}
-                : floatArrays.get(normalInput.source.substring(1));
+        return Optional.ofNullable(normalInput).
+                map(input -> floatArrays.get(input.source.substring(1)))
+                .orElse(new float[]{});
     }
 
     private int[] calcFaces(final int faceStep, final Input vertexInput, final Input texInput, final Input normalInput) {

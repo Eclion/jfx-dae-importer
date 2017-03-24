@@ -3,6 +3,7 @@ package com.javafx.experiments.importers.dae.utils;
 import com.javafx.experiments.importers.dae.structures.Input;
 import org.xml.sax.Attributes;
 
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 /**
@@ -23,13 +24,15 @@ public final class ParserUtils {
     }
 
     public static Input createInput(final String qName, final Attributes attributes) {
-        final String offset = attributes.getValue("offset");
+        final int offset = Optional.ofNullable(attributes.getValue("offset"))
+                .map(Integer::parseInt)
+                .orElse(0);
+
         return new Input(
-                offset == null
-                        ? 0
-                        : Integer.parseInt(offset),
+                offset,
                 attributes.getValue("semantic"),
-                attributes.getValue("source"));
+                attributes.getValue("source")
+        );
     }
 
     public static double[] extractDoubleArray(final String content) {

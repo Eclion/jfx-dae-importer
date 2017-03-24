@@ -13,7 +13,6 @@ import java.util.*;
 
 /**
  * @author Eclion
- *         make subclasses of this one
  */
 public final class DaeNode extends Group {
     public final String name;
