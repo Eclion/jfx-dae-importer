@@ -105,20 +105,20 @@ public final class DaeImporter extends Importer {
 
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Couldn't import " + url);
+            return;
         }
         final long end = System.currentTimeMillis();
-        LOGGER.log(Level.INFO, "IMPORTED [" + url + "] in  " + ((end - start)) + "ms");
+        LOGGER.log(Level.INFO, "Imported [" + url + "] in  " + ((end - start)) + "ms");
     }
 
     private void buildTimelines(final DaeSaxHandler parser) {
-        parser.getKeyFramesMap().entrySet().
-                forEach(entry -> {
-                            if (!timelines.containsKey(entry.getKey())) {
-                                timelines.put(entry.getKey(), new Timeline());
-                            }
-                            timelines.get(entry.getKey()).getKeyFrames().addAll(entry.getValue());
-                        }
-                );
+        parser.getKeyFramesMap().forEach((key, value) -> {
+            if (!timelines.containsKey(key)) {
+                timelines.put(key, new Timeline());
+            }
+            timelines.get(key).getKeyFrames().addAll(value);
+        });
     }
 
     @Override
