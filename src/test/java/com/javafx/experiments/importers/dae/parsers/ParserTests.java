@@ -64,11 +64,11 @@ public final class ParserTests {
         final LibraryHandler parser = assetParser.getLibraryHandler();
         executeParsing("asset_1.xml", parser);
 
-        assertEquals("Z_UP", assetParser.upAxis);
-        assertEquals("meter", assetParser.unit);
-        assertEquals(1.0f, assetParser.scale, 0.0f);
-        assertEquals("Blender User", assetParser.author);
-        assertEquals("Blender 2.78.0", assetParser.authoringTool);
+        assertEquals("Z_UP", assetParser.getUpAxis());
+        assertEquals("meter", assetParser.getUnit());
+        assertEquals(1.0f, assetParser.getScale(), 0.0f);
+        assertEquals("Blender User", assetParser.getAuthor());
+        assertEquals("Blender 2.78.0", assetParser.getAuthoringTool());
     }
 
     @Test

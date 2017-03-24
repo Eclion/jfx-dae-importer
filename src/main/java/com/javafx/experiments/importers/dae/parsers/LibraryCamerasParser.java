@@ -3,8 +3,10 @@ package com.javafx.experiments.importers.dae.parsers;
 import javafx.scene.Camera;
 import javafx.scene.PerspectiveCamera;
 
+import javax.swing.text.html.Option;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Eclion
@@ -42,19 +44,22 @@ final class LibraryCamerasParser extends AbstractParser {
 
     private void saveCamera() {
         PerspectiveCamera camera = new PerspectiveCamera(true);
-        if (yfov != null) {
+
+        Optional.ofNullable(yfov).ifPresent(yfov -> {
             camera.setVerticalFieldOfView(true);
             camera.setFieldOfView(yfov);
-        } else if (xfov != null) {
+        });
+        Optional.ofNullable(xfov).ifPresent(xfov -> {
             camera.setVerticalFieldOfView(false);
             camera.setFieldOfView(xfov);
-        }
-        if (znear != null) camera.setNearClip(znear);
-        if (zfar != null) camera.setFarClip(zfar);
+        });
+        Optional.ofNullable(znear).ifPresent(camera::setNearClip);
+        Optional.ofNullable(zfar).ifPresent(camera::setFarClip);
         cameras.put(currentId.get(CAMERA_TAG), camera);
+
         if (firstCamera == null) {
             firstCamera = camera;
-            if (aspectRatio != null) firstCameraAspectRatio = aspectRatio;
+            Optional.ofNullable(aspectRatio).ifPresent(aspectRatio -> firstCameraAspectRatio = aspectRatio);
         }
     }
 }
