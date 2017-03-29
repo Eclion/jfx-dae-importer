@@ -1,5 +1,6 @@
 package com.javafx.experiments.importers.dae.structures;
 
+import com.javafx.experiments.importers.dae.utils.ParserUtils;
 import javafx.scene.Group;
 
 import java.util.HashMap;
@@ -18,6 +19,7 @@ public final class DaeScene extends Group {
     }
 
     public void build(final DaeBuildHelper buildHelper) {
-        DaeNode.daeNodeTreeBuild(this, buildHelper);
+        ParserUtils.getDaeNodeChildStream(this).
+                forEach(child -> child.build(buildHelper));
     }
 }

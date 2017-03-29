@@ -125,11 +125,17 @@ final class LibraryVisualSceneParser extends AbstractParser {
         final DaeNode thisNode = nodes.pop();
         if (nodes.isEmpty()) {
             scenes.peek().getChildren().add(thisNode);
-            if (thisNode.hasJoints()) {
-                scenes.peek().skeletons.put(thisNode.getId(), DaeSkeleton.fromDaeNode(thisNode));
-            }
+            buildSkeletonIfChildrenHaveJoints(thisNode);
         } else {
             nodes.peek().getChildren().add(thisNode);
+        }
+    }
+
+    private void buildSkeletonIfChildrenHaveJoints(DaeNode node) {
+        if (node.hasJoints()) {
+            scenes.peek().skeletons.put(node.getId(), DaeSkeleton.fromDaeNode(node));
+        } else {
+            node.getDaeNodeChildStream().forEach(this::buildSkeletonIfChildrenHaveJoints);
         }
     }
 }

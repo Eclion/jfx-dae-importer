@@ -1,10 +1,13 @@
 package com.javafx.experiments.importers.dae.utils;
 
+import com.javafx.experiments.importers.dae.structures.DaeNode;
 import com.javafx.experiments.importers.dae.structures.Input;
+import javafx.scene.Group;
 import org.xml.sax.Attributes;
 
 import java.util.Optional;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * @author Eclion
@@ -47,5 +50,11 @@ public final class ParserUtils {
             intArray[i] = (int) floatArray[i];
         }
         return intArray;
+    }
+
+    public static Stream<DaeNode> getDaeNodeChildStream(Group group) {
+        return group.getChildren().stream().
+                filter(child -> child instanceof DaeNode).
+                map(child -> (DaeNode) child);
     }
 }

@@ -96,6 +96,14 @@ final class LibraryGeometriesParser extends AbstractParser {
         final Input vertexInput = inputs.get("VERTEX");
         final Input texInput = inputs.get("TEXCOORD");
         final Input normalInput = inputs.get("NORMAL");
+        final Input colorInput = inputs.get("COLOR");
+
+        //TODO change inputs to Map(offset, input) ?
+        /*
+        issue: got some color input which can't be handled by javafx
+        need to ignore it and create the faces thinking of that
+        need to modify the code so it can handle new ignored inputs
+         */
 
         if (vertexInput != null && (vertexInput.offset + 1) > faceStep) {
             faceStep = vertexInput.offset + 1;

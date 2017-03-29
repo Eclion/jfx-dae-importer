@@ -1,6 +1,7 @@
 package com.javafx.experiments.importers.dae.structures;
 
 import com.javafx.experiments.animation.SkinningMeshTimer;
+import com.javafx.experiments.importers.dae.utils.ParserUtils;
 import com.javafx.experiments.shape3d.SkinningMesh;
 import javafx.scene.Group;
 import javafx.scene.paint.Material;
@@ -9,6 +10,7 @@ import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Affine;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 
 /**
@@ -61,10 +63,7 @@ public final class DaeNode extends Group {
     }
 
     public boolean hasJoints() {
-        return getChildren().stream().
-                filter(node -> node instanceof DaeNode).
-                map(node -> (DaeNode) node).
-                anyMatch(DaeNode::isJoint);
+        return getDaeNodeChildStream().anyMatch(DaeNode::isJoint);
     }
 
     boolean isJoint() {
@@ -99,14 +98,11 @@ public final class DaeNode extends Group {
                 break;
         }
 
-        daeNodeTreeBuild(this, buildHelper);
+        getDaeNodeChildStream().forEach(child -> child.build(buildHelper));
     }
 
-    static void daeNodeTreeBuild(final Group node, final DaeBuildHelper buildHelper) {
-        node.getChildren().stream().
-                filter(child -> child instanceof DaeNode).
-                map(child -> (DaeNode) child).
-                forEach(child -> child.build(buildHelper));
+    public Stream<DaeNode> getDaeNodeChildStream() {
+        return ParserUtils.getDaeNodeChildStream(this);
     }
 
     private void buildCamera(final DaeBuildHelper buildHelper) {

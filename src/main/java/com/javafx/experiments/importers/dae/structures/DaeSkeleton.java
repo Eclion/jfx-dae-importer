@@ -29,9 +29,7 @@ public final class DaeSkeleton extends Parent {
         skeleton.getTransforms().addAll(rootNode.getTransforms());
 
         final List<DaeNode> rootDaeNodes = new ArrayList<>();
-        rootDaeNodes.addAll(rootNode.getChildren().stream().
-                filter(node -> node instanceof DaeNode).
-                map(node -> (DaeNode) node).
+        rootDaeNodes.addAll(rootNode.getDaeNodeChildStream().
                 filter(DaeNode::isJoint).
                 collect(Collectors.toList()));
 
@@ -48,9 +46,7 @@ public final class DaeSkeleton extends Parent {
                     joints.put(joint.getId(), joint);
                     bindTransforms.put(joint.getId(), joint.a);
 
-                    final List<DaeNode> children = node.getChildren().stream().
-                            filter(n -> n instanceof DaeNode).
-                            map(n -> (DaeNode) n).
+                    final List<DaeNode> children = node.getDaeNodeChildStream().
                             filter(DaeNode::isJoint).
                             collect(Collectors.toList());
                     joint.getChildren().addAll(buildBone(children, joints, bindTransforms));
