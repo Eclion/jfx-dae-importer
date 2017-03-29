@@ -48,8 +48,8 @@ final class LibraryGeometriesParser extends AbstractParser {
             this.inputs.put(input.semantic, input);
         });
         addStartElementBiConsumer(POLYLIST_TAG, (qName, attributes) -> {
-            Optional.ofNullable(attributes.getValue("material"))
-                    .ifPresent(materialId -> {
+            Optional.ofNullable(attributes.getValue("material")).
+                    ifPresent(materialId -> {
                         final String geometryId = currentId.get("geometry");
                         if (!materials.containsKey(geometryId)) {
                             materials.put(geometryId, new ArrayList<>());
@@ -132,14 +132,14 @@ final class LibraryGeometriesParser extends AbstractParser {
 
     private float[] calcTexCoords(final Input texInput) {
         return Optional.ofNullable(texInput).
-                map(input -> floatArrays.get(input.source.substring(1)))
-                .orElse(new float[]{0, 0});
+                map(input -> floatArrays.get(input.source.substring(1))).
+                orElse(new float[]{0, 0});
     }
 
     private float[] calcNormals(final Input normalInput) {
         return Optional.ofNullable(normalInput).
-                map(input -> floatArrays.get(input.source.substring(1)))
-                .orElse(new float[]{});
+                map(input -> floatArrays.get(input.source.substring(1))).
+                orElse(new float[]{});
     }
 
     private int[] calcFaces(final int faceStep, final Input vertexInput, final Input texInput, final Input normalInput) {
@@ -173,6 +173,6 @@ final class LibraryGeometriesParser extends AbstractParser {
     private void saveVertices() {
         final String sourceId = inputs.get("POSITION").source.substring(1);
         float[] points = floatArrays.get(sourceId);
-        floatArrays.put(currentId.get("vertices"), points);
+        floatArrays.put(currentId.get(VERTICES_TAG), points);
     }
 }

@@ -59,7 +59,7 @@ public final class DaeSkeleton extends Parent {
                 collect(Collectors.toList());
     }
 
-    private static Joint createJointFromNode(DaeNode node) {
+    private static Joint createJointFromNode(final DaeNode node) {
         final Joint joint = new Joint();
         joint.setId(node.getId());
 
@@ -67,7 +67,7 @@ public final class DaeSkeleton extends Parent {
                 filter(transform -> transform instanceof Affine).
                 findFirst().
                 ifPresent(joint.a::setToTransform);
-        
+
         return joint;
     }
 }
