@@ -14,6 +14,7 @@ import java.util.*;
  */
 public final class DaeSaxHandler extends AbstractParser {
 
+    private static final String ALL = "*";
     private static final String ASSET_TAG = "asset";
     private static final String SCENE_TAG = "scene";
     private static final String LIBRARY_ANIMATIONS_TAG = "library_animations";
@@ -33,7 +34,7 @@ public final class DaeSaxHandler extends AbstractParser {
     private Camera firstCamera;
 
     public DaeSaxHandler(final String fileUrl) {
-        addStartElementBiConsumer("*", this::delegateElement);
+        addStartElementBiConsumer(ALL, this::delegateElement);
         addStartElementBiConsumer(ASSET_TAG, (qName, attributes) -> setParser(qName, new AssetParser()));
         addStartElementBiConsumer(SCENE_TAG, (qName, attributes) -> setParser(qName, new SceneParser()));
         addStartElementBiConsumer(LIBRARY_ANIMATIONS_TAG, (qName, attributes) -> setParser(qName, new LibraryAnimationsParser()));
@@ -46,14 +47,12 @@ public final class DaeSaxHandler extends AbstractParser {
         addStartElementBiConsumer(LIBRARY_MATERIALS_TAG, (qName, attributes) -> setParser(qName, new LibraryMaterialsParser()));
         addStartElementBiConsumer(LIBRARY_VISUAL_SCENES_TAG, (qName, attributes) -> setParser(qName, new LibraryVisualSceneParser()));
 
-        addEndElementBiConsumer("*", (qName, content) -> subHandler.getLibraryHandler().endElement(qName, content));
+        addEndElementBiConsumer(ALL, (qName, content) -> subHandler.getLibraryHandler().endElement(qName, content));
     }
 
-    private void delegateElement(String qName, Attributes attributes) {
-        {
-            Optional.ofNullable(subHandler).
-                    ifPresent(handler -> handler.getLibraryHandler().startElement(qName, attributes));
-        }
+    private void delegateElement(final String qName, final Attributes attributes) {
+        Optional.ofNullable(subHandler).
+                ifPresent(handler -> handler.getLibraryHandler().startElement(qName, attributes));
     }
 
     private void setParser(final String tag, final AbstractParser parser) {
