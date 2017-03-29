@@ -65,7 +65,10 @@ final class LibraryGeometriesParser extends AbstractParser {
         addEndElementBiConsumer(P_TAG, (qName, content) -> pLists.add(ParserUtils.extractIntArray(content)));
         addEndElementBiConsumer(POLYGONS_TAG, (qName, content) -> createPolygonsTriangleMesh());
         addEndElementBiConsumer(POLYLIST_TAG, (qName, content) -> createPolylistTriangleMesh());
-        addEndElementBiConsumer(VCOUNT_TAG, (qName, content) -> saveVerticesCounts(content));
+        addEndElementBiConsumer(VCOUNT_TAG, (qName, content) -> {
+            setTriangulatedFromContent(content);
+            saveVerticesCounts(content);
+        });
         addEndElementBiConsumer(VERTICES_TAG, (qName, content) -> saveVertices());
     }
 
@@ -161,14 +164,12 @@ final class LibraryGeometriesParser extends AbstractParser {
         return faces;
     }
 
+    private void setTriangulatedFromContent(final String content) {
+        triangulated = content.replaceAll("[3 ]", "").isEmpty();
+    }
+
     private void saveVerticesCounts(final String content) {
-        final String[] numbers = content.split("\\s+");
-        triangulated = true;
-        vCounts = new int[numbers.length];
-        for (int i = 0; i < numbers.length; i++) {
-            vCounts[i] = Integer.parseInt(numbers[i].trim());
-            if (vCounts[i] != 3 && triangulated) triangulated = false;
-        }
+        vCounts = ParserUtils.extractIntArray(content);
     }
 
     private void saveVertices() {
