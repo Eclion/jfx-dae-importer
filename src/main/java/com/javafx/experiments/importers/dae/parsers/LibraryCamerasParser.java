@@ -3,7 +3,6 @@ package com.javafx.experiments.importers.dae.parsers;
 import javafx.scene.Camera;
 import javafx.scene.PerspectiveCamera;
 
-import javax.swing.text.html.Option;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;

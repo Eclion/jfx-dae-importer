@@ -28,7 +28,7 @@ public final class DaeSkeleton extends Parent {
 
         skeleton.getTransforms().addAll(rootNode.getTransforms());
 
-        List<DaeNode> rootDaeNodes = new ArrayList<>();
+        final List<DaeNode> rootDaeNodes = new ArrayList<>();
         rootDaeNodes.addAll(rootNode.getChildren().stream().
                 filter(node -> node instanceof DaeNode).
                 map(node -> (DaeNode) node).
@@ -43,16 +43,9 @@ public final class DaeSkeleton extends Parent {
     private static List<Joint> buildBone(final List<DaeNode> daeNodes, final Map<String, Joint> joints, final Map<String, Affine> bindTransforms) {
         return daeNodes.stream().
                 map(node -> {
-                    final Joint joint = new Joint();
-                    joint.setId(node.getId());
+                    final Joint joint = createJointFromNode(node);
 
                     joints.put(joint.getId(), joint);
-
-                    node.getTransforms().stream().
-                            filter(transform -> transform instanceof Affine).
-                            findFirst().
-                            ifPresent(joint.a::setToTransform);
-
                     bindTransforms.put(joint.getId(), joint.a);
 
                     final List<DaeNode> children = node.getChildren().stream().
@@ -64,5 +57,17 @@ public final class DaeSkeleton extends Parent {
                     return joint;
                 }).
                 collect(Collectors.toList());
+    }
+
+    private static Joint createJointFromNode(DaeNode node) {
+        final Joint joint = new Joint();
+        joint.setId(node.getId());
+
+        node.getTransforms().stream().
+                filter(transform -> transform instanceof Affine).
+                findFirst().
+                ifPresent(joint.a::setToTransform);
+        
+        return joint;
     }
 }

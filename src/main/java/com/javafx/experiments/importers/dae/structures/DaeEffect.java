@@ -36,15 +36,12 @@ public final class DaeEffect {
     }
 
     public Material build(final Map<String, Image> images) {
-        Material material = null;
         switch (this.type) {
             case PHONG_TAG:
-                material = buildPhongMaterial(images);
-                break;
+                return buildPhongMaterial(images);
             default:
-                break;
+                return null;
         }
-        return material;
     }
 
     PhongMaterial buildPhongMaterial(final Map<String, Image> images) {
@@ -57,17 +54,17 @@ public final class DaeEffect {
     }
 
     private void buildPhongMaterialColors(final PhongMaterial material) {
-        colors.entrySet().forEach(entry -> {
-            switch (entry.getKey()) {
+        colors.forEach((key, value) -> {
+            switch (key) {
                 case AMBIENT_TAG:
                     break;
                 case DIFFUSE_TAG:
-                    material.setDiffuseColor(entry.getValue());
+                    material.setDiffuseColor(value);
                     break;
                 case EMISSION_TAG:
                     break;
                 case SPECULAR_TAG:
-                    material.setSpecularColor(entry.getValue());
+                    material.setSpecularColor(value);
                     break;
                 default:
                     break;
