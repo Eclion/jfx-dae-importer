@@ -33,12 +33,16 @@ public final class DaeAnimation {
     public List<KeyFrame> calculateAnimation(final DaeSkeleton skeleton) {
         final List<KeyFrame> keyFrames = new ArrayList<>();
         final String targetJointName = this.target.split("/")[0];
+
         if (!skeleton.joints.containsKey(targetJointName)) return new ArrayList<>();
+
         final Joint animatedJoint = skeleton.joints.get(targetJointName);
+
         for (int i = 0; i < this.input.length; i++) {
             final Affine keyAffine = new Affine(this.output, MatrixType.MT_3D_4x4, i * 16);
             keyFrames.add(this.convertToKeyFrame(this.input[i] * TIMER_RATIO, animatedJoint.a, keyAffine, this.interpolators[i]));
         }
+
         keyFrames.addAll(this.childAnimations.stream().map(animation -> animation.calculateAnimation(skeleton)).
                 reduce(new ArrayList<>(), (l1, l2) -> {
                     l1.addAll(l2);

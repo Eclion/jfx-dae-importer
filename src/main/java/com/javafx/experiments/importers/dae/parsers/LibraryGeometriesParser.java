@@ -73,14 +73,13 @@ final class LibraryGeometriesParser extends AbstractParser {
     }
 
     private void createPolygonsTriangleMesh() {
-        // create mesh put in map
-        final TriangleMesh mesh = new TriangleMesh();
+/*        final TriangleMesh mesh = new TriangleMesh();
         final String geometryId = currentId.get("geometry");
         if (!meshes.containsKey(geometryId)) {
             meshes.put(geometryId, new ArrayList<>());
         }
-        meshes.get(geometryId).add(mesh);
-        throw new UnsupportedOperationException("Need to implement TriangleMesh creation");
+        meshes.get(geometryId).add(mesh);*/
+        throw new UnsupportedOperationException("Need to implement TriangleMesh Polygons creation");
     }
 
     private void createPolylistTriangleMesh() {
@@ -90,7 +89,6 @@ final class LibraryGeometriesParser extends AbstractParser {
 
         final TriangleMesh mesh = new TriangleMesh(VertexFormat.POINT_TEXCOORD);
 
-        // create mesh put in map
         int faceStep = 1;
 
         final String geometryId = currentId.get("geometry");
@@ -173,8 +171,7 @@ final class LibraryGeometriesParser extends AbstractParser {
     }
 
     private void saveVertices() {
-        // put vertex float into map again with new ID
-        String sourceId = inputs.get("POSITION").source.substring(1);
+        final String sourceId = inputs.get("POSITION").source.substring(1);
         float[] points = floatArrays.get(sourceId);
         floatArrays.put(currentId.get("vertices"), points);
     }

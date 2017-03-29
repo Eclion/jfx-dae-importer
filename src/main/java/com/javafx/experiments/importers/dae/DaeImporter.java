@@ -66,7 +66,7 @@ public final class DaeImporter extends Importer {
     private final Map<String, Timeline> timelines = new HashMap<>();
 
     public Scene createScene(final int width) {
-        Scene scene = new Scene(rootNode, width, (int) (width / firstCameraAspectRatio), true);
+        final Scene scene = new Scene(rootNode, width, (int) (width / firstCameraAspectRatio), true);
         if (firstCamera != null) scene.setCamera(firstCamera);
         scene.setFill(Color.BEIGE);
         return scene;
@@ -83,9 +83,9 @@ public final class DaeImporter extends Importer {
 
     @Override
     public void load(final String url) throws IOException {
-        final int dot = url.lastIndexOf('.');
-        final String extension = url.substring(dot + 1, url.length());
-        if (".dae".equalsIgnoreCase(extension)) {
+        final int dotPosition = url.lastIndexOf('.');
+        final String extension = url.substring(dotPosition + 1, url.length());
+        if (!isSupported(extension)) {
             throw new IOException("unsupported 3D format");
         }
 
@@ -123,7 +123,7 @@ public final class DaeImporter extends Importer {
 
     @Override
     public boolean isSupported(final String extension) {
-        return extension != null && "dae".equals(extension);
+        return "dae".equalsIgnoreCase(extension);
     }
 
     @Override
@@ -133,7 +133,6 @@ public final class DaeImporter extends Importer {
 
     private String extractRootPath(final String relativeUrl) throws IOException {
         final File file = new File(relativeUrl);
-
         return file.getCanonicalFile().getParent();
     }
 }

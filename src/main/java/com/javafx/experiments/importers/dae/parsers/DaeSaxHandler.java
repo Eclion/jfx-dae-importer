@@ -33,9 +33,8 @@ public final class DaeSaxHandler extends AbstractParser {
 
     public DaeSaxHandler(final String fileUrl) {
         addStartElementBiConsumer("*", (qName, attributes) -> {
-            if (subHandler != null) {
-                subHandler.getLibraryHandler().startElement(qName, attributes);
-            }
+            Optional.ofNullable(subHandler)
+                    .ifPresent(handler -> handler.getLibraryHandler().startElement(qName, attributes));
         });
         addStartElementBiConsumer(ASSET_TAG, (qName, attributes) -> setParser(qName, new AssetParser()));
         addStartElementBiConsumer(SCENE_TAG, (qName, attributes) -> setParser(qName, new SceneParser()));
@@ -101,29 +100,20 @@ public final class DaeSaxHandler extends AbstractParser {
     }
 
     private void addCamerasToBuildHelper(final DaeBuildHelper buildHelper) {
-        final LibraryCamerasParser camerasParser = (LibraryCamerasParser) parsers.get(LIBRARY_CAMERAS_TAG);
-
-        if (camerasParser != null) {
-            buildHelper.withCameras(camerasParser.cameras);
-        }
+        Optional.ofNullable((LibraryCamerasParser) parsers.get(LIBRARY_CAMERAS_TAG))
+                .ifPresent(camerasParser -> buildHelper.withCameras(camerasParser.cameras));
     }
 
     private void addControllersToBuildHelper(final DaeBuildHelper buildHelper) {
-        final LibraryControllerParser controllerParser = (LibraryControllerParser) parsers.get(LIBRARY_CONTROLLERS_TAG);
-
-        if (controllerParser != null) {
-            buildHelper.withControllers(controllerParser.controllers);
-        }
-
+        Optional.ofNullable((LibraryControllerParser) parsers.get(LIBRARY_CONTROLLERS_TAG))
+                .ifPresent(controllerParser -> buildHelper.withControllers(controllerParser.controllers));
     }
 
     private void addGeometriesToBuildHelper(final DaeBuildHelper buildHelper) {
-        final LibraryGeometriesParser geometriesParser = (LibraryGeometriesParser) parsers.get(LIBRARY_GEOMETRIES_TAG);
-
-        if (geometriesParser != null) {
-            buildHelper.withMeshes(geometriesParser.meshes).
-                    withMeshMaterialIds(geometriesParser.materials);
-        }
+        Optional.ofNullable((LibraryGeometriesParser) parsers.get(LIBRARY_GEOMETRIES_TAG))
+                .ifPresent(geometriesParser ->
+                        buildHelper.withMeshes(geometriesParser.meshes).
+                                withMeshMaterialIds(geometriesParser.materials));
     }
 
     private void addMaterialsToBuildHelper(final DaeBuildHelper buildHelper) {
