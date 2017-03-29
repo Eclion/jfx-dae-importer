@@ -5,6 +5,7 @@ import javafx.animation.KeyFrame;
 import javafx.scene.Camera;
 import javafx.scene.Group;
 import javafx.scene.transform.Rotate;
+import org.xml.sax.Attributes;
 
 import java.util.*;
 
@@ -32,10 +33,7 @@ public final class DaeSaxHandler extends AbstractParser {
     private Camera firstCamera;
 
     public DaeSaxHandler(final String fileUrl) {
-        addStartElementBiConsumer("*", (qName, attributes) -> {
-            Optional.ofNullable(subHandler)
-                    .ifPresent(handler -> handler.getLibraryHandler().startElement(qName, attributes));
-        });
+        addStartElementBiConsumer("*", this::delegateElement);
         addStartElementBiConsumer(ASSET_TAG, (qName, attributes) -> setParser(qName, new AssetParser()));
         addStartElementBiConsumer(SCENE_TAG, (qName, attributes) -> setParser(qName, new SceneParser()));
         addStartElementBiConsumer(LIBRARY_ANIMATIONS_TAG, (qName, attributes) -> setParser(qName, new LibraryAnimationsParser()));
@@ -49,6 +47,13 @@ public final class DaeSaxHandler extends AbstractParser {
         addStartElementBiConsumer(LIBRARY_VISUAL_SCENES_TAG, (qName, attributes) -> setParser(qName, new LibraryVisualSceneParser()));
 
         addEndElementBiConsumer("*", (qName, content) -> subHandler.getLibraryHandler().endElement(qName, content));
+    }
+
+    private void delegateElement(String qName, Attributes attributes) {
+        {
+            Optional.ofNullable(subHandler).
+                    ifPresent(handler -> handler.getLibraryHandler().startElement(qName, attributes));
+        }
     }
 
     private void setParser(final String tag, final AbstractParser parser) {
@@ -100,18 +105,18 @@ public final class DaeSaxHandler extends AbstractParser {
     }
 
     private void addCamerasToBuildHelper(final DaeBuildHelper buildHelper) {
-        Optional.ofNullable((LibraryCamerasParser) parsers.get(LIBRARY_CAMERAS_TAG))
-                .ifPresent(camerasParser -> buildHelper.withCameras(camerasParser.cameras));
+        Optional.ofNullable((LibraryCamerasParser) parsers.get(LIBRARY_CAMERAS_TAG)).
+                ifPresent(camerasParser -> buildHelper.withCameras(camerasParser.cameras));
     }
 
     private void addControllersToBuildHelper(final DaeBuildHelper buildHelper) {
-        Optional.ofNullable((LibraryControllerParser) parsers.get(LIBRARY_CONTROLLERS_TAG))
-                .ifPresent(controllerParser -> buildHelper.withControllers(controllerParser.controllers));
+        Optional.ofNullable((LibraryControllerParser) parsers.get(LIBRARY_CONTROLLERS_TAG)).
+                ifPresent(controllerParser -> buildHelper.withControllers(controllerParser.controllers));
     }
 
     private void addGeometriesToBuildHelper(final DaeBuildHelper buildHelper) {
-        Optional.ofNullable((LibraryGeometriesParser) parsers.get(LIBRARY_GEOMETRIES_TAG))
-                .ifPresent(geometriesParser ->
+        Optional.ofNullable((LibraryGeometriesParser) parsers.get(LIBRARY_GEOMETRIES_TAG)).
+                ifPresent(geometriesParser ->
                         buildHelper.withMeshes(geometriesParser.meshes).
                                 withMeshMaterialIds(geometriesParser.materials));
     }

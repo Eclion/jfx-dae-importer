@@ -24,9 +24,9 @@ public final class ParserUtils {
     }
 
     public static Input createInput(final String qName, final Attributes attributes) {
-        final int offset = Optional.ofNullable(attributes.getValue("offset"))
-                .map(Integer::parseInt)
-                .orElse(0);
+        final int offset = Optional.ofNullable(attributes.getValue("offset")).
+                map(Integer::parseInt).
+                orElse(0);
 
         return new Input(
                 offset,
