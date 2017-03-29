@@ -77,7 +77,7 @@ public final class DaeSaxHandler extends AbstractParser {
         final DaeScene rootNode = visualSceneParser.scenes.peek();
 
         final String upAxis = parsers.containsKey(ASSET_TAG)
-                ? ((AssetParser) parsers.get(ASSET_TAG)).upAxis
+                ? ((AssetParser) parsers.get(ASSET_TAG)).getUpAxis()
                 : "Z_UP";
 
         if ("Z_UP".equals(upAxis)) {
