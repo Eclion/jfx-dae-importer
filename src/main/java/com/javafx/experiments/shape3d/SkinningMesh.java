@@ -202,6 +202,8 @@ public final class SkinningMesh extends TriangleMesh {
         jointsTransformDirty = false;
     }
 
+
+    //TODO: problem with the point calculation.
     private void updatePoints() {
         final float[] points = new float[nPoints * 3];
         final double[] t = new double[12];
