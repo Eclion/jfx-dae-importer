@@ -89,42 +89,18 @@ final class LibraryGeometriesParser extends AbstractParser {
 
         final TriangleMesh mesh = new TriangleMesh(VertexFormat.POINT_TEXCOORD);
 
-        int faceStep = 1;
-
         final String geometryId = currentId.get("geometry");
 
         final Input vertexInput = inputs.get("VERTEX");
         final Input texInput = inputs.get("TEXCOORD");
         final Input normalInput = inputs.get("NORMAL");
-        final Input colorInput = inputs.get("COLOR");
-
-        //TODO change inputs to Map(offset, input) ?
-        /*
-        issue: got some color input which can't be handled by javafx
-        need to ignore it and create the faces thinking of that
-        need to modify the code so it can handle new ignored inputs
-         */
-
-        if (vertexInput != null && (vertexInput.offset + 1) > faceStep) {
-            faceStep = vertexInput.offset + 1;
-        } else if (vertexInput == null) {
-            LOGGER.log(Level.SEVERE, "Incorrect vertex inputs for " + geometryId);
-            return;
-        }
-
-        if (texInput != null && (texInput.offset + 1) > faceStep) {
-            faceStep = texInput.offset + 1;
-        }
 
         if (normalInput != null) {
             mesh.setVertexFormat(VertexFormat.POINT_NORMAL_TEXCOORD);
-            if ((normalInput.offset + 1) > faceStep) {
-                faceStep = normalInput.offset + 1;
-            }
         }
 
         final float[] points = floatArrays.get(vertexInput.source.substring(1));
-        final int[] faces = calcFaces(faceStep, vertexInput, texInput, normalInput);
+        final int[] faces = calcFaces(vertexInput, texInput, normalInput);
 
         mesh.getFaces().setAll(faces);
         mesh.getPoints().setAll(points);
@@ -150,13 +126,15 @@ final class LibraryGeometriesParser extends AbstractParser {
                 orElse(new float[]{});
     }
 
-    private int[] calcFaces(final int faceStep, final Input vertexInput, final Input texInput, final Input normalInput) {
+    private int[] calcFaces(final Input vertexInput, final Input texInput, final Input normalInput) {
         final int inputCount = (normalInput == null) ? 2 : 3;
         final int[] faces = new int[IntStream.of(vCounts).sum() * inputCount];
         final int[] p = pLists.get(0);
-        int pIndex = 0;
+        final int faceStep = inputs.size();
 
+        int pIndex = 0;
         int faceIndex = 0;
+
         for (int vCount : vCounts) {
             for (int v = 0; v < vCount; v++) {
                 faces[faceIndex + v * inputCount] = p[pIndex + vertexInput.offset];

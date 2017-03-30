@@ -225,16 +225,21 @@ public final class SkinningMesh extends TriangleMesh {
         final int pointSize = getPointElementSize();
 
         for (int i = 0; i < faces.size() / faceSize; i++) {
-            int index1 = faces.get(i * faceSize);
-            int index2 = faces.get(i * faceSize + pointSize);
-            int index3 = faces.get(i * faceSize + pointSize * 2);
-            final Point3D p1 = getPoint(index1);
-            final Point3D p2 = getPoint(index2);
-            final Point3D p3 = getPoint(index3);
+            final int ptIndex1 = faces.get(i * faceSize);
+            final int ptIndex2 = faces.get(i * faceSize + pointSize);
+            final int ptIndex3 = faces.get(i * faceSize + pointSize * 2);
+
+            // should the normal Index checked to be the same for all the face?
+            final int nlIndex = faces.get(i * faceSize + 1);
+
+            final Point3D p1 = getPoint(ptIndex1);
+            final Point3D p2 = getPoint(ptIndex2);
+            final Point3D p3 = getPoint(ptIndex3);
             final Point3D newNormal = calculateNormal(p1, p2, p3);
-            normals[i * 3] = (float) newNormal.getX();
-            normals[i * 3 + 1] = (float) newNormal.getY();
-            normals[i * 3 + 2] = (float) newNormal.getZ();
+
+            normals[nlIndex * 3] = (float) newNormal.getX();
+            normals[nlIndex * 3 + 1] = (float) newNormal.getY();
+            normals[nlIndex * 3 + 2] = (float) newNormal.getZ();
         }
 
         getNormals().setAll(normals);
