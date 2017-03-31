@@ -8,6 +8,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.shape.VertexFormat;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -137,6 +138,7 @@ public final class ParserTests {
         assertEquals("Material-material", geometriesParser.getMaterialIds("Cube-mesh").get(0));
     }
 
+    @Ignore
     @Test
     public void parseLights() throws Exception {
         final LibraryLightsParser lightsParser = new LibraryLightsParser();
