@@ -16,7 +16,7 @@ addons:
       - dev
 script:
   - if [ -e ./gradlew ]; then ./gradlew jacocoTestReport;else gradle jacocoTestReport;fi
-  - sonar-scanner -D sonar.language=java
+  - sonar-scanner -D sonar.language=Java
 
 bundler_args: --retry 5
 
