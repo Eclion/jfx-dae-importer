@@ -4,6 +4,19 @@ version '1.3'
 apply plugin: 'java'
 apply plugin: 'jacoco'
 
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.3"
+    }
+}
+
+apply plugin: 'org.sonarqube'
+
 sourceCompatibility = 1.8
 
 repositories {
@@ -22,4 +35,12 @@ jacocoTestReport {
     }
 }
 
+sonarqube {
+    properties {
+        property "sonar.projectName", "JFX DAE Importer"
+        property "sonar.projectKey", "eclion:jfx-dae-importer"
+    }
+}
+
 check.dependsOn jacocoTestReport
+
