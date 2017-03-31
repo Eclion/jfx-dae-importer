@@ -2,7 +2,7 @@ language: java
 jdk:
   - oraclejdk8
 
-script:
+before_install:
   - sudo apt-get update && sudo apt-get install oracle-java8-installer
   - java -Xmx32m -version
 
