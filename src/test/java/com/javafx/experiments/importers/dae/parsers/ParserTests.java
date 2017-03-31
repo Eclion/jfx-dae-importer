@@ -83,9 +83,9 @@ public final class ParserTests {
         assertEquals(2, animationsParser.animations.size());
         assertNotNull(actualArmatureBoneAnimation);
         assertEquals("Armature_Bone_pose_matrix", actualArmatureBoneAnimation.id);
-        assertArrayEquals(new float[]{0.0f, 0.04166662f, 0.4166666f, 0.8333333f}, actualArmatureBoneAnimation.input, 0.0f);
-        assertEquals("Bone/transform", actualArmatureBoneAnimation.target);
-        assertEquals(64, actualArmatureBoneAnimation.output.length);
+        assertArrayEquals(new float[]{0.0f, 0.04166662f, 0.4166666f, 0.8333333f}, actualArmatureBoneAnimation.getInput(), 0.0f);
+        assertEquals("Bone/transform", actualArmatureBoneAnimation.getTarget());
+        assertEquals(64, actualArmatureBoneAnimation.getOutput().length);
     }
 
     @Test
@@ -112,10 +112,10 @@ public final class ParserTests {
         DaeController actualController = controllerParser.controllers.get("Armature_Cube-skin");
 
         assertEquals("Armature", actualController.getName());
-        assertEquals("Cube-mesh", actualController.skinId);
+        assertEquals("Cube-mesh", actualController.getSkinId());
         //assertEquals(new Affine(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0), actualController.bindShapeMatrix);
-        assertArrayEquals(new String[]{"Bone", "Bone_001"}, actualController.jointNames);
-        assertEquals(2, actualController.vertexWeights.length);
+        assertArrayEquals(new String[]{"Bone", "Bone_001"}, actualController.getJointNames());
+        assertEquals(2, actualController.getVertexWeights().length);
         /*assertArrayEquals(new Affine[]{
                 new Affine(1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, -1.0, 0.0, 0.0),
                 new Affine(1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, -0.996825098991394, 0.0, -1.0, 0.0, 0.0)

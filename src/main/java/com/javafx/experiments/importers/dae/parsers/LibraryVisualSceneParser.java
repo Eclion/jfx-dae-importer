@@ -43,7 +43,6 @@ final class LibraryVisualSceneParser extends AbstractParser {
         addStartElementBiConsumer(INSTANCE_CONTROLLER_TAG, (qName, attributes) -> nodes.peek().setInstanceControllerId(extractUrl(attributes)));
         addStartElementBiConsumer(INSTANCE_GEOMETRY_TAG, (qName, attributes) -> nodes.peek().setInstanceGeometryId(extractUrl(attributes)));
         addStartElementBiConsumer(INSTANCE_LIGHT_TAG, (qName, attributes) -> nodes.peek().setInstanceLightId(extractUrl(attributes)));
-        addStartElementBiConsumer(INSTANCE_MATERIAL_TAG, (qName, attributes) -> nodes.peek().setInstanceMaterialId(attributes.getValue("target").substring(1)));
         addStartElementBiConsumer(NODE_TAG, (qName, attributes) -> createDaeNode(attributes));
         addStartElementBiConsumer(VISUAL_SCENE_TAG, (qName, attributes) -> createVisualScene(attributes));
 
@@ -52,7 +51,6 @@ final class LibraryVisualSceneParser extends AbstractParser {
         addEndElementBiConsumer(ROTATE_TAG, (qName, content) -> addRotation(content));
         addEndElementBiConsumer(SCALE_TAG, (qName, content) -> addScaling(content));
         addEndElementBiConsumer(TRANSLATE_TAG, (qName, content) -> addTranslation(content));
-        addEndElementBiConsumer(SKELETON_TAG, (qName, content) -> nodes.peek().skeletonId = content.substring(1));
     }
 
     private String extractUrl(final Attributes attributes) {
@@ -110,7 +108,7 @@ final class LibraryVisualSceneParser extends AbstractParser {
     }
 
     private void createVisualScene(final Attributes attributes) {
-        scenes.push(new DaeScene(attributes.getValue(ID_STR), attributes.getValue(NAME_STR)));
+        scenes.push(new DaeScene(attributes.getValue(ID_STR)));
     }
 
     private void createDaeNode(final Attributes attributes) {

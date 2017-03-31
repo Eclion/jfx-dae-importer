@@ -28,7 +28,7 @@ final class LibraryAnimationsParser extends AbstractParser {
             currentAnimationId = currentId.get(qName);
             currentAnimations.push(new DaeAnimation(currentAnimationId));
         });
-        addStartElementBiConsumer(CHANNEL_TAG, (qName, attributes) -> currentAnimations.peek().target = attributes.getValue("target"));
+        addStartElementBiConsumer(CHANNEL_TAG, (qName, attributes) -> currentAnimations.peek().setTarget(attributes.getValue("target")));
 
         addEndElementBiConsumer(ANIMATION_TAG, (qName, content) -> {
             DaeAnimation animation = currentAnimations.pop();
@@ -41,9 +41,9 @@ final class LibraryAnimationsParser extends AbstractParser {
         addEndElementBiConsumer(FLOAT_ARRAY_TAG, (qName, content) -> {
             String sourceId = currentId.get(SOURCE_TAG);
             if (sourceId.equalsIgnoreCase(currentAnimationId + "-input")) {
-                currentAnimations.peek().input = ParserUtils.extractFloatArray(content);
+                currentAnimations.peek().setInput(ParserUtils.extractFloatArray(content));
             } else if (sourceId.equalsIgnoreCase(currentAnimationId + "-output")) {
-                currentAnimations.peek().output = ParserUtils.extractDoubleArray(content);
+                currentAnimations.peek().setOutput(ParserUtils.extractDoubleArray(content));
             }
         });
         addEndElementBiConsumer(NAME_ARRAY_TAG, (qName, content) -> currentAnimations.peek().setInterpolations(content.split("\\s+")

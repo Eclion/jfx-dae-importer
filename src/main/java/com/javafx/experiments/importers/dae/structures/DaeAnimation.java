@@ -20,10 +20,10 @@ public final class DaeAnimation {
     private static final int TIMER_RATIO = 3000;
 
     public final String id;
-    public float[] input;
-    public double[] output;
+    private float[] input;
+    private double[] output;
     private Interpolator[] interpolators;
-    public String target;
+    private String target;
     private final List<DaeAnimation> childAnimations = new ArrayList<>();
 
     public DaeAnimation(final String id) {
@@ -34,7 +34,9 @@ public final class DaeAnimation {
         final List<KeyFrame> keyFrames = new ArrayList<>();
         final String targetJointName = this.target.split("/")[0];
 
-        if (!skeleton.joints.containsKey(targetJointName)) return new ArrayList<>();
+        if (!skeleton.joints.containsKey(targetJointName)) {
+            return new ArrayList<>();
+        }
 
         final Joint animatedJoint = skeleton.joints.get(targetJointName);
 
@@ -82,19 +84,35 @@ public final class DaeAnimation {
     public void setInterpolations(final String[] interpolations) {
         this.interpolators = new Interpolator[interpolations.length];
         for (int i = 0; i < interpolations.length; ++i) {
-            interpolators[i] = getInterpolatorFromString(interpolations[i]);
-        }
-    }
-
-    private Interpolator getInterpolatorFromString(final String interpolation) {
-        switch (interpolation.toLowerCase()) {
-            case "linear":
-            default:
-                return Interpolator.LINEAR;
+            interpolators[i] = Interpolator.LINEAR;
         }
     }
 
     public void addChild(final DaeAnimation animation) {
         childAnimations.add(animation);
+    }
+
+    public void setInput(float[] input) {
+        this.input = input;
+    }
+
+    public float[] getInput() {
+        return input;
+    }
+
+    public void setOutput(double[] output) {
+        this.output = output;
+    }
+
+    public double[] getOutput() {
+        return output;
+    }
+
+    public void setTarget(String target) {
+        this.target = target;
+    }
+
+    public String getTarget() {
+        return target;
     }
 }

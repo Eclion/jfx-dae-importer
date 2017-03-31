@@ -117,32 +117,32 @@ public final class SkinningMesh extends TriangleMesh {
 
     // For optimization purposes, store the indices of the non-zero weights
     private List<Integer>[] initializeWeightIndices() {
-        final List<Integer>[] weightIndices = new List[nJoints];
+        final List<Integer>[] wIndices = new List[nJoints];
         for (int j = 0; j < nJoints; j++) {
-            weightIndices[j] = new ArrayList<>();
+            wIndices[j] = new ArrayList<>();
             for (int i = 0; i < nPoints; i++) {
-                if (weights[j][i] != 0.0f) {
-                    weightIndices[j].add(i);
+                if (weights[j][i] > 0.0001) {
+                    wIndices[j].add(i);
                 }
             }
         }
-        return weightIndices;
+        return wIndices;
     }
 
     // Compute the points of the binding mesh relative to the binding transforms
     private float[][] initializeRelativePoints(final Affine[] bindTransforms, final Affine bindGlobalTransform) {
         final ObservableFloatArray points = getPoints();
-        final float[][] relativePoints = new float[nJoints][nPoints * 3];
+        final float[][] relativePts = new float[nJoints][nPoints * 3];
         for (int j = 0; j < nJoints; j++) {
             final Transform postBindTransform = bindTransforms[j].createConcatenation(bindGlobalTransform);
             for (int i = 0; i < nPoints; i++) {
-                final Point3D relativePoint = postBindTransform.transform(points.get(3 * i), points.get(3 * i + 1), points.get(3 * i + 2));
-                relativePoints[j][3 * i] = (float) relativePoint.getX();
-                relativePoints[j][3 * i + 1] = (float) relativePoint.getY();
-                relativePoints[j][3 * i + 2] = (float) relativePoint.getZ();
+                final Point3D relativePt = postBindTransform.transform(points.get(3 * i), points.get(3 * i + 1), points.get(3 * i + 2));
+                relativePts[j][3 * i] = (float) relativePt.getX();
+                relativePts[j][3 * i + 1] = (float) relativePt.getY();
+                relativePts[j][3 * i + 2] = (float) relativePt.getZ();
             }
         }
-        return relativePoints;
+        return relativePts;
     }
 
     // Add a listener to all the joints (and their parents nodes) so that we can track when any of their transforms have changed

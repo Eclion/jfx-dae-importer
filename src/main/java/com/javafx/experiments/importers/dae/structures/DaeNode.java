@@ -21,8 +21,6 @@ public final class DaeNode extends Group {
     public final String type;
     private Category instanceCategory = Category.NONE;
     private String instanceId;
-    private String instanceMaterialId;
-    public String skeletonId;
 
     private enum Category {
         CAMERA,
@@ -58,10 +56,6 @@ public final class DaeNode extends Group {
         instanceCategory = Category.LIGHT;
     }
 
-    public void setInstanceMaterialId(final String instanceMaterialId) {
-        this.instanceMaterialId = instanceMaterialId;
-    }
-
     public boolean hasJoints() {
         return getDaeNodeChildStream().anyMatch(DaeNode::isJoint);
     }
@@ -92,7 +86,6 @@ public final class DaeNode extends Group {
                 buildGeometry(buildHelper);
                 break;
             case LIGHT:
-                break;
             case NONE:
             default:
                 break;
@@ -123,14 +116,14 @@ public final class DaeNode extends Group {
             joints[i] = skeleton.joints.get(bones[i]);
         }
 
-        final List<TriangleMesh> meshes = buildHelper.getMeshes(controller.skinId);
+        final List<TriangleMesh> meshes = buildHelper.getMeshes(controller.getSkinId());
 
-        final List<Material> materials = buildHelper.getMaterials(controller.skinId);
+        final List<Material> materials = buildHelper.getMaterials(controller.getSkinId());
 
         for (int i = 0; i < meshes.size(); i++) {
             final SkinningMesh skinningMesh = new SkinningMesh(
-                    meshes.get(i), controller.vertexWeights, bindTransforms,
-                    controller.bindShapeMatrix, Arrays.asList(joints), Arrays.asList(skeleton));
+                    meshes.get(i), controller.getVertexWeights(), bindTransforms,
+                    controller.getBindShapeMatrix(), Arrays.asList(joints), Arrays.asList(skeleton));
 
             final MeshView meshView = new MeshView(skinningMesh);
 
@@ -146,7 +139,9 @@ public final class DaeNode extends Group {
                 }
             });
 
-            if (i < materials.size()) meshView.setMaterial(materials.get(i));
+            if (i < materials.size()) {
+                meshView.setMaterial(materials.get(i));
+            }
             getChildren().add(meshView);
         }
     }
@@ -158,7 +153,9 @@ public final class DaeNode extends Group {
 
         for (int i = 0; i < meshes.size(); i++) {
             final MeshView meshView = new MeshView(meshes.get(i));
-            if (i < materials.size()) meshView.setMaterial(materials.get(i));
+            if (i < materials.size()) {
+                meshView.setMaterial(materials.get(i));
+            }
             getChildren().add(meshView);
         }
 

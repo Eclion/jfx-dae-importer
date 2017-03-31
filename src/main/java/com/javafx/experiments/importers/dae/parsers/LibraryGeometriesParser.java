@@ -6,7 +6,6 @@ import javafx.scene.shape.TriangleMesh;
 import javafx.scene.shape.VertexFormat;
 
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
@@ -44,7 +43,7 @@ final class LibraryGeometriesParser extends AbstractParser {
     LibraryGeometriesParser() {
         addStartElementBiConsumer("*", (qName, attributes) -> currentId.put(qName, attributes.getValue("id")));
         addStartElementBiConsumer(INPUT_TAG, (qName, attributes) -> {
-            Input input = ParserUtils.createInput(qName, attributes);
+            Input input = ParserUtils.createInput(attributes);
             this.inputs.put(input.semantic, input);
         });
         addStartElementBiConsumer(POLYLIST_TAG, (qName, attributes) -> {
@@ -138,8 +137,8 @@ final class LibraryGeometriesParser extends AbstractParser {
         for (int vCount : vCounts) {
             for (int v = 0; v < vCount; v++) {
                 faces[faceIndex + v * inputCount] = p[pIndex + vertexInput.offset];
-                if (inputCount == 3)
-                    faces[faceIndex + v * inputCount + 1] = p[pIndex + normalInput.offset];
+                if (normalInput != null)
+                    faces[faceIndex + v * 3 + 1] = p[pIndex + normalInput.offset];
                 faces[faceIndex + v * inputCount + inputCount - 1] = (texInput == null) ? 0 : p[pIndex + texInput.offset];
                 pIndex += faceStep;
             }

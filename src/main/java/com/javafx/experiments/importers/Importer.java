@@ -37,7 +37,7 @@ import java.util.Map;
 import javafx.animation.Timeline;
 import javafx.scene.Group;
 
-public abstract class Importer {
+public interface Importer {
     /**
      * Loads the 3D file.
      *

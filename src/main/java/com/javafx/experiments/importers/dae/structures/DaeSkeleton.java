@@ -14,18 +14,17 @@ import java.util.stream.Collectors;
  */
 public final class DaeSkeleton extends Parent {
 
-    private final String name;
     public final Map<String, Joint> joints = new LinkedHashMap<>();
     private final Map<String, Affine> bindTransforms = new LinkedHashMap<>();
 
-    DaeSkeleton(final String id, final String name) {
+    DaeSkeleton(final String id) {
         setId(id);
-        this.name = name;
     }
 
     public static DaeSkeleton fromDaeNode(final DaeNode rootNode) {
-        final DaeSkeleton skeleton = new DaeSkeleton(rootNode.getId(), rootNode.name);
+        final DaeSkeleton skeleton = new DaeSkeleton(rootNode.getId());
 
+        //TODO should the rootNode transforms be local to the parent or global?
         skeleton.getTransforms().addAll(rootNode.getTransforms());
 
         final List<DaeNode> rootDaeNodes = new ArrayList<>();
