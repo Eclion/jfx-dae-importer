@@ -15,7 +15,7 @@ addons:
     branches:
       - dev
 script:
-  - sonar-scanner -D sonar.language=Java
+  - sonar-scanner
 
 test:
   post:
