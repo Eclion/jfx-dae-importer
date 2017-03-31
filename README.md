@@ -6,6 +6,7 @@
 
 ### Code coverage
 [![codecov](https://codecov.io/gh/Eclion/jfx-dae-importer/branch/master/graph/badge.svg)](https://codecov.io/gh/Eclion/jfx-dae-importer)
+[Sonarqube dashboard](https://sonarqube.com/dashboard?id=eclion%3Ajfx-dae-importer%3Adev)
 
 ## About
 
