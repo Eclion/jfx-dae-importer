@@ -1,6 +1,11 @@
 # Collada (dae v1.4) importer for Javafx
+
+### Code quality
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d2194e0e6e5e43c381006b1e0707a1c9)](https://www.codacy.com/app/Eclion/jfx-dae-importer?utm_source=github.com&utm_medium=referral&utm_content=Eclion/jfx-dae-importer&utm_campaign=badger)
 [![codebeat badge](https://codebeat.co/badges/35d4263a-4e9f-4b14-acbb-e2c8565c5e06)](https://codebeat.co/projects/github-com-eclion-jfx-dae-importer)
+
+### Code coverage
+[![codecov](https://codecov.io/gh/Eclion/jfx-dae-importer/branch/master/graph/badge.svg)](https://codecov.io/gh/Eclion/jfx-dae-importer)
 
 ## About
 
