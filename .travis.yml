@@ -18,7 +18,7 @@ script:
   - sonar-scanner
 
 after_success:
-  - if [ -e ./gradlew ]; then ./gradlew jacocoTestReport;else gradle jacocoTestReport;fi
+  - if [ -e ./gradlew ]; then ./gradlew test jacocoTestReport;else gradle test jacocoTestReport;fi
   - codecov
 
 bundler_args: --retry 5
