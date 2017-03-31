@@ -15,7 +15,7 @@ addons:
     branches:
       - dev
 script:
-  - sonar-scanner
+  - sonar-scanner -D sonar.language=java
 
 bundler_args: --retry 5
 
