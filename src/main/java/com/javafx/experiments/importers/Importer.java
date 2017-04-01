@@ -45,7 +45,7 @@ public interface Importer {
      *            supports.
      * @throws IOException If issue loading file
      */
-    public abstract void load(final String url) throws IOException;
+    public abstract void load(String url) throws IOException;
 
     /**
      * Gets the 3D node that was loaded earlier through the load() call.
@@ -62,7 +62,7 @@ public interface Importer {
      *                    "dae")
      * @return True if the extension is of a supported type. False otherwise.
      */
-    public abstract boolean isSupported(final String supportType);
+    public abstract boolean isSupported(String supportType);
 
     /**
      * Can be overridden to return a timeline animation for the 3D file.

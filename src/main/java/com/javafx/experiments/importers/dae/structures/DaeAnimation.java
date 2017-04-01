@@ -92,7 +92,7 @@ public final class DaeAnimation {
         childAnimations.add(animation);
     }
 
-    public void setInput(float[] input) {
+    public void setInput(final float[] input) {
         this.input = input;
     }
 
@@ -100,7 +100,7 @@ public final class DaeAnimation {
         return input;
     }
 
-    public void setOutput(double[] output) {
+    public void setOutput(final double[] output) {
         this.output = output;
     }
 
@@ -108,7 +108,7 @@ public final class DaeAnimation {
         return output;
     }
 
-    public void setTarget(String target) {
+    public void setTarget(final String target) {
         this.target = target;
     }
 

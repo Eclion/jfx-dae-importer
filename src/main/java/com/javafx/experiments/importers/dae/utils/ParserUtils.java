@@ -52,7 +52,7 @@ public final class ParserUtils {
         return intArray;
     }
 
-    public static Stream<DaeNode> getDaeNodeChildStream(Group group) {
+    public static Stream<DaeNode> getDaeNodeChildStream(final Group group) {
         return group.getChildren().stream().
                 filter(child -> child instanceof DaeNode).
                 map(child -> (DaeNode) child);

@@ -53,7 +53,7 @@ final class LibraryEffectsParser extends AbstractParser {
         });
         addStartElementBiConsumer(TEXTURE_TAG, (qName, attributes) -> {
             tempColor = null;
-            tempTexture = attributes.getValue("texture");
+            tempTexture = attributes.getValue(TEXTURE_TAG);
         });
 
         addEndElementBiConsumer(COLOR_TAG, (qName, content) -> tempColor = extractColor(content));

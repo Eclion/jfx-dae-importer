@@ -20,12 +20,10 @@ final class LibraryVisualSceneParser extends AbstractParser {
     private static final String INSTANCE_CONTROLLER_TAG = "instance_controller";
     private static final String INSTANCE_GEOMETRY_TAG = "instance_geometry";
     private static final String INSTANCE_LIGHT_TAG = "instance_light";
-    private static final String INSTANCE_MATERIAL_TAG = "instance_material";
     private static final String NODE_TAG = "node";
     private static final String MATRIX_TAG = "matrix";
     private static final String ROTATE_TAG = "rotate";
     private static final String SCALE_TAG = "scale";
-    private static final String SKELETON_TAG = "skeleton";
     private static final String TRANSLATE_TAG = "translate";
     private static final String VISUAL_SCENE_TAG = "visual_scene";
 
@@ -129,7 +127,7 @@ final class LibraryVisualSceneParser extends AbstractParser {
         }
     }
 
-    private void buildSkeletonIfChildrenHaveJoints(DaeNode node) {
+    private void buildSkeletonIfChildrenHaveJoints(final DaeNode node) {
         if (node.hasJoints()) {
             scenes.peek().skeletons.put(node.getId(), DaeSkeleton.fromDaeNode(node));
         } else {

@@ -29,7 +29,7 @@ public final class DaeController {
         return skinId;
     }
 
-    public void setSkinId(String skinId) {
+    public void setSkinId(final String skinId) {
         this.skinId = skinId;
     }
 
@@ -37,7 +37,7 @@ public final class DaeController {
         return bindShapeMatrix;
     }
 
-    public void setBindShapeMatrix(Affine bindShapeMatrix) {
+    public void setBindShapeMatrix(final Affine bindShapeMatrix) {
         this.bindShapeMatrix = bindShapeMatrix;
     }
 
@@ -45,7 +45,7 @@ public final class DaeController {
         return jointNames;
     }
 
-    public void setJointNames(String[] jointNames) {
+    public void setJointNames(final String[] jointNames) {
         this.jointNames = jointNames;
     }
 
@@ -53,7 +53,7 @@ public final class DaeController {
         return vertexWeights;
     }
 
-    public void setVertexWeights(float[][] vertexWeights) {
+    public void setVertexWeights(final float[][] vertexWeights) {
         this.vertexWeights = vertexWeights;
     }
 }

@@ -19,7 +19,7 @@ final class LibraryAnimationsParser extends AbstractParser {
 
     private final Map<String, String> currentId = new HashMap<>();
     private String currentAnimationId = "";
-    public final Map<String, DaeAnimation> animations = new HashMap<>();
+    final Map<String, DaeAnimation> animations = new HashMap<>();
     private final LinkedList<DaeAnimation> currentAnimations = new LinkedList<>();
 
     LibraryAnimationsParser() {
