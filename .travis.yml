@@ -7,9 +7,9 @@ before_install:
   - sudo apt-get update && sudo apt-get install oracle-java8-installer
   - pip install --user codecov
   - java -Xmx32m -version
-  - curl -sL https://github.com/jpm4j/jpm4j.installers/raw/master/dist/biz.aQute.jpm.run.jar >jpm4j.jar
-  - java -jar jpm4j.jar -u init
-  - ~/jpm/bin/jpm install com.codacy:codacy-coverage-reporter:assembly
+#  - curl -sL https://github.com/jpm4j/jpm4j.installers/raw/master/dist/biz.aQute.jpm.run.jar >jpm4j.jar
+#  - java -jar jpm4j.jar -u init
+#  - ~/jpm/bin/jpm install com.codacy:codacy-coverage-reporter:assembly
 
 addons:
   sonarqube:
@@ -26,7 +26,7 @@ script:
 after_success:
   - if [ -e ./gradlew ]; then ./gradlew test jacocoTestReport;else gradle test jacocoTestReport;fi
   - codecov
-  - ~/jpm/bin/codacy-coverage-reporter -l Java -r build/reports/jacoco/test/jacocoTestReport.xml
+#  - ~/jpm/bin/codacy-coverage-reporter -l Java -r build/reports/jacoco/test/jacocoTestReport.xml
 
 bundler_args: --retry 5
 
