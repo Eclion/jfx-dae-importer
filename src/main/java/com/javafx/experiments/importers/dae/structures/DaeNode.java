@@ -1,6 +1,7 @@
 package com.javafx.experiments.importers.dae.structures;
 
 import com.javafx.experiments.animation.SkinningMeshTimer;
+import com.javafx.experiments.importers.FeatureToggle;
 import com.javafx.experiments.importers.dae.utils.ParserUtils;
 import com.javafx.experiments.shape3d.SkinningMesh;
 import javafx.scene.Group;
@@ -80,7 +81,16 @@ public final class DaeNode extends Group {
                 buildCamera(buildHelper);
                 break;
             case CONTROLLER:
-                buildController(buildHelper);
+                FeatureToggle.onDisplayMeshsChange(bool -> {
+                    if (bool) {
+                        buildController(buildHelper);
+                    }
+                });
+                FeatureToggle.onDisplaySkeletonsChange(bool -> {
+                    if (bool) {
+                        buildSkeleton(buildHelper);
+                    }
+                });
                 break;
             case GEOMETRY:
                 buildGeometry(buildHelper);
@@ -107,23 +117,16 @@ public final class DaeNode extends Group {
 
         final DaeSkeleton skeleton = buildHelper.getSkeleton(controller.getName());
 
-        final String[] bones = skeleton.joints.keySet().toArray(new String[]{});
-        final Affine[] bindTransforms = new Affine[bones.length];
-        final Joint[] joints = new Joint[bones.length];
-
-        for (int i = 0; i < bones.length; i++) {
-            bindTransforms[i] = controller.bindPoses.get(i);
-            joints[i] = skeleton.joints.get(bones[i]);
-        }
+        final List<Joint> joints = new ArrayList<>(skeleton.joints.values());
+        final Affine[] bindTransforms = controller.bindPoses.toArray(new Affine[joints.size()]);
 
         final List<TriangleMesh> meshes = buildHelper.getMeshes(controller.getSkinId());
-
         final List<Material> materials = buildHelper.getMaterials(controller.getSkinId());
 
         for (int i = 0; i < meshes.size(); i++) {
             final SkinningMesh skinningMesh = new SkinningMesh(
                     meshes.get(i), controller.getVertexWeights(), bindTransforms,
-                    controller.getBindShapeMatrix(), Arrays.asList(joints), Arrays.asList(skeleton));
+                    controller.getBindShapeMatrix(), joints, Arrays.asList(skeleton));
 
             final MeshView meshView = new MeshView(skinningMesh);
 
@@ -146,6 +149,18 @@ public final class DaeNode extends Group {
         }
     }
 
+    private void buildSkeleton(final DaeBuildHelper buildHelper) {
+        final DaeController controller = buildHelper.getController(instanceId);
+
+        final DaeSkeleton skeleton = buildHelper.getSkeleton(controller.getName());
+
+        final List<Joint> joints = new ArrayList<>(skeleton.joints.values());
+
+        joints.stream().
+                map(Joint::toMeshView).
+                forEach(getChildren()::add);
+    }
+
     private void buildGeometry(final DaeBuildHelper buildHelper) {
         final List<TriangleMesh> meshes = buildHelper.getMeshes(instanceId);
 
@@ -156,8 +171,17 @@ public final class DaeNode extends Group {
             if (i < materials.size()) {
                 meshView.setMaterial(materials.get(i));
             }
-            getChildren().add(meshView);
+            addMeshViewAsChild(meshView);
         }
+    }
 
+    private void addMeshViewAsChild(final MeshView meshView) {
+        FeatureToggle.onDisplayMeshsChange(bool -> {
+            if (bool) {
+                getChildren().add(meshView);
+            } else if (getChildren().contains(meshView)) {
+                getChildren().remove(meshView);
+            }
+        });
     }
 }

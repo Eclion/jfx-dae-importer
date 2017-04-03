@@ -110,7 +110,7 @@ public final class DaeImporter implements Importer {
             return;
         }
         final long end = System.currentTimeMillis();
-        LOGGER.log(Level.INFO, "Imported [%s] in %l ms", new Object[]{url, end - start});
+        LOGGER.log(Level.INFO, "Imported [{0}] in {1} ms", new Object[]{url, end - start});
     }
 
     private void buildTimelines(final DaeSaxHandler parser) {

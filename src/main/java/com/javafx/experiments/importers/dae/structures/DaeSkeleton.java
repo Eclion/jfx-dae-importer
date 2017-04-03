@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
  */
 public final class DaeSkeleton extends Parent {
 
-    public final Map<String, Joint> joints = new LinkedHashMap<>();
+    final Map<String, Joint> joints = new LinkedHashMap<>();
     private final Map<String, Affine> bindTransforms = new LinkedHashMap<>();
 
-    DaeSkeleton(final String id) {
+    private DaeSkeleton(final String id) {
         setId(id);
     }
 
