@@ -126,9 +126,8 @@ public final class Joint extends Group {
         return mesh;
     }
 
-    MeshView toMeshView() {
+    void addMeshView() {
         final MeshView meshView = new MeshView(createCubeMesh());
-        meshView.getTransforms().addAll(this.getTransforms());
-        return meshView;
+        getChildren().add(meshView);
     }
 }

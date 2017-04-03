@@ -11,6 +11,7 @@ import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Affine;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -117,7 +118,9 @@ public final class DaeNode extends Group {
 
         final DaeSkeleton skeleton = buildHelper.getSkeleton(controller.getName());
 
-        final List<Joint> joints = new ArrayList<>(skeleton.joints.values());
+        final String[] jointNames = controller.getJointNames();
+
+        final List<Joint> joints = Stream.of(jointNames).map(skeleton.joints::get).collect(Collectors.toList());
         final Affine[] bindTransforms = controller.bindPoses.toArray(new Affine[joints.size()]);
 
         final List<TriangleMesh> meshes = buildHelper.getMeshes(controller.getSkinId());
@@ -156,9 +159,8 @@ public final class DaeNode extends Group {
 
         final List<Joint> joints = new ArrayList<>(skeleton.joints.values());
 
-        joints.stream().
-                map(Joint::toMeshView).
-                forEach(getChildren()::add);
+        joints.forEach(Joint::addMeshView);
+        getChildren().add(skeleton);
     }
 
     private void buildGeometry(final DaeBuildHelper buildHelper) {
