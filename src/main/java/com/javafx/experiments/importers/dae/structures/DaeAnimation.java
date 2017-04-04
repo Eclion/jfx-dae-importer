@@ -10,6 +10,7 @@ import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Eclion
@@ -17,7 +18,7 @@ import java.util.List;
 public final class DaeAnimation {
 
     //ratio set for the animation used for testing.
-    private static final int TIMER_RATIO = 3000;
+    private static final int TIMER_MS_RATIO = 1000;
 
     public final String id;
     private float[] input;
@@ -32,24 +33,26 @@ public final class DaeAnimation {
 
     public List<KeyFrame> calculateAnimation(final DaeSkeleton skeleton) {
         final List<KeyFrame> keyFrames = new ArrayList<>();
-        final String targetJointName = this.target.split("/")[0];
 
-        if (!skeleton.joints.containsKey(targetJointName)) {
-            return new ArrayList<>();
-        }
+        Optional.ofNullable(this.target).
+                map(t -> t.split("/")[0]).
+                map(skeleton.joints::get).
+                map(this::calculateJointAnimation).
+                ifPresent(keyFrames::addAll);
 
-        final Joint animatedJoint = skeleton.joints.get(targetJointName);
+        this.childAnimations.stream().
+                map(animation -> animation.calculateAnimation(skeleton)).
+                forEach(keyFrames::addAll);
 
+        return keyFrames;
+    }
+
+    private List<KeyFrame> calculateJointAnimation(Joint joint) {
+        final List<KeyFrame> keyFrames = new ArrayList<>();
         for (int i = 0; i < this.input.length; i++) {
             final Affine keyAffine = new Affine(this.output, MatrixType.MT_3D_4x4, i * 16);
-            keyFrames.add(this.convertToKeyFrame(this.input[i] * TIMER_RATIO, animatedJoint.a, keyAffine, this.interpolators[i]));
+            keyFrames.add(this.convertToKeyFrame(this.input[i] * TIMER_MS_RATIO, joint.a, keyAffine, this.interpolators[i]));
         }
-
-        keyFrames.addAll(this.childAnimations.stream().map(animation -> animation.calculateAnimation(skeleton)).
-                reduce(new ArrayList<>(), (l1, l2) -> {
-                    l1.addAll(l2);
-                    return l1;
-                }));
         return keyFrames;
     }
 
