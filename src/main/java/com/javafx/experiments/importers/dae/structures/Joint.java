@@ -33,6 +33,9 @@
 package com.javafx.experiments.importers.dae.structures;
 
 import javafx.scene.Group;
+import javafx.scene.shape.Mesh;
+import javafx.scene.shape.MeshView;
+import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
@@ -78,5 +81,53 @@ public final class Joint extends Group {
         this.rz.setAxis(Rotate.Z_AXIS);
 
         this.getTransforms().addAll(t, is, joz, joy, jox, rz, ry, rx, s, a);
+    }
+
+    private Mesh createCubeMesh() {
+
+        float width = 0.2f / 2f;
+        float points[] = {
+                -width, -width, -width,
+                width, -width, -width,
+                width, width, -width,
+                -width, width, -width,
+                -width, -width, width,
+                width, -width, width,
+                width, width, width,
+                -width, width, width};
+
+        float texCoords[] = {0, 0, 1, 0, 1, 1, 0, 1};
+
+        int faceSmoothingGroups[] = {
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        int faces[] = {
+                0, 0, 2, 2, 1, 1,
+                2, 2, 0, 0, 3, 3,
+                1, 0, 6, 2, 5, 1,
+                6, 2, 1, 0, 2, 3,
+                5, 0, 7, 2, 4, 1,
+                7, 2, 5, 0, 6, 3,
+                4, 0, 3, 2, 0, 1,
+                3, 2, 4, 0, 7, 3,
+                3, 0, 6, 2, 2, 1,
+                6, 2, 3, 0, 7, 3,
+                4, 0, 1, 2, 5, 1,
+                1, 2, 4, 0, 0, 3,
+        };
+
+        final TriangleMesh mesh = new TriangleMesh();
+        mesh.getPoints().setAll(points);
+        mesh.getTexCoords().setAll(texCoords);
+        mesh.getFaces().setAll(faces);
+        mesh.getFaceSmoothingGroups().setAll(faceSmoothingGroups);
+
+        return mesh;
+    }
+
+    void addMeshView() {
+        final MeshView meshView = new MeshView(createCubeMesh());
+        getChildren().add(meshView);
     }
 }

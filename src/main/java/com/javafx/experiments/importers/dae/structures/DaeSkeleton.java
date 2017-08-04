@@ -14,24 +14,21 @@ import java.util.stream.Collectors;
  */
 public final class DaeSkeleton extends Parent {
 
-    private final String name;
-    public final Map<String, Joint> joints = new LinkedHashMap<>();
+    final Map<String, Joint> joints = new LinkedHashMap<>();
     private final Map<String, Affine> bindTransforms = new LinkedHashMap<>();
 
-    DaeSkeleton(final String id, final String name) {
+    private DaeSkeleton(final String id) {
         setId(id);
-        this.name = name;
     }
 
     public static DaeSkeleton fromDaeNode(final DaeNode rootNode) {
-        final DaeSkeleton skeleton = new DaeSkeleton(rootNode.getId(), rootNode.name);
+        final DaeSkeleton skeleton = new DaeSkeleton(rootNode.getId());
 
+        //TODO should the rootNode transforms be local to the parent or global?
         skeleton.getTransforms().addAll(rootNode.getTransforms());
 
         final List<DaeNode> rootDaeNodes = new ArrayList<>();
-        rootDaeNodes.addAll(rootNode.getChildren().stream().
-                filter(node -> node instanceof DaeNode).
-                map(node -> (DaeNode) node).
+        rootDaeNodes.addAll(rootNode.getDaeNodeChildStream().
                 filter(DaeNode::isJoint).
                 collect(Collectors.toList()));
 
@@ -48,9 +45,7 @@ public final class DaeSkeleton extends Parent {
                     joints.put(joint.getId(), joint);
                     bindTransforms.put(joint.getId(), joint.a);
 
-                    final List<DaeNode> children = node.getChildren().stream().
-                            filter(n -> n instanceof DaeNode).
-                            map(n -> (DaeNode) n).
+                    final List<DaeNode> children = node.getDaeNodeChildStream().
                             filter(DaeNode::isJoint).
                             collect(Collectors.toList());
                     joint.getChildren().addAll(buildBone(children, joints, bindTransforms));

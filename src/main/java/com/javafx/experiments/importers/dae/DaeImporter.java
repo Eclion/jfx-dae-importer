@@ -58,7 +58,7 @@ import java.util.logging.Logger;
  * - Assume 1 Unit = 1 FX Unit
  */
 @SuppressWarnings("UnusedDeclaration")
-public final class DaeImporter extends Importer {
+public final class DaeImporter implements Importer {
     private static final Logger LOGGER = Logger.getLogger(DaeImporter.class.getSimpleName());
     private Group rootNode = new Group();
     private Camera firstCamera;
@@ -67,7 +67,11 @@ public final class DaeImporter extends Importer {
 
     public Scene createScene(final int width) {
         final Scene scene = new Scene(rootNode, width, (int) (width / firstCameraAspectRatio), true);
-        if (firstCamera != null) scene.setCamera(firstCamera);
+
+        if (firstCamera != null) {
+            scene.setCamera(firstCamera);
+        }
+
         scene.setFill(Color.BEIGE);
         return scene;
     }
@@ -104,12 +108,11 @@ public final class DaeImporter extends Importer {
             firstCameraAspectRatio = handler.getFirstCameraAspectRatio();
 
         } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();
-            LOGGER.log(Level.SEVERE, "Couldn't import " + url);
+            LOGGER.log(Level.SEVERE, "Couldn't import {0} : \n{1}", new Object[]{url, e.getMessage()});
             return;
         }
         final long end = System.currentTimeMillis();
-        LOGGER.log(Level.INFO, "Imported [" + url + "] in  " + ((end - start)) + "ms");
+        LOGGER.log(Level.INFO, "Imported [{0}] in {1} ms", new Object[]{url, end - start});
     }
 
     private void buildTimelines(final DaeSaxHandler parser) {

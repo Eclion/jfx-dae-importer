@@ -1,6 +1,8 @@
 package com.javafx.experiments.importers.dae.structures;
 
 import com.javafx.experiments.animation.SkinningMeshTimer;
+import com.javafx.experiments.importers.FeatureToggle;
+import com.javafx.experiments.importers.dae.utils.ParserUtils;
 import com.javafx.experiments.shape3d.SkinningMesh;
 import javafx.scene.Group;
 import javafx.scene.paint.Material;
@@ -9,6 +11,8 @@ import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Affine;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -19,8 +23,6 @@ public final class DaeNode extends Group {
     public final String type;
     private Category instanceCategory = Category.NONE;
     private String instanceId;
-    private String instanceMaterialId;
-    public String skeletonId;
 
     private enum Category {
         CAMERA,
@@ -56,15 +58,8 @@ public final class DaeNode extends Group {
         instanceCategory = Category.LIGHT;
     }
 
-    public void setInstanceMaterialId(final String instanceMaterialId) {
-        this.instanceMaterialId = instanceMaterialId;
-    }
-
     public boolean hasJoints() {
-        return getChildren().stream().
-                filter(node -> node instanceof DaeNode).
-                map(node -> (DaeNode) node).
-                anyMatch(DaeNode::isJoint);
+        return getDaeNodeChildStream().anyMatch(DaeNode::isJoint);
     }
 
     boolean isJoint() {
@@ -87,26 +82,31 @@ public final class DaeNode extends Group {
                 buildCamera(buildHelper);
                 break;
             case CONTROLLER:
-                buildController(buildHelper);
+                FeatureToggle.onDisplayMeshsChange(bool -> {
+                    if (bool) {
+                        buildController(buildHelper);
+                    }
+                });
+                FeatureToggle.onDisplaySkeletonsChange(bool -> {
+                    if (bool) {
+                        buildSkeleton(buildHelper);
+                    }
+                });
                 break;
             case GEOMETRY:
                 buildGeometry(buildHelper);
                 break;
             case LIGHT:
-                break;
             case NONE:
             default:
                 break;
         }
 
-        daeNodeTreeBuild(this, buildHelper);
+        getDaeNodeChildStream().forEach(child -> child.build(buildHelper));
     }
 
-    static void daeNodeTreeBuild(final Group node, final DaeBuildHelper buildHelper) {
-        node.getChildren().stream().
-                filter(child -> child instanceof DaeNode).
-                map(child -> (DaeNode) child).
-                forEach(child -> child.build(buildHelper));
+    public Stream<DaeNode> getDaeNodeChildStream() {
+        return ParserUtils.getDaeNodeChildStream(this);
     }
 
     private void buildCamera(final DaeBuildHelper buildHelper) {
@@ -118,23 +118,18 @@ public final class DaeNode extends Group {
 
         final DaeSkeleton skeleton = buildHelper.getSkeleton(controller.getName());
 
-        final String[] bones = skeleton.joints.keySet().toArray(new String[]{});
-        final Affine[] bindTransforms = new Affine[bones.length];
-        final Joint[] joints = new Joint[bones.length];
+        final String[] jointNames = controller.getJointNames();
 
-        for (int i = 0; i < bones.length; i++) {
-            bindTransforms[i] = controller.bindPoses.get(i);
-            joints[i] = skeleton.joints.get(bones[i]);
-        }
+        final List<Joint> joints = Stream.of(jointNames).map(skeleton.joints::get).collect(Collectors.toList());
+        final Affine[] bindTransforms = controller.bindPoses.toArray(new Affine[joints.size()]);
 
-        final List<TriangleMesh> meshes = buildHelper.getMeshes(controller.skinId);
-
-        final List<Material> materials = buildHelper.getMaterials(controller.skinId);
+        final List<TriangleMesh> meshes = buildHelper.getMeshes(controller.getSkinId());
+        final List<Material> materials = buildHelper.getMaterials(controller.getSkinId());
 
         for (int i = 0; i < meshes.size(); i++) {
             final SkinningMesh skinningMesh = new SkinningMesh(
-                    meshes.get(i), controller.vertexWeights, bindTransforms,
-                    controller.bindShapeMatrix, Arrays.asList(joints), Arrays.asList(skeleton));
+                    meshes.get(i), controller.getVertexWeights(), bindTransforms,
+                    controller.getBindShapeMatrix(), joints, Arrays.asList(skeleton));
 
             final MeshView meshView = new MeshView(skinningMesh);
 
@@ -150,9 +145,22 @@ public final class DaeNode extends Group {
                 }
             });
 
-            if (i < materials.size()) meshView.setMaterial(materials.get(i));
+            if (i < materials.size()) {
+                meshView.setMaterial(materials.get(i));
+            }
             getChildren().add(meshView);
         }
+    }
+
+    private void buildSkeleton(final DaeBuildHelper buildHelper) {
+        final DaeController controller = buildHelper.getController(instanceId);
+
+        final DaeSkeleton skeleton = buildHelper.getSkeleton(controller.getName());
+
+        final List<Joint> joints = new ArrayList<>(skeleton.joints.values());
+
+        joints.forEach(Joint::addMeshView);
+        getChildren().add(skeleton);
     }
 
     private void buildGeometry(final DaeBuildHelper buildHelper) {
@@ -162,9 +170,20 @@ public final class DaeNode extends Group {
 
         for (int i = 0; i < meshes.size(); i++) {
             final MeshView meshView = new MeshView(meshes.get(i));
-            if (i < materials.size()) meshView.setMaterial(materials.get(i));
-            getChildren().add(meshView);
+            if (i < materials.size()) {
+                meshView.setMaterial(materials.get(i));
+            }
+            addMeshViewAsChild(meshView);
         }
+    }
 
+    private void addMeshViewAsChild(final MeshView meshView) {
+        FeatureToggle.onDisplayMeshsChange(bool -> {
+            if (bool) {
+                getChildren().add(meshView);
+            } else if (getChildren().contains(meshView)) {
+                getChildren().remove(meshView);
+            }
+        });
     }
 }

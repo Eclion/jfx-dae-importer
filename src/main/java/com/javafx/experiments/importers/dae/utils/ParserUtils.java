@@ -1,10 +1,13 @@
 package com.javafx.experiments.importers.dae.utils;
 
+import com.javafx.experiments.importers.dae.structures.DaeNode;
 import com.javafx.experiments.importers.dae.structures.Input;
+import javafx.scene.Group;
 import org.xml.sax.Attributes;
 
 import java.util.Optional;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * @author Eclion
@@ -23,7 +26,7 @@ public final class ParserUtils {
         return array;
     }
 
-    public static Input createInput(final String qName, final Attributes attributes) {
+    public static Input createInput(final Attributes attributes) {
         final int offset = Optional.ofNullable(attributes.getValue("offset")).
                 map(Integer::parseInt).
                 orElse(0);
@@ -47,5 +50,11 @@ public final class ParserUtils {
             intArray[i] = (int) floatArray[i];
         }
         return intArray;
+    }
+
+    public static Stream<DaeNode> getDaeNodeChildStream(final Group group) {
+        return group.getChildren().stream().
+                filter(child -> child instanceof DaeNode).
+                map(child -> (DaeNode) child);
     }
 }

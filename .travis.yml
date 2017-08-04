@@ -1,0 +1,29 @@
+language: java
+jdk:
+  - oraclejdk8
+install: true
+
+before_install:
+  - sudo apt-get update && sudo apt-get install oracle-java8-installer
+  - pip install --user codecov
+  - java -Xmx32m -version
+
+addons:
+  sonarqube:
+    organization: "eclion-github"
+    token:
+      secure: "uFlntPpKKy63ZRHC/KU3uQt40SHfebVHgtSW7AjrEOl/C2Hrs5CFrzpN3bZPY9Ginv6zm4wN2GZBXt/kh4qiY4EVik+mHLK5tLbQiIhHUITg1ezMf69NI9OFRtJnmMHGB8zkvwkRQaNIZxtIioJUnLh2unPP7zZ/cNIK+RzsAcmZPfdLlJoKcXFPOytMN71hC7QBT00a7ND+MZ0ZKracpTyNQUB1vfzLsTMpLmhDUyDd/lGfQZ6U6k/33rn8gMNY4Oh/TtTroomqjdqGxlmMWkm85gbiPgEAtEs7mkPHf44Er56UPCmmp3wS9BsdBpKnUhAYmEEO0AtA8VOBaEjzDA7R1LFLa1vY4Woo715hhSbWcWJR3iSLfZNYG0/Ij1HCDrPNlKVU5Ue9TqiDrm3+mEbBOuRPTaQcAnIP38BBXQXy4S/jAm5j00MeglCFnQDagu9Y1eKIvEL5PfE/wFatX51rbCDtKUjrK48qLqH/sQ2CZVC5gWDJDT8AvY0XKwCQxV5VKwsJdWSdcR53FzkgYOGPD3hCcj1igtIvBMfFSMxSoU/hP6Io7/kHJLE0qclWDr0YaT8JAp+zRQh1ZhZOKNQPblZHE4OGUZfyx+7Rjmdhjl7f877driJP4Nlh0rVlDEsXxjf2EAj6cd4qGezw7P8T+vN5LFFNd+YKlki5fg0="
+    branches:
+      - dev
+
+script:
+  - sonar-scanner
+  - gradle sonarqube
+
+after_success:
+  - if [ -e ./gradlew ]; then ./gradlew test jacocoTestReport;else gradle test jacocoTestReport;fi
+  - codecov
+  - if [ -e ./gradlew ]; then ./gradlew sendCoverageToCodacy;else gradle sendCoverageToCodacy;fi
+
+bundler_args: --retry 5
+

@@ -117,32 +117,32 @@ public final class SkinningMesh extends TriangleMesh {
 
     // For optimization purposes, store the indices of the non-zero weights
     private List<Integer>[] initializeWeightIndices() {
-        final List<Integer>[] weightIndices = new List[nJoints];
+        final List<Integer>[] wIndices = new List[nJoints];
         for (int j = 0; j < nJoints; j++) {
-            weightIndices[j] = new ArrayList<>();
+            wIndices[j] = new ArrayList<>();
             for (int i = 0; i < nPoints; i++) {
-                if (weights[j][i] != 0.0f) {
-                    weightIndices[j].add(i);
+                if (weights[j][i] > 0.0001) {
+                    wIndices[j].add(i);
                 }
             }
         }
-        return weightIndices;
+        return wIndices;
     }
 
     // Compute the points of the binding mesh relative to the binding transforms
     private float[][] initializeRelativePoints(final Affine[] bindTransforms, final Affine bindGlobalTransform) {
         final ObservableFloatArray points = getPoints();
-        final float[][] relativePoints = new float[nJoints][nPoints * 3];
+        final float[][] relativePts = new float[nJoints][nPoints * 3];
         for (int j = 0; j < nJoints; j++) {
             final Transform postBindTransform = bindTransforms[j].createConcatenation(bindGlobalTransform);
             for (int i = 0; i < nPoints; i++) {
-                final Point3D relativePoint = postBindTransform.transform(points.get(3 * i), points.get(3 * i + 1), points.get(3 * i + 2));
-                relativePoints[j][3 * i] = (float) relativePoint.getX();
-                relativePoints[j][3 * i + 1] = (float) relativePoint.getY();
-                relativePoints[j][3 * i + 2] = (float) relativePoint.getZ();
+                final Point3D relativePt = postBindTransform.transform(points.get(3 * i), points.get(3 * i + 1), points.get(3 * i + 2));
+                relativePts[j][3 * i] = (float) relativePt.getX();
+                relativePts[j][3 * i + 1] = (float) relativePt.getY();
+                relativePts[j][3 * i + 2] = (float) relativePt.getZ();
             }
         }
-        return relativePoints;
+        return relativePts;
     }
 
     // Add a listener to all the joints (and their parents nodes) so that we can track when any of their transforms have changed
@@ -202,6 +202,8 @@ public final class SkinningMesh extends TriangleMesh {
         jointsTransformDirty = false;
     }
 
+
+    //TODO: problem with the point calculation.
     private void updatePoints() {
         final float[] points = new float[nPoints * 3];
         final double[] t = new double[12];
@@ -225,16 +227,21 @@ public final class SkinningMesh extends TriangleMesh {
         final int pointSize = getPointElementSize();
 
         for (int i = 0; i < faces.size() / faceSize; i++) {
-            int index1 = faces.get(i * faceSize);
-            int index2 = faces.get(i * faceSize + pointSize);
-            int index3 = faces.get(i * faceSize + pointSize * 2);
-            final Point3D p1 = getPoint(index1);
-            final Point3D p2 = getPoint(index2);
-            final Point3D p3 = getPoint(index3);
+            final int ptIndex1 = faces.get(i * faceSize);
+            final int ptIndex2 = faces.get(i * faceSize + pointSize);
+            final int ptIndex3 = faces.get(i * faceSize + pointSize * 2);
+
+            // should the normal Index checked to be the same for all the face?
+            final int nlIndex = faces.get(i * faceSize + 1);
+
+            final Point3D p1 = getPoint(ptIndex1);
+            final Point3D p2 = getPoint(ptIndex2);
+            final Point3D p3 = getPoint(ptIndex3);
             final Point3D newNormal = calculateNormal(p1, p2, p3);
-            normals[i * 3] = (float) newNormal.getX();
-            normals[i * 3 + 1] = (float) newNormal.getY();
-            normals[i * 3 + 2] = (float) newNormal.getZ();
+
+            normals[nlIndex * 3] = (float) newNormal.getX();
+            normals[nlIndex * 3 + 1] = (float) newNormal.getY();
+            normals[nlIndex * 3 + 2] = (float) newNormal.getZ();
         }
 
         getNormals().setAll(normals);

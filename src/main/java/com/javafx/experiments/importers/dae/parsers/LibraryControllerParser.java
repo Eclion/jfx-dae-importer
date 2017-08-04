@@ -42,22 +42,22 @@ final class LibraryControllerParser extends AbstractParser {
         addStartElementBiConsumer("*", (qName, attributes) -> currentId.put(qName, attributes.getValue("id")));
         addStartElementBiConsumer(CONTROLLER_TAG, (qName, attributes) -> {
             currentControllerId = currentId.get(qName);
-            controllers.put(currentControllerId, new DaeController(currentControllerId, attributes.getValue("name")));
+            controllers.put(currentControllerId, new DaeController(attributes.getValue("name")));
         });
         addStartElementBiConsumer(INPUT_TAG, (qName, attributes) -> {
-            Input input = ParserUtils.createInput(qName, attributes);
+            Input input = ParserUtils.createInput(attributes);
             inputs.put(input.semantic, input);
         });
         addStartElementBiConsumer(PARAM_TAG, (qName, attributes) -> {
             String sourceId = currentId.get(SOURCE_STR);
             params.put(sourceId, new Param(attributes.getValue("name"), attributes.getValue("type")));
         });
-        addStartElementBiConsumer(SKIN_TAG, (qName, attributes) -> controllers.get(currentControllerId).skinId = attributes.getValue(SOURCE_STR).substring(1));
+        addStartElementBiConsumer(SKIN_TAG, (qName, attributes) -> controllers.get(currentControllerId).setSkinId(attributes.getValue(SOURCE_STR).substring(1)));
         addStartElementBiConsumer(VERTEX_WEIGTHS_TAG, (qName, attributes) -> nbPoints = Integer.parseInt(attributes.getValue("count")));
 
         addEndElementBiConsumer(BIND_SHAPE_MATRIX_TAG, (qName, content) -> {
             String[] matrixValues = content.split(WHITESPACES_REGEX);
-            controllers.get(currentControllerId).bindShapeMatrix = extractMatrixTransformation(matrixValues);
+            controllers.get(currentControllerId).setBindShapeMatrix(extractMatrixTransformation(matrixValues));
         });
         addEndElementBiConsumer(CONTROLLER_TAG, (qName, content) -> init());
         addEndElementBiConsumer(FLOAT_ARRAY_TAG, (qName, content) -> {
@@ -70,7 +70,7 @@ final class LibraryControllerParser extends AbstractParser {
                 controllers.get(currentControllerId).bindPoses.add(new Affine(doubleArray, MatrixType.MT_3D_4x4, i * 16));
             }
         });
-        addEndElementBiConsumer(NAME_ARRAY_TAG, (qName, content) -> controllers.get(currentControllerId).jointNames = content.split(WHITESPACES_REGEX));
+        addEndElementBiConsumer(NAME_ARRAY_TAG, (qName, content) -> controllers.get(currentControllerId).setJointNames(content.split(WHITESPACES_REGEX)));
         addEndElementBiConsumer(V_TAG, (qName, content) -> v = ParserUtils.extractIntArray(content));
         addEndElementBiConsumer(VCOUNT_TAG, (qName, content) -> vCounts = ParserUtils.extractIntArray(content));
         addEndElementBiConsumer(VERTEX_WEIGTHS_TAG, (qName, content) -> saveWeights());
@@ -94,7 +94,7 @@ final class LibraryControllerParser extends AbstractParser {
         int weightOffset = weightInput.offset;
         float[] weightValues = floatArrays.get(weightInput.source.substring(1));
 
-        int nbJoints = controllers.get(currentControllerId).jointNames.length;
+        int nbJoints = controllers.get(currentControllerId).getJointNames().length;
         float[][] weights = new float[nbJoints][nbPoints];
 
         int index = 0;
@@ -107,7 +107,7 @@ final class LibraryControllerParser extends AbstractParser {
             }
         }
 
-        controllers.get(currentControllerId).vertexWeights = weights;
+        controllers.get(currentControllerId).setVertexWeights(weights);
     }
 
     private Affine extractMatrixTransformation(final String[] matrixStringValues) {

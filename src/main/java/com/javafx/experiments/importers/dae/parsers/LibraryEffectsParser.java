@@ -9,22 +9,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
  * @author Eclion
  */
 final class LibraryEffectsParser extends AbstractParser {
+    private static final Logger LOGGER = Logger.getLogger(LibraryEffectsParser.class.getSimpleName());
+
     private static final String AMBIENT_TAG = "ambient";
     private static final String COLOR_TAG = "color";
     private static final String DIFFUSE_TAG = "diffuse";
     private static final String EFFECT_TAG = "effect";
     private static final String EMISSION_TAG = "emission";
-    private static final String FLOAT_TAG = "float";
-    private static final String INDEX_OF_REFRACTION_TAG = "index_of_refraction";
     private static final String INIT_FROM_TAG = "init_from";
     private static final String PHONG_TAG = "phong";
-    private static final String SHININESS_TAG = "shininess";
     private static final String SPECULAR_TAG = "specular";
     private static final String SOURCE_TAG = "source";
     private static final String TEXTURE_TAG = "texture";
@@ -38,7 +38,6 @@ final class LibraryEffectsParser extends AbstractParser {
     private DaeEffect currentEffect;
     private String tempTexture;
 
-    private Float tempFloat;
     private Color tempColor;
 
     LibraryEffectsParser() {
@@ -47,15 +46,14 @@ final class LibraryEffectsParser extends AbstractParser {
             currentSid.put(qName, attributes.getValue("sid"));
         });
         addStartElementBiConsumer(EFFECT_TAG, (qName, attributes) -> currentEffect = new DaeEffect(this.currentId.get("effect")));
-        addStartElementBiConsumer(PHONG_TAG, (qName, attributes) -> currentEffect.type = qName);
+        addStartElementBiConsumer(PHONG_TAG, (qName, attributes) -> currentEffect.setType(qName));
         addStartElementBiConsumer(COLOR_TAG, (qName, attributes) -> {
             tempColor = null;
             tempTexture = null;
         });
-        addStartElementBiConsumer(FLOAT_TAG, (qName, attributes) -> tempFloat = null);
         addStartElementBiConsumer(TEXTURE_TAG, (qName, attributes) -> {
             tempColor = null;
-            tempTexture = attributes.getValue("texture");
+            tempTexture = attributes.getValue(TEXTURE_TAG);
         });
 
         addEndElementBiConsumer(COLOR_TAG, (qName, content) -> tempColor = extractColor(content));
@@ -68,16 +66,13 @@ final class LibraryEffectsParser extends AbstractParser {
                     }
                 }));
         addEndElementBiConsumer(EFFECT_TAG, (qName, content) -> effects.add(currentEffect));
-        addEndElementBiConsumer(FLOAT_TAG, (qName, content) -> tempFloat = Float.parseFloat(content));
-        addEndElementBiConsumer(INDEX_OF_REFRACTION_TAG, (qName, content) -> currentEffect.refractionIndex = tempFloat);
         addEndElementBiConsumer(INIT_FROM_TAG, (qName, content) -> currentEffect.surfaces.put(currentSid.get("newparam"), content));
-        addEndElementBiConsumer(SHININESS_TAG, (qName, content) -> currentEffect.shininess = tempFloat);
         addEndElementBiConsumer(SOURCE_TAG, (qName, content) -> currentEffect.samplers.put(currentSid.get("newparam"), content));
     }
 
     void buildEffects(final Map<String, Image> images) {
         effects.stream().
-                filter(effect -> effect.type != null).
+                filter(DaeEffect::hasType).
                 forEach(effect -> effectIdToMaterialMap.put(effect.id, effect.build(images))
                 );
     }
@@ -96,7 +91,7 @@ final class LibraryEffectsParser extends AbstractParser {
                     Double.parseDouble(colors[3])
             );
         } catch (Exception ignored) {
-
+            LOGGER.warning("Couldn't parse the color from \"" + content + "\"");
         }
         return null;
     }

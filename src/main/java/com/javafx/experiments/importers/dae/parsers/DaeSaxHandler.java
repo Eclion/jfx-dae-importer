@@ -31,8 +31,6 @@ public final class DaeSaxHandler extends AbstractParser {
 
     private final Map<String, AbstractParser> parsers = new HashMap<>();
 
-    private Camera firstCamera;
-
     public DaeSaxHandler(final String fileUrl) {
         addStartElementBiConsumer(ALL, this::delegateElement);
         addStartElementBiConsumer(ASSET_TAG, (qName, attributes) -> setParser(qName, new AssetParser()));
@@ -61,7 +59,7 @@ public final class DaeSaxHandler extends AbstractParser {
     }
 
     public Camera getFirstCamera() {
-        return (parsers.containsKey(LIBRARY_CAMERAS_TAG))
+        return parsers.containsKey(LIBRARY_CAMERAS_TAG)
                 ? ((LibraryCamerasParser) parsers.get(LIBRARY_CAMERAS_TAG)).firstCamera
                 : null;
     }
@@ -75,7 +73,9 @@ public final class DaeSaxHandler extends AbstractParser {
     public Group buildScene() {
         final LibraryVisualSceneParser visualSceneParser = (LibraryVisualSceneParser) parsers.get(LIBRARY_VISUAL_SCENES_TAG);
 
-        if (visualSceneParser == null || visualSceneParser.scenes.isEmpty()) return new Group();
+        if (visualSceneParser == null || visualSceneParser.scenes.isEmpty()) {
+            return new Group();
+        }
 
         final DaeScene rootNode = visualSceneParser.scenes.peek();
 
@@ -141,7 +141,9 @@ public final class DaeSaxHandler extends AbstractParser {
     public Map<String, List<KeyFrame>> getKeyFramesMap() {
         final LibraryAnimationsParser animationsParser = (LibraryAnimationsParser) parsers.get(LIBRARY_ANIMATIONS_TAG);
         final LibraryVisualSceneParser visualSceneParser = (LibraryVisualSceneParser) parsers.get(LIBRARY_VISUAL_SCENES_TAG);
-        if (animationsParser == null || visualSceneParser == null) return new HashMap<>();
+        if (animationsParser == null || visualSceneParser == null) {
+            return new HashMap<>();
+        }
 
         final Map<String, List<KeyFrame>> frames = new HashMap<>();
         visualSceneParser.scenes.peek().skeletons.values().

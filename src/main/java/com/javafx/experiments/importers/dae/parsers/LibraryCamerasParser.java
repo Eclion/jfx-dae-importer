@@ -44,13 +44,13 @@ final class LibraryCamerasParser extends AbstractParser {
     private void saveCamera() {
         PerspectiveCamera camera = new PerspectiveCamera(true);
 
-        Optional.ofNullable(yfov).ifPresent(yfov -> {
+        Optional.ofNullable(yfov).ifPresent(fov -> {
             camera.setVerticalFieldOfView(true);
-            camera.setFieldOfView(yfov);
+            camera.setFieldOfView(fov);
         });
-        Optional.ofNullable(xfov).ifPresent(xfov -> {
+        Optional.ofNullable(xfov).ifPresent(fov -> {
             camera.setVerticalFieldOfView(false);
-            camera.setFieldOfView(xfov);
+            camera.setFieldOfView(fov);
         });
         Optional.ofNullable(znear).ifPresent(camera::setNearClip);
         Optional.ofNullable(zfar).ifPresent(camera::setFarClip);
@@ -58,7 +58,7 @@ final class LibraryCamerasParser extends AbstractParser {
 
         if (firstCamera == null) {
             firstCamera = camera;
-            Optional.ofNullable(aspectRatio).ifPresent(aspectRatio -> firstCameraAspectRatio = aspectRatio);
+            Optional.ofNullable(aspectRatio).ifPresent(ratio -> firstCameraAspectRatio = ratio);
         }
     }
 }

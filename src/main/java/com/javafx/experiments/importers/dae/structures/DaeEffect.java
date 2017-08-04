@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Eclion on 16/03/17.
+ * @author Eclion
  */
 public final class DaeEffect {
 
@@ -19,32 +19,27 @@ public final class DaeEffect {
     private static final String EMISSION_TAG = "emission";
     private static final String SPECULAR_TAG = "specular";
 
-
     public final String id;
 
     public final Map<String, String> surfaces = new HashMap<>();
     public final Map<String, String> samplers = new HashMap<>();
     public final Map<String, Color> colors = new HashMap<>();
     public final Map<String, String> textureIds = new HashMap<>();
-    public float shininess;
-    public float refractionIndex;
 
-    public String type;
+    private String type;
 
     public DaeEffect(final String id) {
         this.id = id;
     }
 
     public Material build(final Map<String, Image> images) {
-        switch (this.type) {
-            case PHONG_TAG:
-                return buildPhongMaterial(images);
-            default:
-                return null;
+        if (PHONG_TAG.equals(this.type)) {
+            return buildPhongMaterial(images);
         }
+        return null;
     }
 
-    PhongMaterial buildPhongMaterial(final Map<String, Image> images) {
+    private PhongMaterial buildPhongMaterial(final Map<String, Image> images) {
         final PhongMaterial material = new PhongMaterial();
 
         buildPhongMaterialColors(material);
@@ -56,16 +51,14 @@ public final class DaeEffect {
     private void buildPhongMaterialColors(final PhongMaterial material) {
         colors.forEach((key, value) -> {
             switch (key) {
-                case AMBIENT_TAG:
-                    break;
                 case DIFFUSE_TAG:
                     material.setDiffuseColor(value);
-                    break;
-                case EMISSION_TAG:
                     break;
                 case SPECULAR_TAG:
                     material.setSpecularColor(value);
                     break;
+                case AMBIENT_TAG:
+                case EMISSION_TAG:
                 default:
                     break;
             }
@@ -80,19 +73,25 @@ public final class DaeEffect {
                 forEach(entry -> {
                     final Image image = images.get(surfaces.get(samplers.get(entry.getValue())));
                     switch (entry.getKey()) {
-                        case AMBIENT_TAG:
-                            break;
                         case DIFFUSE_TAG:
                             material.setDiffuseMap(image);
-                            break;
-                        case EMISSION_TAG:
                             break;
                         case SPECULAR_TAG:
                             material.setSpecularMap(image);
                             break;
+                        case AMBIENT_TAG:
+                        case EMISSION_TAG:
                         default:
                             break;
                     }
                 });
+    }
+
+    public void setType(final String type) {
+        this.type = type;
+    }
+
+    public boolean hasType() {
+        return type != null;
     }
 }
