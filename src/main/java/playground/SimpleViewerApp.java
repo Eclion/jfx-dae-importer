@@ -31,6 +31,7 @@
  */
 package playground;
 
+import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -38,14 +39,21 @@ import java.util.List;
 import com.javafx.experiments.importers.dae.DaeImporter;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
+import javafx.scene.image.WritableImage;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import third_party.GifExporterFX;
+
+import javax.imageio.ImageIO;
 
 /**
  * JavaFX 3D Viewer Application
@@ -53,13 +61,15 @@ import javafx.stage.StageStyle;
 public final class SimpleViewerApp extends Application {
     private final Group root3D = new Group();
     private final PerspectiveCamera camera = new PerspectiveCamera(true);
-    private final Rotate cameraXRotate = new Rotate(-10, 0, 0, 0, Rotate.X_AXIS);
+    private final Rotate cameraXRotate = new Rotate(10, 0, 0, 0, Rotate.X_AXIS);
     //private final Rotate cameraXRotate = new Rotate(0,0,0,0,Rotate.X_AXIS);
-    private final Rotate cameraYRotate = new Rotate(0, 0, 0, 0, Rotate.Y_AXIS);
+    private final Rotate cameraYRotate = new Rotate(-160, 0, 0, 0, Rotate.Y_AXIS);
     //private final Rotate cameraYRotate = new Rotate(-50,0,0,0,Rotate.Y_AXIS);
     private final Rotate cameraLookXRotate = new Rotate(0, 0, 0, 0, Rotate.X_AXIS);
     private final Rotate cameraLookZRotate = new Rotate(0, 0, 0, 0, Rotate.Z_AXIS);
     private final Translate cameraPosition = new Translate(0, 0, -10);
+
+    GifExporterFX gifExporterFX = new GifExporterFX();
 
     @Override
     public void start(final Stage stage) throws Exception {
@@ -81,7 +91,10 @@ public final class SimpleViewerApp extends Application {
         final DaeImporter importer = new DaeImporter();
         try {
             if (args.isEmpty()) {
-                importer.load("models/animated_ball.dae");
+                //importer.load("models/animated_cube.dae");
+                //importer.load("models/test1.dae");
+                //importer.load("models/nemuneko.dae");
+                importer.load("models/nemuneko-animated.dae");
             } else {
                 importer.load(new File(args.get(0)).toURI().toURL().toExternalForm());
             }
@@ -89,6 +102,9 @@ public final class SimpleViewerApp extends Application {
             e.printStackTrace();
         }
 
+        //importer.getRoot().setScaleX(0.2);
+        //importer.getRoot().setScaleY(0.2);
+        //importer.getRoot().setScaleZ(0.2);
         root3D.getChildren().addAll(camera, importer.getRoot());
 
         final Timeline timeline = new Timeline();
@@ -98,6 +114,18 @@ public final class SimpleViewerApp extends Application {
 
         stage.setScene(scene);
         stage.show();
+
+        /*final WritableImage writableImage = new WritableImage((int) scene.getWidth(), (int) scene.getHeight());
+        scene.snapshot(writableImage);
+        RenderedImage renderedImage = SwingFXUtils.fromFXImage(writableImage, null);
+        ImageIO.write(
+                renderedImage,
+                "png",
+                new File("test.png"));*/
+
+        //gifExporterFX.captureNow(scene, new File("test.gif").toPath(), 100, true);
+
+        scene.onMousePressedProperty().setValue(mouseEvent -> System.out.println(mouseEvent.getPickResult().getIntersectedNode().getLayoutX()));
     }
 
     public static void main(final String[] args) {
